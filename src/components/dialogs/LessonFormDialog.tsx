@@ -1,12 +1,14 @@
 
 import React from 'react';
 import { useForm } from "react-hook-form";
+import { useParams } from "react-router-dom";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogFooter 
+  DialogFooter, 
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +21,7 @@ import {
   FormMessage
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
 
 interface LessonFormValues {
   data: string;
@@ -39,6 +42,8 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
   initialData = {},
   isEditing = false
 }) => {
+  const { id: courseId } = useParams();
+  
   const form = useForm<LessonFormValues>({
     defaultValues: {
       data: initialData.data || "",
@@ -48,8 +53,53 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
   });
 
   const onSubmit = (data: LessonFormValues) => {
-    // In a real app, this would save to a database
-    console.log("Lesson form submitted:", data);
+    if (!courseId) {
+      toast.error("ID corso non valido");
+      return;
+    }
+    
+    // Get existing courses
+    const existingCourses = localStorage.getItem('courses') 
+      ? JSON.parse(localStorage.getItem('courses')!) 
+      : [];
+    
+    // Find the course to update
+    const courseIndex = existingCourses.findIndex(course => course.id === courseId);
+    
+    if (courseIndex === -1) {
+      toast.error("Corso non trovato");
+      return;
+    }
+    
+    // Create new lesson with ID
+    const newLesson = {
+      id: uuidv4(),
+      ...data
+    };
+    
+    // Add lesson to course
+    if (!existingCourses[courseIndex].giornateDiLezione) {
+      existingCourses[courseIndex].giornateDiLezione = [];
+    }
+    
+    if (isEditing && initialData.id) {
+      // Update existing lesson
+      const lessonIndex = existingCourses[courseIndex].giornateDiLezione.findIndex(
+        lesson => lesson.id === initialData.id
+      );
+      if (lessonIndex !== -1) {
+        existingCourses[courseIndex].giornateDiLezione[lessonIndex] = {
+          ...existingCourses[courseIndex].giornateDiLezione[lessonIndex],
+          ...data
+        };
+      }
+    } else {
+      // Add new lesson
+      existingCourses[courseIndex].giornateDiLezione.push(newLesson);
+    }
+    
+    // Save updated courses
+    localStorage.setItem('courses', JSON.stringify(existingCourses));
     
     // Show success message
     toast.success(isEditing 
@@ -59,6 +109,9 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     
     // Close the dialog
     onClose();
+    
+    // Force refresh to show the updated data
+    window.location.reload();
   };
 
   return (
@@ -66,6 +119,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Giornata' : 'Aggiungi Giornata'}</DialogTitle>
+          <DialogDescription>Aggiungi una giornata di lezione al corso</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

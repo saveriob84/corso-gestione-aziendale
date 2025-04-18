@@ -1,12 +1,14 @@
 
 import React from 'react';
 import { useForm } from "react-hook-form";
+import { useParams } from "react-router-dom";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogFooter 
+  DialogFooter, 
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +21,7 @@ import {
   FormMessage
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ParticipantFormValues {
   nome: string;
@@ -40,6 +43,8 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   initialData = {},
   isEditing = false
 }) => {
+  const { id: courseId } = useParams();
+  
   const form = useForm<ParticipantFormValues>({
     defaultValues: {
       nome: initialData.nome || "",
@@ -50,8 +55,57 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   });
 
   const onSubmit = (data: ParticipantFormValues) => {
-    // In a real app, this would save to a database
-    console.log("Participant form submitted:", data);
+    if (!courseId) {
+      toast.error("ID corso non valido");
+      return;
+    }
+    
+    // Get existing courses
+    const existingCourses = localStorage.getItem('courses') 
+      ? JSON.parse(localStorage.getItem('courses')!) 
+      : [];
+    
+    // Find the course to update
+    const courseIndex = existingCourses.findIndex(course => course.id === courseId);
+    
+    if (courseIndex === -1) {
+      toast.error("Corso non trovato");
+      return;
+    }
+    
+    // Create new participant with ID
+    const newParticipant = {
+      id: uuidv4(),
+      ...data
+    };
+    
+    // Add participant to course
+    if (!existingCourses[courseIndex].partecipantiList) {
+      existingCourses[courseIndex].partecipantiList = [];
+    }
+    
+    if (isEditing && initialData.id) {
+      // Update existing participant
+      const participantIndex = existingCourses[courseIndex].partecipantiList.findIndex(
+        participant => participant.id === initialData.id
+      );
+      if (participantIndex !== -1) {
+        existingCourses[courseIndex].partecipantiList[participantIndex] = {
+          ...existingCourses[courseIndex].partecipantiList[participantIndex],
+          ...data
+        };
+      }
+    } else {
+      // Add new participant
+      existingCourses[courseIndex].partecipantiList.push(newParticipant);
+      
+      // Update participant count
+      existingCourses[courseIndex].partecipanti = 
+        (existingCourses[courseIndex].partecipanti || 0) + 1;
+    }
+    
+    // Save updated courses
+    localStorage.setItem('courses', JSON.stringify(existingCourses));
     
     // Show success message
     toast.success(isEditing 
@@ -61,6 +115,9 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
     
     // Close the dialog
     onClose();
+    
+    // Force refresh to show the updated data
+    window.location.reload();
   };
 
   return (
@@ -68,6 +125,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
+          <DialogDescription>Aggiungi un partecipante al corso</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -78,7 +136,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome" {...field} />
+                    <Input placeholder="es. Mario" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -92,7 +150,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                 <FormItem>
                   <FormLabel>Cognome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Cognome" {...field} />
+                    <Input placeholder="es. Rossi" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +164,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                 <FormItem>
                   <FormLabel>Azienda</FormLabel>
                   <FormControl>
-                    <Input placeholder="Azienda" {...field} />
+                    <Input placeholder="es. TechSolutions Srl" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -120,7 +178,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                 <FormItem>
                   <FormLabel>Ruolo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ruolo" {...field} />
+                    <Input placeholder="es. Tecnico" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

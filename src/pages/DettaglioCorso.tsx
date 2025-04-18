@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,11 @@ import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
 import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog';
 import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
+import { toast } from 'sonner';
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   
   // States for dialogs
   const [isEditingCourse, setIsEditingCourse] = useState(false);
@@ -22,38 +25,97 @@ const DettaglioCorso = () => {
   const [isAddingTutor, setIsAddingTutor] = useState(false);
   const [selectedPdfType, setSelectedPdfType] = useState<null | 'inizioCorso' | 'fineCorso' | 'elencoPartecipanti' | 'elencoDocenti'>(null);
   
-  // Mock data - in un'applicazione reale questi dati verrebbero caricati da un'API
-  const corso = {
-    id,
-    codice: "FORM-" + id,
-    titolo: "Corso di Formazione sulla Sicurezza sul Lavoro",
-    dataInizio: "2023-10-15",
-    dataFine: "2023-11-15",
-    sede: "Via Roma 123, Milano",
-    moduloFormativo: "Sicurezza generale",
-    giornateDiLezione: [
-      { data: "2023-10-15", orario: "09:00 - 13:00", sede: "Aula Magna" },
-      { data: "2023-10-22", orario: "09:00 - 13:00", sede: "Aula Magna" },
-      { data: "2023-11-05", orario: "09:00 - 13:00", sede: "Laboratorio A" },
-      { data: "2023-11-15", orario: "09:00 - 13:00", sede: "Aula Magna" }
-    ],
-    partecipanti: [
-      { nome: "Mario", cognome: "Rossi", azienda: "TechSolutions Srl", ruolo: "Tecnico" },
-      { nome: "Giulia", cognome: "Verdi", azienda: "TechSolutions Srl", ruolo: "Manager" },
-      { nome: "Paolo", cognome: "Bianchi", azienda: "InnovaSpa", ruolo: "Operaio" },
-      { nome: "Laura", cognome: "Neri", azienda: "InnovaSpa", ruolo: "Responsabile" }
-    ],
-    docenti: [
-      { nome: "Prof. Alberto", cognome: "Mariani", specializzazione: "Sicurezza sul lavoro" }
-    ],
-    tutor: [
-      { nome: "Dott.ssa Carla", cognome: "Esposito", ruolo: "Tutor d'aula" }
-    ]
-  };
+  // State to store the course data
+  const [corso, setCorso] = useState<any>(null);
+  
+  // Load course data from localStorage
+  useEffect(() => {
+    const loadCourseData = () => {
+      // First check for user-created courses in localStorage
+      const storedCourses = localStorage.getItem('courses');
+      if (storedCourses) {
+        const parsedCourses = JSON.parse(storedCourses);
+        const foundCourse = parsedCourses.find(course => course.id === id);
+        if (foundCourse) {
+          return foundCourse;
+        }
+      }
+      
+      // If not found in localStorage, check default courses
+      const defaultCourses = [
+        {
+          id: "1",
+          codice: "FORM-001",
+          titolo: "Sicurezza sul Lavoro",
+          dataInizio: "2023-10-15",
+          dataFine: "2023-11-15",
+          sede: "Via Roma 123, Milano",
+          moduloFormativo: "Sicurezza generale",
+          giornateDiLezione: [
+            { id: "g1", data: "2023-10-15", orario: "09:00 - 13:00", sede: "Aula Magna" },
+            { id: "g2", data: "2023-10-22", orario: "09:00 - 13:00", sede: "Aula Magna" },
+            { id: "g3", data: "2023-11-05", orario: "09:00 - 13:00", sede: "Laboratorio A" },
+            { id: "g4", data: "2023-11-15", orario: "09:00 - 13:00", sede: "Aula Magna" }
+          ],
+          partecipantiList: [
+            { id: "p1", nome: "Mario", cognome: "Rossi", azienda: "TechSolutions Srl", ruolo: "Tecnico" },
+            { id: "p2", nome: "Giulia", cognome: "Verdi", azienda: "TechSolutions Srl", ruolo: "Manager" },
+            { id: "p3", nome: "Paolo", cognome: "Bianchi", azienda: "InnovaSpa", ruolo: "Operaio" },
+            { id: "p4", nome: "Laura", cognome: "Neri", azienda: "InnovaSpa", ruolo: "Responsabile" }
+          ],
+          partecipanti: 4,
+          docentiList: [
+            { id: "d1", nome: "Prof. Alberto", cognome: "Mariani", specializzazione: "Sicurezza sul lavoro" }
+          ],
+          docenti: 1,
+          tutorList: [
+            { id: "t1", nome: "Dott.ssa Carla", cognome: "Esposito", ruolo: "Tutor d'aula" }
+          ],
+          tutor: 1,
+          edizioni: 3,
+          aziende: 5,
+          stato: "Completato"
+        },
+        {
+          id: "2",
+          codice: "FORM-002",
+          titolo: "Marketing Digitale",
+          dataInizio: "2023-12-01",
+          dataFine: "2023-12-20",
+          sede: "Via Milano 45, Roma",
+          moduloFormativo: "Marketing base",
+          giornateDiLezione: [],
+          partecipantiList: [],
+          partecipanti: 0,
+          docentiList: [],
+          docenti: 0,
+          tutorList: [],
+          tutor: 0,
+          edizioni: 1,
+          aziende: 3,
+          stato: "In corso"
+        }
+      ];
+      
+      return defaultCourses.find(course => course.id === id);
+    };
+    
+    const foundCourse = loadCourseData();
+    if (foundCourse) {
+      setCorso(foundCourse);
+    } else {
+      toast.error("Corso non trovato");
+      navigate("/corsi");
+    }
+  }, [id, navigate]);
 
   const handleGeneratePdf = () => {
     setSelectedPdfType('inizioCorso');
   };
+
+  if (!corso) {
+    return <div className="p-8 text-center">Caricamento corso in corso...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -168,8 +230,8 @@ const DettaglioCorso = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.giornateDiLezione.map((giornata, index) => (
-                      <tr key={index}>
+                    {corso.giornateDiLezione && corso.giornateDiLezione.map((giornata, index) => (
+                      <tr key={giornata.id || index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.data}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.orario}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.sede}</td>
@@ -178,6 +240,13 @@ const DettaglioCorso = () => {
                         </td>
                       </tr>
                     ))}
+                    {(!corso.giornateDiLezione || corso.giornateDiLezione.length === 0) && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
+                          Nessuna giornata di lezione programmata
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -217,8 +286,8 @@ const DettaglioCorso = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.partecipanti.map((partecipante, index) => (
-                      <tr key={index}>
+                    {corso.partecipantiList && corso.partecipantiList.map((partecipante, index) => (
+                      <tr key={partecipante.id || index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.cognome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.azienda}</td>
@@ -228,6 +297,13 @@ const DettaglioCorso = () => {
                         </td>
                       </tr>
                     ))}
+                    {(!corso.partecipantiList || corso.partecipantiList.length === 0) && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-sm text-slate-500">
+                          Nessun partecipante iscritto
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -260,8 +336,8 @@ const DettaglioCorso = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.docenti.map((docente, index) => (
-                      <tr key={index}>
+                    {corso.docentiList && corso.docentiList.map((docente, index) => (
+                      <tr key={docente.id || index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{docente.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{docente.cognome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{docente.specializzazione}</td>
@@ -270,6 +346,13 @@ const DettaglioCorso = () => {
                         </td>
                       </tr>
                     ))}
+                    {(!corso.docentiList || corso.docentiList.length === 0) && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
+                          Nessun docente assegnato
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -299,8 +382,8 @@ const DettaglioCorso = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.tutor.map((tutor, index) => (
-                      <tr key={index}>
+                    {corso.tutorList && corso.tutorList.map((tutor, index) => (
+                      <tr key={tutor.id || index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{tutor.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{tutor.cognome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{tutor.ruolo}</td>
@@ -309,6 +392,13 @@ const DettaglioCorso = () => {
                         </td>
                       </tr>
                     ))}
+                    {(!corso.tutorList || corso.tutorList.length === 0) && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
+                          Nessun tutor assegnato
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

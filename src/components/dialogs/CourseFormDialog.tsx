@@ -19,6 +19,8 @@ import {
   FormMessage
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 
 interface CourseFormValues {
   codice: string;
@@ -42,6 +44,8 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
   initialData = {},
   isEditing = false
 }) => {
+  const navigate = useNavigate();
+  
   const form = useForm<CourseFormValues>({
     defaultValues: {
       codice: initialData.codice || "",
@@ -49,19 +53,54 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
       dataInizio: initialData.dataInizio || "",
       dataFine: initialData.dataFine || "",
       sede: initialData.sede || "",
-      moduloFormativo: initialData.moduloFormativo || ""
+      moduloFormativo: initialData.moduloFormativo || "",
     }
   });
 
   const onSubmit = (data: CourseFormValues) => {
-    // In a real app, this would save to a database
-    console.log("Form submitted:", data);
+    // Get existing courses or initialize empty array
+    const existingCourses = localStorage.getItem('courses') 
+      ? JSON.parse(localStorage.getItem('courses')!) 
+      : [];
     
-    // Show success message
-    toast.success(isEditing 
-      ? "Corso aggiornato con successo" 
-      : "Nuovo corso creato con successo"
-    );
+    if (isEditing && initialData.id) {
+      // Update existing course
+      const updatedCourses = existingCourses.map(course => 
+        course.id === initialData.id ? { ...course, ...data } : course
+      );
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      
+      // Show success message
+      toast.success("Corso aggiornato con successo");
+    } else {
+      // Create new course with ID and defaults
+      const newCourse = {
+        ...data,
+        id: uuidv4(),
+        edizioni: 1,
+        partecipanti: 0,
+        docenti: 0,
+        tutor: 0,
+        aziende: 1,
+        stato: "Pianificato",
+        giornateDiLezione: [],
+        partecipantiList: [],
+        docentiList: [],
+        tutorList: []
+      };
+      
+      // Add to localStorage
+      existingCourses.push(newCourse);
+      localStorage.setItem('courses', JSON.stringify(existingCourses));
+      
+      // Show success message
+      toast.success("Corso aggiunto con successo");
+      
+      // Navigate to the new course page
+      setTimeout(() => {
+        navigate(`/corsi/${newCourse.id}`);
+      }, 500);
+    }
     
     // Close the dialog
     onClose();
@@ -71,7 +110,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Modifica Corso' : 'Nuovo Corso'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Modifica Corso' : 'Aggiungi Corso'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -80,9 +119,9 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
               name="codice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Codice Corso</FormLabel>
+                  <FormLabel>Codice corso</FormLabel>
                   <FormControl>
-                    <Input placeholder="FORM-XXX" {...field} />
+                    <Input placeholder="es. FORM-001" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,44 +133,42 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
               name="titolo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Titolo Corso</FormLabel>
+                  <FormLabel>Titolo corso</FormLabel>
                   <FormControl>
-                    <Input placeholder="Titolo del corso" {...field} />
+                    <Input placeholder="es. Sicurezza sul Lavoro" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dataInizio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data Inizio</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="dataFine"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data Fine</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="dataInizio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data inizio</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="dataFine"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data fine</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <FormField
               control={form.control}
@@ -140,7 +177,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
                 <FormItem>
                   <FormLabel>Sede</FormLabel>
                   <FormControl>
-                    <Input placeholder="Indirizzo sede" {...field} />
+                    <Input placeholder="es. Via Roma 123, Milano" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -152,9 +189,9 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
               name="moduloFormativo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Modulo Formativo</FormLabel>
+                  <FormLabel>Modulo formativo</FormLabel>
                   <FormControl>
-                    <Input placeholder="Tipo di formazione" {...field} />
+                    <Input placeholder="es. Sicurezza generale" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +200,7 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
             
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>Annulla</Button>
-              <Button type="submit">{isEditing ? 'Aggiorna Corso' : 'Crea Corso'}</Button>
+              <Button type="submit">{isEditing ? 'Aggiorna' : 'Aggiungi'}</Button>
             </DialogFooter>
           </form>
         </Form>
