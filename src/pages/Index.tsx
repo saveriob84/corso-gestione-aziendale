@@ -13,9 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import CourseFormDialog from "@/components/dialogs/CourseFormDialog";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAddingCourse, setIsAddingCourse] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<any>(null);
 
   // Mock data per la tabella dei corsi
   const corsi = [
@@ -96,6 +99,10 @@ const Index = () => {
     }
   };
 
+  const handleEditCourse = (corso: any) => {
+    setEditingCourse(corso);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -107,7 +114,7 @@ const Index = () => {
             Gestisci i corsi di formazione e visualizza il loro stato
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setIsAddingCourse(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Nuovo Corso
         </Button>
@@ -215,7 +222,7 @@ const Index = () => {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" onClick={() => handleEditCourse(corso)}>
                         <PenLine className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon">
@@ -229,6 +236,20 @@ const Index = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <CourseFormDialog 
+        isOpen={isAddingCourse}
+        onClose={() => setIsAddingCourse(false)}
+      />
+
+      {editingCourse && (
+        <CourseFormDialog
+          isOpen={Boolean(editingCourse)}
+          onClose={() => setEditingCourse(null)}
+          initialData={editingCourse}
+          isEditing
+        />
+      )}
     </div>
   );
 };

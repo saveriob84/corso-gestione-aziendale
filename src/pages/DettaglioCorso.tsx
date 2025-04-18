@@ -1,14 +1,26 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, File, FileText, Users, BookOpen, PlusCircle, Download, Upload } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import LessonFormDialog from '@/components/dialogs/LessonFormDialog';
+import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
+import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog';
+import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
+import PdfViewer from '@/components/pdf/PdfViewer';
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
+  
+  // States for dialogs
+  const [isEditingCourse, setIsEditingCourse] = useState(false);
+  const [isAddingLesson, setIsAddingLesson] = useState(false);
+  const [isAddingParticipant, setIsAddingParticipant] = useState(false);
+  const [isAddingTeacher, setIsAddingTeacher] = useState(false);
+  const [isAddingTutor, setIsAddingTutor] = useState(false);
+  const [selectedPdfType, setSelectedPdfType] = useState<null | 'inizioCorso' | 'fineCorso' | 'elencoPartecipanti' | 'elencoDocenti'>(null);
   
   // Mock data - in un'applicazione reale questi dati verrebbero caricati da un'API
   const corso = {
@@ -39,6 +51,10 @@ const DettaglioCorso = () => {
     ]
   };
 
+  const handleGeneratePdf = () => {
+    setSelectedPdfType('inizioCorso');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -49,11 +65,11 @@ const DettaglioCorso = () => {
           <p className="text-slate-500 dark:text-slate-400">Codice: {corso.codice}</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleGeneratePdf}>
             <FileText className="mr-2 h-4 w-4" />
             Genera PDF
           </Button>
-          <Button>
+          <Button onClick={() => setIsEditingCourse(true)}>
             Modifica Corso
           </Button>
         </div>
@@ -127,7 +143,7 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
 
-        {/* Sezione Calendario */}
+        {/* Calendario tab content */}
         <TabsContent value="calendario" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -135,7 +151,7 @@ const DettaglioCorso = () => {
                 <CardTitle>Calendario Didattico</CardTitle>
                 <CardDescription>Giornate di lezione programmate</CardDescription>
               </div>
-              <Button size="sm">
+              <Button size="sm" onClick={() => setIsAddingLesson(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Aggiungi Giornata
               </Button>
@@ -169,7 +185,7 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
 
-        {/* Sezione Partecipanti */}
+        {/* Partecipanti tab content */}
         <TabsContent value="partecipanti" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -182,7 +198,7 @@ const DettaglioCorso = () => {
                   <Download className="mr-2 h-4 w-4" />
                   Esporta
                 </Button>
-                <Button size="sm">
+                <Button size="sm" onClick={() => setIsAddingParticipant(true)}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Aggiungi
                 </Button>
@@ -219,7 +235,7 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
 
-        {/* Sezione Docenti e Tutor */}
+        {/* Docenti e Tutor tab content */}
         <TabsContent value="docenti" className="mt-4 space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -227,7 +243,7 @@ const DettaglioCorso = () => {
                 <CardTitle>Docenti</CardTitle>
                 <CardDescription>Professori e specialisti</CardDescription>
               </div>
-              <Button size="sm">
+              <Button size="sm" onClick={() => setIsAddingTeacher(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Aggiungi Docente
               </Button>
@@ -266,7 +282,7 @@ const DettaglioCorso = () => {
                 <CardTitle>Tutor</CardTitle>
                 <CardDescription>Assistenti e supporto</CardDescription>
               </div>
-              <Button size="sm">
+              <Button size="sm" onClick={() => setIsAddingTutor(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Aggiungi Tutor
               </Button>
@@ -300,6 +316,45 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <CourseFormDialog
+        isOpen={isEditingCourse}
+        onClose={() => setIsEditingCourse(false)}
+        initialData={corso}
+        isEditing={true}
+      />
+      
+      <LessonFormDialog
+        isOpen={isAddingLesson}
+        onClose={() => setIsAddingLesson(false)}
+      />
+      
+      <ParticipantFormDialog
+        isOpen={isAddingParticipant}
+        onClose={() => setIsAddingParticipant(false)}
+      />
+      
+      <TeacherTutorFormDialog
+        isOpen={isAddingTeacher}
+        onClose={() => setIsAddingTeacher(false)}
+        type="docente"
+      />
+      
+      <TeacherTutorFormDialog
+        isOpen={isAddingTutor}
+        onClose={() => setIsAddingTutor(false)}
+        type="tutor"
+      />
+      
+      {selectedPdfType && (
+        <PdfViewer
+          pdfType={selectedPdfType}
+          corso={corso}
+          isOpen={Boolean(selectedPdfType)}
+          onClose={() => setSelectedPdfType(null)}
+        />
+      )}
     </div>
   );
 };
