@@ -29,6 +29,7 @@ interface CourseFormValues {
   dataFine: string;
   sede: string;
   moduloFormativo: string;
+  dataCreazione?: string;
 }
 
 interface CourseFormDialogProps {
@@ -36,13 +37,15 @@ interface CourseFormDialogProps {
   onClose: () => void;
   initialData?: Partial<CourseFormValues>;
   isEditing?: boolean;
+  onCourseAdded?: (course: CourseFormValues) => void;
 }
 
 const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
   isOpen,
   onClose,
   initialData = {},
-  isEditing = false
+  isEditing = false,
+  onCourseAdded
 }) => {
   const navigate = useNavigate();
   
@@ -58,25 +61,21 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
   });
 
   const onSubmit = (data: CourseFormValues) => {
-    // Get existing courses or initialize empty array
     const existingCourses = localStorage.getItem('courses') 
       ? JSON.parse(localStorage.getItem('courses')!) 
       : [];
     
     if (isEditing && initialData.id) {
-      // Update existing course
       const updatedCourses = existingCourses.map(course => 
         course.id === initialData.id ? { ...course, ...data } : course
       );
       localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      
-      // Show success message
       toast.success("Corso aggiornato con successo");
     } else {
-      // Create new course with ID and defaults
       const newCourse = {
         ...data,
         id: uuidv4(),
+        dataCreazione: new Date().toISOString(),
         edizioni: 1,
         partecipanti: 0,
         docenti: 0,
@@ -89,20 +88,19 @@ const CourseFormDialog: React.FC<CourseFormDialogProps> = ({
         tutorList: []
       };
       
-      // Add to localStorage
       existingCourses.push(newCourse);
       localStorage.setItem('courses', JSON.stringify(existingCourses));
-      
-      // Show success message
       toast.success("Corso aggiunto con successo");
       
-      // Navigate to the new course page
+      if (onCourseAdded) {
+        onCourseAdded(newCourse);
+      }
+      
       setTimeout(() => {
         navigate(`/corsi/${newCourse.id}`);
       }, 500);
     }
     
-    // Close the dialog
     onClose();
   };
 

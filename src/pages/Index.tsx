@@ -1,91 +1,139 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, Search, FileText, Filter, Eye, Download, PenLine, Plus } from "lucide-react";
 import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  LayoutDashboard, 
+  Search, 
+  FileText, 
+  Filter, 
+  Eye, 
+  Download, 
+  PenLine, 
+  Plus,
+  Trash2,
+  Calendar
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CourseFormDialog from "@/components/dialogs/CourseFormDialog";
+import { toast } from "sonner";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddingCourse, setIsAddingCourse] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [deletingCourse, setDeletingCourse] = useState<any>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [courses, setCourses] = useState<any[]>([]);
 
-  // Mock data per la tabella dei corsi
-  const corsi = [
-    {
-      id: "1",
-      codice: "FORM-001",
-      titolo: "Sicurezza sul Lavoro",
-      edizioni: 3,
-      partecipanti: 28,
-      docenti: 2,
-      tutor: 1,
-      aziende: 5,
-      stato: "Completato"
-    },
-    {
-      id: "2",
-      codice: "FORM-002",
-      titolo: "Marketing Digitale",
-      edizioni: 1,
-      partecipanti: 12,
-      docenti: 1,
-      tutor: 1,
-      aziende: 3,
-      stato: "In corso"
-    },
-    {
-      id: "3",
-      codice: "FORM-003",
-      titolo: "Leadership e Team Management",
-      edizioni: 2,
-      partecipanti: 15,
-      docenti: 2,
-      tutor: 1,
-      aziende: 4,
-      stato: "Pianificato"
-    },
-    {
-      id: "4",
-      codice: "FORM-004",
-      titolo: "Excel Avanzato",
-      edizioni: 4,
-      partecipanti: 30,
-      docenti: 1,
-      tutor: 2,
-      aziende: 6,
-      stato: "Completato"
-    },
-    {
-      id: "5",
-      codice: "FORM-005",
-      titolo: "Tecniche di Vendita",
-      edizioni: 2,
-      partecipanti: 18,
-      docenti: 1,
-      tutor: 1,
-      aziende: 3,
-      stato: "In corso"
+  useEffect(() => {
+    loadCourses();
+  }, []);
+
+  const loadCourses = () => {
+    const storedCourses = localStorage.getItem('courses');
+    const userCourses = storedCourses ? JSON.parse(storedCourses) : [];
+    const corsi = [
+      {
+        id: "1",
+        codice: "FORM-001",
+        titolo: "Sicurezza sul Lavoro",
+        edizioni: 3,
+        partecipanti: 28,
+        docenti: 2,
+        tutor: 1,
+        aziende: 5,
+        stato: "Completato"
+      },
+      {
+        id: "2",
+        codice: "FORM-002",
+        titolo: "Marketing Digitale",
+        edizioni: 1,
+        partecipanti: 12,
+        docenti: 1,
+        tutor: 1,
+        aziende: 3,
+        stato: "In corso"
+      },
+      {
+        id: "3",
+        codice: "FORM-003",
+        titolo: "Leadership e Team Management",
+        edizioni: 2,
+        partecipanti: 15,
+        docenti: 2,
+        tutor: 1,
+        aziende: 4,
+        stato: "Pianificato"
+      },
+      {
+        id: "4",
+        codice: "FORM-004",
+        titolo: "Excel Avanzato",
+        edizioni: 4,
+        partecipanti: 30,
+        docenti: 1,
+        tutor: 2,
+        aziende: 6,
+        stato: "Completato"
+      },
+      {
+        id: "5",
+        codice: "FORM-005",
+        titolo: "Tecniche di Vendita",
+        edizioni: 2,
+        partecipanti: 18,
+        docenti: 1,
+        tutor: 1,
+        aziende: 3,
+        stato: "In corso"
+      }
+    ];
+    const allCourses = [...corsi, ...userCourses].sort((a, b) => {
+      const dateA = a.dataCreazione ? new Date(a.dataCreazione) : new Date(0);
+      const dateB = b.dataCreazione ? new Date(b.dataCreazione) : new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+    setCourses(allCourses);
+  };
+
+  const handleDeleteCourse = () => {
+    if (deletingCourse && deleteConfirmation === deletingCourse.titolo) {
+      const existingCourses = localStorage.getItem('courses') 
+        ? JSON.parse(localStorage.getItem('courses')!) 
+        : [];
+      
+      const updatedCourses = existingCourses.filter(course => course.id !== deletingCourse.id);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      
+      loadCourses();
+      setDeletingCourse(null);
+      setDeleteConfirmation('');
+      toast.success("Corso eliminato con successo");
+    } else {
+      toast.error("Il nome del corso non corrisponde");
     }
-  ];
+  };
 
-  // Filtra i corsi in base alla ricerca
-  const filteredCorsi = corsi.filter(corso =>
-    corso.codice.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    corso.titolo.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleCourseAdded = () => {
+    loadCourses();
+  };
 
-  // Funzione per determinare il colore del badge in base allo stato
   const getStatusColor = (status) => {
     switch (status) {
       case 'Completato':
@@ -102,6 +150,11 @@ const Index = () => {
   const handleEditCourse = (corso: any) => {
     setEditingCourse(corso);
   };
+
+  const filteredCorsi = courses.filter(corso =>
+    corso.codice?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    corso.titolo?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -191,6 +244,7 @@ const Index = () => {
               <TableRow>
                 <TableHead>Codice</TableHead>
                 <TableHead>Titolo corso</TableHead>
+                <TableHead>Data creazione</TableHead>
                 <TableHead>Edizioni</TableHead>
                 <TableHead>Partecipanti</TableHead>
                 <TableHead>Docenti</TableHead>
@@ -205,6 +259,13 @@ const Index = () => {
                 <TableRow key={corso.id}>
                   <TableCell className="font-medium">{corso.codice}</TableCell>
                   <TableCell>{corso.titolo}</TableCell>
+                  <TableCell>
+                    {corso.dataCreazione ? (
+                      format(new Date(corso.dataCreazione), 'dd/MM/yyyy', { locale: it })
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
                   <TableCell>{corso.edizioni}</TableCell>
                   <TableCell>{corso.partecipanti}</TableCell>
                   <TableCell>{corso.docenti}</TableCell>
@@ -228,6 +289,14 @@ const Index = () => {
                       <Button variant="ghost" size="icon">
                         <FileText className="h-4 w-4" />
                       </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => setDeletingCourse(corso)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -240,6 +309,7 @@ const Index = () => {
       <CourseFormDialog 
         isOpen={isAddingCourse}
         onClose={() => setIsAddingCourse(false)}
+        onCourseAdded={handleCourseAdded}
       />
 
       {editingCourse && (
@@ -248,8 +318,42 @@ const Index = () => {
           onClose={() => setEditingCourse(null)}
           initialData={editingCourse}
           isEditing
+          onCourseAdded={handleCourseAdded}
         />
       )}
+
+      <AlertDialog open={!!deletingCourse} onOpenChange={() => setDeletingCourse(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma eliminazione corso</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata. Per confermare l'eliminazione, 
+              digita il nome del corso: <strong>{deletingCourse?.titolo}</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4">
+            <Input
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+              placeholder="Digita il nome del corso per confermare"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeletingCourse(null);
+              setDeleteConfirmation('');
+            }}>
+              Annulla
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCourse}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
