@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 
 interface LessonFormValues {
+  id?: string; // Added id property
   data: string;
   orario: string;
   sede: string;

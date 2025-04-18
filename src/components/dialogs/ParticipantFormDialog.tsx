@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -24,6 +23,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 
 interface ParticipantFormValues {
+  id?: string;
   nome: string;
   cognome: string;
   azienda: string;

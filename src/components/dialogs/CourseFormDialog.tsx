@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { 
@@ -23,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom';
 
 interface CourseFormValues {
+  id?: string;
   codice: string;
   titolo: string;
   dataInizio: string;
