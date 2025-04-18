@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, File, FileText, Users, BookOpen, PlusCircle, Download, Upload } from "lucide-react";
+import { Calendar, File, FileText, Users, BookOpen, PlusCircle, Download, Upload, Trash2, PenIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import LessonFormDialog from '@/components/dialogs/LessonFormDialog';
 import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
@@ -12,6 +11,7 @@ import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog'
 import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +24,10 @@ const DettaglioCorso = () => {
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [isAddingTutor, setIsAddingTutor] = useState(false);
   const [selectedPdfType, setSelectedPdfType] = useState<null | 'inizioCorso' | 'fineCorso' | 'elencoPartecipanti' | 'elencoDocenti'>(null);
+  
+  // State to handle lesson editing
+  const [isEditingLesson, setIsEditingLesson] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
   
   // State to store the course data
   const [corso, setCorso] = useState<any>(null);
@@ -109,8 +113,22 @@ const DettaglioCorso = () => {
     }
   }, [id, navigate]);
 
+  const handleEditLesson = (lesson) => {
+    setSelectedLesson(lesson);
+    setIsEditingLesson(true);
+  };
+
   const handleGeneratePdf = () => {
     setSelectedPdfType('inizioCorso');
+  };
+
+  // Function to format the date for display
+  const formatDate = (dateString) => {
+    try {
+      return format(new Date(dateString), 'dd/MM/yyyy');
+    } catch (error) {
+      return dateString || 'Data non disponibile';
+    }
   };
 
   if (!corso) {
@@ -164,11 +182,11 @@ const DettaglioCorso = () => {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Data inizio</p>
-                  <p>{corso.dataInizio}</p>
+                  <p>{formatDate(corso.dataInizio)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Data fine</p>
-                  <p>{corso.dataFine}</p>
+                  <p>{formatDate(corso.dataFine)}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sede</p>
@@ -213,7 +231,11 @@ const DettaglioCorso = () => {
                 <CardTitle>Calendario Didattico</CardTitle>
                 <CardDescription>Giornate di lezione programmate</CardDescription>
               </div>
-              <Button size="sm" onClick={() => setIsAddingLesson(true)}>
+              <Button size="sm" onClick={() => {
+                setSelectedLesson(null);
+                setIsAddingLesson(true);
+                setIsEditingLesson(false);
+              }}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Aggiungi Giornata
               </Button>
@@ -232,11 +254,21 @@ const DettaglioCorso = () => {
                   <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
                     {corso.giornateDiLezione && corso.giornateDiLezione.map((giornata, index) => (
                       <tr key={giornata.id || index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.data}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{formatDate(giornata.data)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.orario}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.sede}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button variant="ghost" size="sm">Modifica</Button>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleEditLesson(giornata)}
+                              className="flex items-center"
+                            >
+                              <PenIcon className="h-4 w-4 mr-1" />
+                              Modifica
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -418,6 +450,13 @@ const DettaglioCorso = () => {
       <LessonFormDialog
         isOpen={isAddingLesson}
         onClose={() => setIsAddingLesson(false)}
+      />
+      
+      <LessonFormDialog
+        isOpen={isEditingLesson}
+        onClose={() => setIsEditingLesson(false)}
+        initialData={selectedLesson}
+        isEditing={true}
       />
       
       <ParticipantFormDialog
