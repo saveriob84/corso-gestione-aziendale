@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CourseHeader from '@/components/course-detail/CourseHeader';
 import CourseInfo from '@/components/course-detail/CourseInfo';
@@ -11,8 +12,9 @@ import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
 import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog';
 import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
-import { toast } from 'sonner';
-import * as XLSX from 'xlsx';
+import ParticipantSearchDialog from '@/components/dialogs/ParticipantSearchDialog';
+import { useCourseDetail } from '@/hooks/useCourseDetail';
+import { useParticipantActions } from '@/hooks/useParticipantActions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,12 +25,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import ParticipantSearchDialog from '@/components/dialogs/ParticipantSearchDialog';
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 import { getParticipantTemplate } from '@/utils/excelTemplates';
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   
   const [isEditingCourse, setIsEditingCourse] = useState(false);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
@@ -42,151 +44,33 @@ const DettaglioCorso = () => {
   
   const [isEditingParticipant, setIsEditingParticipant] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
-  const [isDeleteParticipantDialogOpen, setIsDeleteParticipantDialogOpen] = useState(false);
-  const [participantToDelete, setParticipantToDelete] = useState<string | null>(null);
-  
   const [isParticipantSearchOpen, setIsParticipantSearchOpen] = useState(false);
-  
-  const [corso, setCorso] = useState<any>(null);
-  const [companies, setCompanies] = useState<any[]>([]);
-  
-  useEffect(() => {
-    const loadCourseData = () => {
-      const storedCourses = localStorage.getItem('courses');
-      if (storedCourses) {
-        const parsedCourses = JSON.parse(storedCourses);
-        const foundCourse = parsedCourses.find(course => course.id === id);
-        if (foundCourse) {
-          return foundCourse;
-        }
-      }
-      
-      const defaultCourses = [
-        {
-          id: "1",
-          codice: "FORM-001",
-          titolo: "Sicurezza sul Lavoro",
-          dataInizio: "2023-10-15",
-          dataFine: "2023-11-15",
-          sede: "Via Roma 123, Milano",
-          moduloFormativo: "Sicurezza generale",
-          giornateDiLezione: [
-            { id: "g1", data: "2023-10-15", orario: "09:00 - 13:00", sede: "Aula Magna" },
-            { id: "g2", data: "2023-10-22", orario: "09:00 - 13:00", sede: "Aula Magna" },
-            { id: "g3", data: "2023-11-05", orario: "09:00 - 13:00", sede: "Laboratorio A" },
-            { id: "g4", data: "2023-11-15", orario: "09:00 - 13:00", sede: "Aula Magna" }
-          ],
-          partecipantiList: [
-            { id: "p1", nome: "Mario", cognome: "Rossi", azienda: "TechSolutions Srl", ruolo: "Tecnico" },
-            { id: "p2", nome: "Giulia", cognome: "Verdi", azienda: "TechSolutions Srl", ruolo: "Manager" },
-            { id: "p3", nome: "Paolo", cognome: "Bianchi", azienda: "InnovaSpa", ruolo: "Operaio" },
-            { id: "p4", nome: "Laura", cognome: "Neri", azienda: "InnovaSpa", ruolo: "Responsabile" }
-          ],
-          partecipanti: 4,
-          docentiList: [
-            { id: "d1", nome: "Prof. Alberto", cognome: "Mariani", specializzazione: "Sicurezza sul lavoro" }
-          ],
-          docenti: 1,
-          tutorList: [
-            { id: "t1", nome: "Dott.ssa Carla", cognome: "Esposito", ruolo: "Tutor d'aula" }
-          ],
-          tutor: 1,
-          edizioni: 3,
-          aziende: 5,
-          stato: "Completato"
-        },
-        {
-          id: "2",
-          codice: "FORM-002",
-          titolo: "Marketing Digitale",
-          dataInizio: "2023-12-01",
-          dataFine: "2023-12-20",
-          sede: "Via Milano 45, Roma",
-          moduloFormativo: "Marketing base",
-          giornateDiLezione: [],
-          partecipantiList: [],
-          partecipanti: 0,
-          docentiList: [],
-          docenti: 0,
-          tutorList: [],
-          tutor: 0,
-          edizioni: 1,
-          aziende: 3,
-          stato: "In corso"
-        }
-      ];
-      
-      return defaultCourses.find(course => course.id === id);
-    };
-    
-    const foundCourse = loadCourseData();
-    if (foundCourse) {
-      setCorso(foundCourse);
-    } else {
-      toast.error("Corso non trovato");
-      navigate("/corsi");
-    }
-    
-    const storedCompanies = localStorage.getItem('companies');
-    if (storedCompanies) {
-      setCompanies(JSON.parse(storedCompanies));
-    }
-  }, [id, navigate]);
 
-  const handleEditLesson = (lesson) => {
+  const { corso, setCorso, companies } = useCourseDetail(id!);
+  
+  const {
+    isDeleteParticipantDialogOpen,
+    setIsDeleteParticipantDialogOpen,
+    handleDeleteParticipant,
+    confirmDeleteParticipant,
+    handleAddExistingParticipant
+  } = useParticipantActions(id!, corso, setCorso);
+
+  const handleEditLesson = (lesson: any) => {
     setSelectedLesson(lesson);
     setIsEditingLesson(true);
   };
 
-  const handleEditParticipant = (participant) => {
+  const handleEditParticipant = (participant: any) => {
     setSelectedParticipant(participant);
     setIsEditingParticipant(true);
-  };
-  
-  const handleDeleteParticipant = (participantId) => {
-    setParticipantToDelete(participantId);
-    setIsDeleteParticipantDialogOpen(true);
-  };
-  
-  const confirmDeleteParticipant = () => {
-    if (!participantToDelete) return;
-    
-    const existingCourses = localStorage.getItem('courses') 
-      ? JSON.parse(localStorage.getItem('courses')!) 
-      : [];
-    
-    const courseIndex = existingCourses.findIndex(course => course.id === id);
-    
-    if (courseIndex === -1) {
-      toast.error("Corso non trovato");
-      return;
-    }
-    
-    const updatedParticipantsList = existingCourses[courseIndex].partecipantiList.filter(
-      participant => participant.id !== participantToDelete
-    );
-    
-    existingCourses[courseIndex].partecipantiList = updatedParticipantsList;
-    
-    existingCourses[courseIndex].partecipanti = updatedParticipantsList.length;
-    
-    localStorage.setItem('courses', JSON.stringify(existingCourses));
-    
-    setCorso({
-      ...corso,
-      partecipantiList: updatedParticipantsList,
-      partecipanti: updatedParticipantsList.length
-    });
-    
-    toast.success("Partecipante eliminato con successo");
-    setIsDeleteParticipantDialogOpen(false);
   };
 
   const handleGeneratePdf = () => {
     setSelectedPdfType('inizioCorso');
   };
 
-  const getCompanyName = (companyId) => {
+  const getCompanyName = (companyId: string) => {
     const company = companies.find(company => company.id === companyId);
     return company ? company.ragioneSociale : "Non specificata";
   };
@@ -204,47 +88,6 @@ const DettaglioCorso = () => {
       console.error('Error downloading template:', error);
       toast.error('Errore durante il download del template');
     }
-  };
-
-  const handleLoadExistingParticipant = () => {
-    setIsParticipantSearchOpen(true);
-  };
-
-  const handleAddExistingParticipant = (participant: any) => {
-    const existingCourses = JSON.parse(localStorage.getItem('courses') || '[]');
-    const courseIndex = existingCourses.findIndex(c => c.id === id);
-    
-    if (courseIndex === -1) {
-      toast.error("Corso non trovato");
-      return;
-    }
-
-    const isParticipantInCourse = existingCourses[courseIndex].partecipantiList?.some(
-      (p: any) => p.id === participant.id
-    );
-
-    if (isParticipantInCourse) {
-      toast.error("Il partecipante è già presente in questo corso");
-      return;
-    }
-
-    const updatedParticipantsList = [
-      ...(existingCourses[courseIndex].partecipantiList || []),
-      participant
-    ];
-
-    existingCourses[courseIndex].partecipantiList = updatedParticipantsList;
-    existingCourses[courseIndex].partecipanti = updatedParticipantsList.length;
-
-    localStorage.setItem('courses', JSON.stringify(existingCourses));
-    
-    setCorso({
-      ...corso,
-      partecipantiList: updatedParticipantsList,
-      partecipanti: updatedParticipantsList.length
-    });
-
-    toast.success("Partecipante aggiunto al corso con successo");
   };
 
   if (!corso) {
@@ -289,7 +132,7 @@ const DettaglioCorso = () => {
             onDeleteParticipant={handleDeleteParticipant}
             onDownloadTemplate={downloadTemplate}
             onImportExcel={() => document.getElementById('import-file')?.click()}
-            onLoadExistingParticipant={handleLoadExistingParticipant}
+            onLoadExistingParticipant={() => setIsParticipantSearchOpen(true)}
             getCompanyName={getCompanyName}
           />
         </TabsContent>
