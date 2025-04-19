@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Download, FileText, PenIcon, Trash2, Upload, UserPlus } from "lucide-react";
@@ -25,14 +24,15 @@ const formatDateOfBirth = (dateString?: string): string => {
     // Try to parse it as a day of the year (Excel sometimes stores dates this way)
     const date = new Date(1899, 11, 30);
     date.setDate(date.getDate() + parseInt(dateString));
-    if (date instanceof Date && !isNaN(date.getTime()) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
+    if (!isNaN(date.getTime()) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
       return format(date, 'dd/MM/yyyy', { locale: it });
     }
   }
 
-  // Try to parse as Date object
-  if (dateString instanceof Date) {
-    return format(dateString, 'dd/MM/yyyy', { locale: it });
+  // Try to parse as Date object directly
+  const parsedDate = new Date(dateString);
+  if (!isNaN(parsedDate.getTime())) {
+    return format(parsedDate, 'dd/MM/yyyy', { locale: it });
   }
 
   // Try to parse as DD/MM/YYYY format
@@ -40,22 +40,12 @@ const formatDateOfBirth = (dateString?: string): string => {
     const parts = dateString.split('/');
     if (parts.length === 3) {
       const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-      if (date instanceof Date && !isNaN(date.getTime())) {
+      if (!isNaN(date.getTime())) {
         return format(date, 'dd/MM/yyyy', { locale: it });
       }
     }
   } catch (e) {
     // Continue to other format attempts
-  }
-
-  // Try as ISO date string
-  try {
-    const date = new Date(dateString);
-    if (date instanceof Date && !isNaN(date.getTime())) {
-      return format(date, 'dd/MM/yyyy', { locale: it });
-    }
-  } catch (e) {
-    // Return original string if we can't parse it
   }
 
   // Return original string if we can't parse it
