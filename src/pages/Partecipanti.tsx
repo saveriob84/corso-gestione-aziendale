@@ -23,20 +23,12 @@ const Partecipanti = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
 
   useEffect(() => {
-    const loadAllParticipants = () => {
-      const courses = JSON.parse(localStorage.getItem('courses') || '[]');
-      const allParticipants: Participant[] = [];
-      
-      courses.forEach(course => {
-        if (course.partecipantiList) {
-          allParticipants.push(...course.partecipantiList);
-        }
-      });
-      
-      setParticipants(allParticipants);
+    const loadParticipants = () => {
+      const savedParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
+      setParticipants(savedParticipants);
     };
 
-    loadAllParticipants();
+    loadParticipants();
   }, []);
 
   const downloadTemplate = () => {
@@ -96,7 +88,10 @@ const Partecipanti = () => {
           return participant;
         });
 
-        setParticipants(prev => [...prev, ...mappedParticipants]);
+        const updatedParticipants = [...participants, ...mappedParticipants];
+        localStorage.setItem('participants', JSON.stringify(updatedParticipants));
+        setParticipants(updatedParticipants);
+        
         toast.success(`Importati ${mappedParticipants.length} partecipanti con successo`);
       } catch (error) {
         console.error('Error importing file:', error);

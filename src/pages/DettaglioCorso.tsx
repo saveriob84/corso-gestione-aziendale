@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import ParticipantSearchDialog from '@/components/dialogs/ParticipantSearchDialog';
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +43,8 @@ const DettaglioCorso = () => {
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
   const [isDeleteParticipantDialogOpen, setIsDeleteParticipantDialogOpen] = useState(false);
   const [participantToDelete, setParticipantToDelete] = useState<string | null>(null);
+  
+  const [isParticipantSearchOpen, setIsParticipantSearchOpen] = useState(false);
   
   const [corso, setCorso] = useState<any>(null);
   const [companies, setCompanies] = useState<any[]>([]);
@@ -222,19 +224,44 @@ const DettaglioCorso = () => {
   };
 
   const handleLoadExistingParticipant = () => {
-    const allCourses = localStorage.getItem('courses') 
-      ? JSON.parse(localStorage.getItem('courses')!)
-      : [];
-    
-    const allParticipants = allCourses.reduce((acc, course) => {
-      if (course.id !== id && course.partecipantiList) {
-        return [...acc, ...course.partecipantiList];
-      }
-      return acc;
-    }, []);
+    setIsParticipantSearchOpen(true);
+  };
 
-    setSelectedParticipant(null);
-    setIsAddingParticipant(true);
+  const handleAddExistingParticipant = (participant: any) => {
+    const existingCourses = JSON.parse(localStorage.getItem('courses') || '[]');
+    const courseIndex = existingCourses.findIndex(c => c.id === id);
+    
+    if (courseIndex === -1) {
+      toast.error("Corso non trovato");
+      return;
+    }
+
+    const isParticipantInCourse = existingCourses[courseIndex].partecipantiList?.some(
+      (p: any) => p.id === participant.id
+    );
+
+    if (isParticipantInCourse) {
+      toast.error("Il partecipante è già presente in questo corso");
+      return;
+    }
+
+    const updatedParticipantsList = [
+      ...(existingCourses[courseIndex].partecipantiList || []),
+      participant
+    ];
+
+    existingCourses[courseIndex].partecipantiList = updatedParticipantsList;
+    existingCourses[courseIndex].partecipanti = updatedParticipantsList.length;
+
+    localStorage.setItem('courses', JSON.stringify(existingCourses));
+    
+    setCorso({
+      ...corso,
+      partecipantiList: updatedParticipantsList,
+      partecipanti: updatedParticipantsList.length
+    });
+
+    toast.success("Partecipante aggiunto al corso con successo");
   };
 
   if (!corso) {
@@ -377,6 +404,12 @@ const DettaglioCorso = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ParticipantSearchDialog
+        isOpen={isParticipantSearchOpen}
+        onClose={() => setIsParticipantSearchOpen(false)}
+        onSelectParticipant={handleAddExistingParticipant}
+      />
     </div>
   );
 };
