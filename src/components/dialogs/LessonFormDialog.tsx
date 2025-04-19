@@ -48,6 +48,7 @@ interface LessonFormValues {
   oraInizio: string;
   oraFine: string;
   sede: string;
+  orario?: string; // Add orario property to fix TypeScript error
 }
 
 interface LessonFormDialogProps {
@@ -68,14 +69,14 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
   const { id: courseId } = useParams();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   
-  // Convert string data to Date object if needed
-  const initialDate = initialData.data 
+  // Convert string data to Date object if needed, with null-checking
+  const initialDate = initialData && initialData.data 
     ? typeof initialData.data === 'string'
       ? new Date(initialData.data)
       : initialData.data
     : undefined;
 
-  // Extract hours from orario string if it exists
+  // Extract hours from orario string if it exists, with null-checking
   const parseOrario = (orario?: string) => {
     if (!orario) return { oraInizio: '', oraFine: '' };
     
@@ -89,14 +90,15 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     return { oraInizio: '', oraFine: '' };
   };
   
-  const { oraInizio, oraFine } = parseOrario(initialData.orario);
+  // Safely access the orario property with null checking
+  const { oraInizio, oraFine } = parseOrario(initialData && initialData.orario);
   
   const form = useForm<LessonFormValues>({
     defaultValues: {
       data: initialDate,
-      oraInizio: oraInizio || "",
-      oraFine: oraFine || "",
-      sede: initialData.sede || "",
+      oraInizio: initialData?.oraInizio || oraInizio || "",
+      oraFine: initialData?.oraFine || oraFine || "",
+      sede: initialData?.sede || "",
     }
   });
 
@@ -129,7 +131,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     
     // Create lesson data
     const lessonData = {
-      id: initialData.id || uuidv4(),
+      id: initialData?.id || uuidv4(),
       data: formattedDate,
       orario,
       sede: values.sede
@@ -140,7 +142,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
       existingCourses[courseIndex].giornateDiLezione = [];
     }
     
-    if (isEditing && initialData.id) {
+    if (isEditing && initialData?.id) {
       // Update existing lesson
       const lessonIndex = existingCourses[courseIndex].giornateDiLezione.findIndex(
         lesson => lesson.id === initialData.id
@@ -170,7 +172,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
   };
 
   const handleDelete = () => {
-    if (!courseId || !initialData.id) return;
+    if (!courseId || !initialData?.id) return;
 
     // Get existing courses
     const existingCourses = localStorage.getItem('courses') 
