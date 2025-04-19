@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { info } from 'console';
 
 interface Participant {
   id: string;

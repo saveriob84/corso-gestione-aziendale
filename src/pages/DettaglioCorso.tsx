@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +13,7 @@ import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog'
 import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
 import { toast } from 'sonner';
-import XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import {
   AlertDialog,
   AlertDialogAction,
