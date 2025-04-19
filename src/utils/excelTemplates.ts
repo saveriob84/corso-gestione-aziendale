@@ -6,6 +6,7 @@ export const getParticipantTemplate = () => {
       'Nome*': '',
       'Cognome*': '',
       'Codice Fiscale*': '',
+      'Luogo di Nascita': '',
       'Data di Nascita (GG/MM/AAAA)': '',
       'Username': '',
       'Password': '',

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,12 +9,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getParticipantTemplate } from '@/utils/excelTemplates';
 import { ImportInstructions } from "@/components/alerts/ImportInstructions";
+import { format, isValid, parse } from "date-fns";
+import { it } from "date-fns/locale";
 
 interface Participant {
   id: string;
   nome: string;
   cognome: string;
   codiceFiscale: string;
+  luogoNascita?: string;
   dataNascita?: string;
   aziendaId?: string;
   azienda?: string;
@@ -55,6 +57,38 @@ const Partecipanti = () => {
 
     loadParticipants();
   }, []);
+
+  const formatDateOfBirth = (dateString?: string): string => {
+    if (!dateString) return '-';
+
+    // Check if it's a numeric value that needs formatting
+    if (/^\d+$/.test(dateString)) {
+      // Try to parse it as a day of the year (Excel sometimes stores dates this way)
+      const date = new Date(1899, 11, 30);
+      date.setDate(date.getDate() + parseInt(dateString));
+      if (isValid(date) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
+        return format(date, 'dd/MM/yyyy', { locale: it });
+      }
+    }
+
+    // Try to parse as DD/MM/YYYY format
+    const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+    if (isValid(parsedDate)) {
+      return format(parsedDate, 'dd/MM/yyyy', { locale: it });
+    }
+
+    // Try different formats if the standard one fails
+    const formats = ['yyyy-MM-dd', 'MM/dd/yyyy', 'yyyy/MM/dd'];
+    for (const formatString of formats) {
+      const parsedDate = parse(dateString, formatString, new Date());
+      if (isValid(parsedDate)) {
+        return format(parsedDate, 'dd/MM/yyyy', { locale: it });
+      }
+    }
+
+    // Return original string if we can't parse it
+    return dateString;
+  };
 
   const downloadTemplate = () => {
     try {
@@ -205,6 +239,7 @@ const Partecipanti = () => {
             nome: row['Nome*'] || row['Nome'] || '',
             cognome: row['Cognome*'] || row['Cognome'] || '',
             codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
+            luogoNascita: row['Luogo di Nascita'] || '',
             dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
             aziendaId: aziendaId,
             azienda: aziendaNome,
@@ -348,7 +383,7 @@ const Partecipanti = () => {
                   <TableCell>{participant.nome}</TableCell>
                   <TableCell>{participant.cognome}</TableCell>
                   <TableCell>{participant.codiceFiscale}</TableCell>
-                  <TableCell>{participant.dataNascita || '-'}</TableCell>
+                  <TableCell>{formatDateOfBirth(participant.dataNascita)}</TableCell>
                   <TableCell>{participant.azienda || '-'}</TableCell>
                   <TableCell>{participant.titoloStudio || '-'}</TableCell>
                   <TableCell>{participant.qualifica || '-'}</TableCell>
