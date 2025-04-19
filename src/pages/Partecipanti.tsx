@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getParticipantTemplate } from '@/utils/excelTemplates';
+import { ImportInstructions } from "@/components/alerts/ImportInstructions";
 
 interface Participant {
   id: string;
@@ -169,20 +170,7 @@ const Partecipanti = () => {
         </div>
       </div>
 
-      <Alert>
-        <AlertDescription>
-          <div className="space-y-2">
-            <p className="font-medium">Istruzioni per l'importazione:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li><strong>Campi obbligatori:</strong> Nome, Cognome, Codice Fiscale</li>
-              <li><strong>Formato data di nascita:</strong> GG/MM/AAAA</li>
-              <li><strong>Codice Fiscale:</strong> verrà automaticamente convertito in maiuscolo</li>
-              <li>Gli altri campi sono opzionali</li>
-              <li>Scarica il template Excel per vedere il formato corretto dei dati</li>
-            </ul>
-          </div>
-        </AlertDescription>
-      </Alert>
+      <ImportInstructions />
 
       <Card>
         <CardHeader>
