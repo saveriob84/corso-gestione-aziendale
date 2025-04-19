@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,31 @@ interface Participant {
   cognome: string;
   codiceFiscale: string;
   dataNascita?: string;
+  aziendaId?: string;
   azienda?: string;
   titoloStudio?: string;
   qualifica?: string;
+  username?: string;
+  password?: string;
+  numeroCellulare?: string;
+  ccnl?: string;
+  tipologiaContrattuale?: string;
+  annoAssunzione?: string;
+}
+
+interface Company {
+  id: string;
+  ragioneSociale: string;
+  partitaIva?: string;
+  indirizzo?: string;
+  comune?: string;
+  cap?: string;
+  provincia?: string;
+  telefono?: string;
+  email?: string;
+  referente?: string;
+  codiceAteco?: string;
+  macrosettore?: string;
 }
 
 const Partecipanti = () => {
@@ -48,6 +71,46 @@ const Partecipanti = () => {
     }
   };
 
+  const findOrCreateCompany = (companyData: any): string | undefined => {
+    // Se non c'è la ragione sociale, non creiamo l'azienda
+    if (!companyData.ragioneSociale) return undefined;
+
+    // Recuperare le aziende esistenti
+    const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
+    
+    // Cercare se l'azienda esiste già per ragione sociale o partita IVA
+    const existingCompany = existingCompanies.find((company: Company) => 
+      (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
+      (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
+    );
+
+    if (existingCompany) {
+      return existingCompany.id;
+    }
+
+    // Se non esiste, creare una nuova azienda
+    const newCompany: Company = {
+      id: crypto.randomUUID(),
+      ragioneSociale: companyData.ragioneSociale,
+      partitaIva: companyData.partitaIva || '',
+      indirizzo: companyData.indirizzo || '',
+      comune: companyData.comune || '',
+      cap: companyData.cap || '',
+      provincia: companyData.provincia || '',
+      telefono: companyData.telefono || '',
+      email: companyData.email || '',
+      referente: companyData.referente || '',
+      codiceAteco: companyData.codiceAteco || '',
+      macrosettore: companyData.macrosettore || ''
+    };
+
+    // Salvare la nuova azienda
+    const updatedCompanies = [...existingCompanies, newCompany];
+    localStorage.setItem('companies', JSON.stringify(updatedCompanies));
+    
+    return newCompany.id;
+  };
+
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -60,30 +123,119 @@ const Partecipanti = () => {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows: any[] = XLSX.utils.sheet_to_json(firstSheet);
 
-        const mappedParticipants = rows.map(row => {
-          const participant = {
+        const newParticipants: Participant[] = [];
+        const newCompaniesCreated: string[] = [];
+        const existingCompaniesLinked: string[] = [];
+
+        rows.forEach(row => {
+          if (!row['Nome*'] || !row['Cognome*'] || !row['Codice Fiscale*']) {
+            throw new Error('Campi obbligatori mancanti: Nome, Cognome e Codice Fiscale sono richiesti');
+          }
+
+          // Estrazione dati azienda dal file Excel
+          const companyData = {
+            ragioneSociale: row['Ragione Sociale Azienda*'] || row['Ragione Sociale Azienda'] || '',
+            partitaIva: row['Partita IVA Azienda'] || '',
+            indirizzo: row['Indirizzo Azienda'] || '',
+            comune: row['Comune Azienda'] || '',
+            cap: row['CAP Azienda'] || '',
+            provincia: row['Provincia Azienda'] || '',
+            telefono: row['Telefono Azienda'] || '',
+            email: row['Email Azienda'] || '',
+            referente: row['Referente Azienda'] || '',
+            codiceAteco: row['Codice ATECO'] || '',
+            macrosettore: row['Macrosettore'] || ''
+          };
+
+          // Trova o crea azienda se ci sono dati validi
+          let aziendaId: string | undefined;
+          let aziendaNome: string | undefined;
+          
+          const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
+          if (companyData.ragioneSociale) {
+            // Cercare se l'azienda esiste già per ragione sociale o partita IVA
+            const existingCompany = existingCompanies.find((company: Company) => 
+              (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
+              (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
+            );
+
+            if (existingCompany) {
+              aziendaId = existingCompany.id;
+              aziendaNome = existingCompany.ragioneSociale;
+              
+              // Aggiunta alla lista delle aziende collegate
+              if (!existingCompaniesLinked.includes(existingCompany.ragioneSociale)) {
+                existingCompaniesLinked.push(existingCompany.ragioneSociale);
+              }
+            } else {
+              // Crea nuova azienda
+              const newCompany: Company = {
+                id: crypto.randomUUID(),
+                ragioneSociale: companyData.ragioneSociale,
+                partitaIva: companyData.partitaIva || '',
+                indirizzo: companyData.indirizzo || '',
+                comune: companyData.comune || '',
+                cap: companyData.cap || '',
+                provincia: companyData.provincia || '',
+                telefono: companyData.telefono || '',
+                email: companyData.email || '',
+                referente: companyData.referente || '',
+                codiceAteco: companyData.codiceAteco || '',
+                macrosettore: companyData.macrosettore || ''
+              };
+
+              // Salvare la nuova azienda
+              existingCompanies.push(newCompany);
+              
+              aziendaId = newCompany.id;
+              aziendaNome = newCompany.ragioneSociale;
+              
+              // Aggiunta alla lista delle nuove aziende create
+              if (!newCompaniesCreated.includes(newCompany.ragioneSociale)) {
+                newCompaniesCreated.push(newCompany.ragioneSociale);
+              }
+            }
+            
+            // Salva le aziende aggiornate
+            localStorage.setItem('companies', JSON.stringify(existingCompanies));
+          }
+
+          const participant: Participant = {
             id: crypto.randomUUID(),
             nome: row['Nome*'] || row['Nome'] || '',
             cognome: row['Cognome*'] || row['Cognome'] || '',
             codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
             dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
-            azienda: row['Azienda'] || '',
+            aziendaId: aziendaId,
+            azienda: aziendaNome,
             titoloStudio: row['Titolo di Studio'] || '',
-            qualifica: row['Qualifica'] || ''
+            username: row['Username'] || '',
+            password: row['Password'] || '',
+            numeroCellulare: row['Numero di cellulare'] || '',
+            ccnl: row['CCNL'] || '',
+            tipologiaContrattuale: row['Tipologia contrattuale'] || '',
+            qualifica: row['Qualifica professionale'] || '',
+            annoAssunzione: row['Anno di assunzione'] || ''
           };
 
-          if (!participant.nome || !participant.cognome || !participant.codiceFiscale) {
-            throw new Error('Campi obbligatori mancanti: Nome, Cognome e Codice Fiscale sono richiesti');
-          }
-
-          return participant;
+          newParticipants.push(participant);
         });
 
-        const updatedParticipants = [...participants, ...mappedParticipants];
+        const updatedParticipants = [...participants, ...newParticipants];
         localStorage.setItem('participants', JSON.stringify(updatedParticipants));
         setParticipants(updatedParticipants);
         
-        toast.success(`Importati ${mappedParticipants.length} partecipanti con successo`);
+        // Notifiche di successo
+        toast.success(`Importati ${newParticipants.length} partecipanti con successo`);
+        
+        if (newCompaniesCreated.length > 0) {
+          toast.success(`Create ${newCompaniesCreated.length} nuove aziende: ${newCompaniesCreated.join(', ')}`);
+        }
+        
+        if (existingCompaniesLinked.length > 0) {
+          toast.success(`Collegate ${existingCompaniesLinked.length} aziende esistenti ai partecipanti`);
+        }
+        
       } catch (error) {
         console.error('Error importing file:', error);
         toast.error(error instanceof Error ? error.message : 'Errore durante l\'importazione del file');
