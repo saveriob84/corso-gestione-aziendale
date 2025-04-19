@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -200,7 +199,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     window.location.reload();
   };
 
-  // Function to get date constraints
+  // Function to get date constraints - fixed to include both start and end dates
   const getDateConstraints = () => {
     if (!courseId) return (date: Date) => false;
 
@@ -208,17 +207,24 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
       ? JSON.parse(localStorage.getItem('courses')!) 
       : [];
     
-    const course = existingCourses.find(course => course.id === courseId);
+    const course = existingCourses.find((course: any) => course.id === courseId);
     
     if (!course || !course.dataInizio || !course.dataFine) {
       return (date: Date) => false; // No constraints
     }
 
+    // Create Date objects and set time to midnight for proper comparison
     const startDate = new Date(course.dataInizio);
+    startDate.setHours(0, 0, 0, 0);
+    
     const endDate = new Date(course.dataFine);
+    endDate.setHours(23, 59, 59, 999); // End of the day
 
+    // Return a function that returns true for dates OUTSIDE the allowed range
     return (date: Date) => {
-      return date < startDate || date > endDate;
+      const currentDate = new Date(date);
+      currentDate.setHours(0, 0, 0, 0);
+      return currentDate < startDate || currentDate > endDate;
     };
   };
 
