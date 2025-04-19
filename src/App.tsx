@@ -26,6 +26,7 @@ const App = () => (
           <Route path="/corsi/:id" element={<SidebarLayout><DettaglioCorso /></SidebarLayout>} />
           <Route path="/archivio" element={<SidebarLayout><ArchivioComunicazioni /></SidebarLayout>} />
           <Route path="/aziende" element={<SidebarLayout><Aziende /></SidebarLayout>} />
+          <Route path="/partecipanti" element={<SidebarLayout><Partecipanti /></SidebarLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
