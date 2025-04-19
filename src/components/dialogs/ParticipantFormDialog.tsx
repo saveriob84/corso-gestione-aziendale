@@ -101,21 +101,21 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   
   const form = useForm<ParticipantFormValues>({
     defaultValues: {
-      nome: initialData.nome || "",
-      cognome: initialData.cognome || "",
-      codiceFiscale: initialData.codiceFiscale || "",
-      luogoNascita: initialData.luogoNascita || "",
-      dataNascita: initialData.dataNascita,
-      username: initialData.username || "",
-      password: initialData.password || "",
-      cellulare: initialData.cellulare || "",
-      aziendaId: initialData.aziendaId || "",
-      exLege: initialData.exLege || false,
-      titoloStudio: initialData.titoloStudio || "",
-      ccnl: initialData.ccnl || "",
-      contratto: initialData.contratto || "",
-      qualifica: initialData.qualifica || "",
-      annoAssunzione: initialData.annoAssunzione || new Date().getFullYear().toString(),
+      nome: initialData?.nome || "",
+      cognome: initialData?.cognome || "",
+      codiceFiscale: initialData?.codiceFiscale || "",
+      luogoNascita: initialData?.luogoNascita || "",
+      dataNascita: initialData?.dataNascita,
+      username: initialData?.username || "",
+      password: initialData?.password || "",
+      cellulare: initialData?.cellulare || "",
+      aziendaId: initialData?.aziendaId || "",
+      exLege: initialData?.exLege || false,
+      titoloStudio: initialData?.titoloStudio || "",
+      ccnl: initialData?.ccnl || "",
+      contratto: initialData?.contratto || "",
+      qualifica: initialData?.qualifica || "",
+      annoAssunzione: initialData?.annoAssunzione || new Date().getFullYear().toString(),
     }
   });
 
