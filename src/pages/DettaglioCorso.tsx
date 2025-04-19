@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +12,7 @@ import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import XLSX from 'xlsx';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,12 +23,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import UserPlus from "lucide-react/dist/icons/user-plus";
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  // States for dialogs
   const [isEditingCourse, setIsEditingCourse] = useState(false);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
@@ -36,25 +37,19 @@ const DettaglioCorso = () => {
   const [isAddingTutor, setIsAddingTutor] = useState(false);
   const [selectedPdfType, setSelectedPdfType] = useState<null | 'inizioCorso' | 'fineCorso' | 'elencoPartecipanti' | 'elencoDocenti'>(null);
   
-  // State to handle lesson editing
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   
-  // State to handle participant editing and deletion
   const [isEditingParticipant, setIsEditingParticipant] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
   const [isDeleteParticipantDialogOpen, setIsDeleteParticipantDialogOpen] = useState(false);
   const [participantToDelete, setParticipantToDelete] = useState<string | null>(null);
   
-  // State to store the course data
   const [corso, setCorso] = useState<any>(null);
-  // State to store companies for linking
   const [companies, setCompanies] = useState<any[]>([]);
   
-  // Load course data and companies from localStorage
   useEffect(() => {
     const loadCourseData = () => {
-      // First check for user-created courses in localStorage
       const storedCourses = localStorage.getItem('courses');
       if (storedCourses) {
         const parsedCourses = JSON.parse(storedCourses);
@@ -64,7 +59,6 @@ const DettaglioCorso = () => {
         }
       }
       
-      // If not found in localStorage, check default courses
       const defaultCourses = [
         {
           id: "1",
@@ -131,7 +125,6 @@ const DettaglioCorso = () => {
       navigate("/corsi");
     }
     
-    // Load companies
     const storedCompanies = localStorage.getItem('companies');
     if (storedCompanies) {
       setCompanies(JSON.parse(storedCompanies));
@@ -156,12 +149,10 @@ const DettaglioCorso = () => {
   const confirmDeleteParticipant = () => {
     if (!participantToDelete) return;
     
-    // Get existing courses
     const existingCourses = localStorage.getItem('courses') 
       ? JSON.parse(localStorage.getItem('courses')!) 
       : [];
     
-    // Find the course to update
     const courseIndex = existingCourses.findIndex(course => course.id === id);
     
     if (courseIndex === -1) {
@@ -169,28 +160,22 @@ const DettaglioCorso = () => {
       return;
     }
     
-    // Remove participant from the list
     const updatedParticipantsList = existingCourses[courseIndex].partecipantiList.filter(
       participant => participant.id !== participantToDelete
     );
     
-    // Update course with new participants list
     existingCourses[courseIndex].partecipantiList = updatedParticipantsList;
     
-    // Update participant count
     existingCourses[courseIndex].partecipanti = updatedParticipantsList.length;
     
-    // Save updated courses
     localStorage.setItem('courses', JSON.stringify(existingCourses));
     
-    // Update the local state
     setCorso({
       ...corso,
       partecipantiList: updatedParticipantsList,
       partecipanti: updatedParticipantsList.length
     });
     
-    // Show success message
     toast.success("Partecipante eliminato con successo");
     setIsDeleteParticipantDialogOpen(false);
   };
@@ -199,19 +184,66 @@ const DettaglioCorso = () => {
     setSelectedPdfType('inizioCorso');
   };
 
-  // Function to get company name by id
   const getCompanyName = (companyId) => {
     const company = companies.find(company => company.id === companyId);
     return company ? company.ragioneSociale : "Non specificata";
   };
 
-  // Function to format the date for display
   const formatDate = (dateString) => {
     try {
       return format(new Date(dateString), 'dd/MM/yyyy');
     } catch (error) {
       return dateString || 'Data non disponibile';
     }
+  };
+
+  const downloadTemplate = () => {
+    try {
+      const template = [
+        {
+          'Nome*': '',
+          'Cognome*': '',
+          'Codice Fiscale*': '',
+          'Data di Nascita (GG/MM/AAAA)': '',
+          'Username': '',
+          'Password': '',
+          'Numero di cellulare': '',
+          'Azienda': '',
+          'Assunzione ex lege 68/99': '',
+          'Titolo di Studio': '',
+          'CCNL': '',
+          'Tipologia contrattuale': '',
+          'Qualifica professionale': '',
+          'Anno di assunzione': ''
+        }
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(template);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
+      XLSX.writeFile(workbook, 'template-partecipanti.xlsx');
+      
+      toast.success('Template scaricato con successo');
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      toast.error('Errore durante il download del template');
+    }
+  };
+
+  const handleLoadExistingParticipant = () => {
+    const allCourses = localStorage.getItem('courses') 
+      ? JSON.parse(localStorage.getItem('courses')!)
+      : [];
+    
+    const allParticipants = allCourses.reduce((acc, course) => {
+      if (course.id !== id && course.partecipantiList) {
+        return [...acc, ...course.partecipantiList];
+      }
+      return acc;
+    }, []);
+
+    setSelectedParticipant(null);
+    setIsAddingParticipant(true);
   };
 
   if (!corso) {
@@ -246,7 +278,6 @@ const DettaglioCorso = () => {
           <TabsTrigger value="docenti">Docenti e Tutor</TabsTrigger>
         </TabsList>
 
-        {/* Sezione Anagrafica */}
         <TabsContent value="anagrafica" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
@@ -306,7 +337,6 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
 
-        {/* Calendario tab content */}
         <TabsContent value="calendario" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -369,7 +399,6 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
 
-        {/* Partecipanti tab content */}
         <TabsContent value="partecipanti" className="mt-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -378,13 +407,45 @@ const DettaglioCorso = () => {
                 <CardDescription>Studenti iscritti al corso</CardDescription>
               </div>
               <div className="flex gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={downloadTemplate}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Scarica Template Excel
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm">
+                    Scarica un template Excel con tutti i campi necessari per importare i partecipanti
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={() => document.getElementById('import-file')?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Importa Excel
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm">
+                    Importa un file Excel contenente l'elenco dei partecipanti
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={handleLoadExistingParticipant}>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Carica Partecipante
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm">
+                    Seleziona un partecipante già inserito in un altro corso
+                  </TooltipContent>
+                </Tooltip>
+
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
                   Esporta
-                </Button>
-                <Button size="sm" onClick={() => setIsAddingParticipant(true)}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Aggiungi
                 </Button>
               </div>
             </CardHeader>
@@ -449,7 +510,6 @@ const DettaglioCorso = () => {
           </Card>
         </TabsContent>
 
-        {/* Docenti e Tutor tab content */}
         <TabsContent value="docenti" className="mt-4 space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -545,7 +605,6 @@ const DettaglioCorso = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Dialogs */}
       <CourseFormDialog
         isOpen={isEditingCourse}
         onClose={() => setIsEditingCourse(false)}
@@ -598,7 +657,6 @@ const DettaglioCorso = () => {
         />
       )}
       
-      {/* Delete Participant Confirmation Dialog */}
       <AlertDialog 
         open={isDeleteParticipantDialogOpen} 
         onOpenChange={setIsDeleteParticipantDialogOpen}
