@@ -26,7 +26,6 @@ const App = () => (
           <Route path="/corsi/:id" element={<SidebarLayout><DettaglioCorso /></SidebarLayout>} />
           <Route path="/archivio" element={<SidebarLayout><ArchivioComunicazioni /></SidebarLayout>} />
           <Route path="/aziende" element={<SidebarLayout><Aziende /></SidebarLayout>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

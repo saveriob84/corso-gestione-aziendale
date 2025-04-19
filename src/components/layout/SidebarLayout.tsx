@@ -9,7 +9,8 @@ import {
   Users, 
   Settings,
   ChevronRight,
-  LogOut
+  LogOut,
+  Building
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -65,10 +66,10 @@ const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               active={currentPath.startsWith("/corsi")} 
             />
             <SidebarItem 
-              icon={FileText} 
-              label="Comunicazioni" 
-              href="/comunicazioni" 
-              active={currentPath.startsWith("/comunicazioni")} 
+              icon={Building} 
+              label="Aziende" 
+              href="/aziende" 
+              active={currentPath.startsWith("/aziende")} 
             />
             <SidebarItem 
               icon={Archive} 
