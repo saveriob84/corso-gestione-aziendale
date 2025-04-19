@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -40,6 +39,7 @@ import {
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import CompanyFormDialog from './CompanyFormDialog';
+import { useParticipantActions } from '@/hooks/useParticipantActions';
 
 interface ParticipantFormValues {
   id?: string;
@@ -81,16 +81,12 @@ interface Company {
   codiceAteco: string;
 }
 
-// Helper function to parse date if it's a string
 const parseDateIfNeeded = (dateValue: any): Date | undefined => {
   if (!dateValue) return undefined;
   
-  // If already a Date object, return as is
   if (dateValue instanceof Date) return dateValue;
   
-  // If it's a string, try to parse it
   if (typeof dateValue === 'string') {
-    // Try common formats
     const formats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
     
     for (const dateFormat of formats) {
@@ -100,7 +96,6 @@ const parseDateIfNeeded = (dateValue: any): Date | undefined => {
       }
     }
     
-    // If it's a timestamp
     const timestamp = Date.parse(dateValue);
     if (!isNaN(timestamp)) {
       return new Date(timestamp);
@@ -119,15 +114,30 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   const { id: courseId } = useParams();
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [corso, setCorso] = useState<any>(null);
   
-  // Process initialData to ensure dates are properly formatted
+  const { updateParticipantGlobally } = useParticipantActions(
+    courseId || '', 
+    corso, 
+    setCorso
+  );
+
+  useEffect(() => {
+    if (courseId) {
+      const courses = JSON.parse(localStorage.getItem('courses') || '[]');
+      const currentCourse = courses.find((c: any) => c.id === courseId);
+      if (currentCourse) {
+        setCorso(currentCourse);
+      }
+    }
+  }, [courseId]);
+  
   const formattedInitialData = {
     ...initialData,
     dataNascita: parseDateIfNeeded(initialData?.dataNascita),
     exLege: Boolean(initialData?.exLege)
   };
   
-  // Load companies from localStorage
   useEffect(() => {
     const storedCompanies = localStorage.getItem('companies');
     if (storedCompanies) {
@@ -155,10 +165,8 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
     }
   });
 
-  // Reset form when initialData changes
   useEffect(() => {
-    if (isEditing && initialData) {
-      // Reset form with properly formatted data
+    if (isOpen) {
       form.reset({
         nome: initialData?.nome || "",
         cognome: initialData?.cognome || "",
@@ -177,7 +185,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
         annoAssunzione: initialData?.annoAssunzione || new Date().getFullYear().toString(),
       });
     }
-  }, [initialData, isEditing, form]);
+  }, [initialData, isOpen, form]);
 
   const onSubmit = (data: ParticipantFormValues) => {
     if (!courseId) {
@@ -185,12 +193,10 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
       return;
     }
     
-    // Get existing courses
     const existingCourses = localStorage.getItem('courses') 
       ? JSON.parse(localStorage.getItem('courses')!) 
       : [];
     
-    // Find the course to update
     const courseIndex = existingCourses.findIndex(course => course.id === courseId);
     
     if (courseIndex === -1) {
@@ -198,27 +204,23 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
       return;
     }
     
-    // Get selected company details
     const selectedCompany = companies.find(company => company.id === data.aziendaId);
     const aziendaDetails = selectedCompany ? {
       aziendaId: selectedCompany.id,
       azienda: selectedCompany.ragioneSociale
     } : { azienda: "Non specificata" };
     
-    // Create new participant with ID
     const newParticipant = {
       id: isEditing && initialData.id ? initialData.id : uuidv4(),
       ...data,
       ...aziendaDetails
     };
     
-    // Add participant to course
     if (!existingCourses[courseIndex].partecipantiList) {
       existingCourses[courseIndex].partecipantiList = [];
     }
     
     if (isEditing && initialData.id) {
-      // Update existing participant
       const participantIndex = existingCourses[courseIndex].partecipantiList.findIndex(
         participant => participant.id === initialData.id
       );
@@ -227,29 +229,29 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
           ...existingCourses[courseIndex].partecipantiList[participantIndex],
           ...newParticipant
         };
+        
+        updateParticipantGlobally(newParticipant);
       }
     } else {
-      // Add new participant
       existingCourses[courseIndex].partecipantiList.push(newParticipant);
       
-      // Update participant count
       existingCourses[courseIndex].partecipanti = 
         (existingCourses[courseIndex].partecipanti || 0) + 1;
+        
+      const existingParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
+      existingParticipants.push(newParticipant);
+      localStorage.setItem('participants', JSON.stringify(existingParticipants));
     }
     
-    // Save updated courses
     localStorage.setItem('courses', JSON.stringify(existingCourses));
     
-    // Show success message
     toast.success(isEditing 
       ? "Partecipante aggiornato con successo" 
       : "Partecipante aggiunto con successo"
     );
     
-    // Close the dialog
     onClose();
     
-    // Force refresh to show the updated data
     window.location.reload();
   };
 
@@ -346,13 +348,14 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
                             initialFocus
                             disabled={(date) => date > new Date()}
+                            className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>

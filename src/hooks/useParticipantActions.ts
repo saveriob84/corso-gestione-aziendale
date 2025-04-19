@@ -81,12 +81,31 @@ export const useParticipantActions = (courseId: string, corso: any, setCorso: (c
     toast.success("Partecipante aggiunto al corso con successo");
   };
 
+  // Function to update the global participant list when a participant is updated in a course
+  const updateParticipantGlobally = (updatedParticipant: any) => {
+    // Update the participant in the global participants list
+    const existingParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
+    
+    const participantIndex = existingParticipants.findIndex((p: any) => p.id === updatedParticipant.id);
+    
+    if (participantIndex !== -1) {
+      // Update existing participant
+      existingParticipants[participantIndex] = {
+        ...existingParticipants[participantIndex],
+        ...updatedParticipant
+      };
+      
+      localStorage.setItem('participants', JSON.stringify(existingParticipants));
+    }
+  };
+
   return {
     participantToDelete,
     isDeleteParticipantDialogOpen,
     setIsDeleteParticipantDialogOpen,
     handleDeleteParticipant,
     confirmDeleteParticipant,
-    handleAddExistingParticipant
+    handleAddExistingParticipant,
+    updateParticipantGlobally
   };
 };
