@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar, File, FileText, Users, BookOpen, PlusCircle, Download, Upload, Trash2, PenIcon, Building } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import CourseHeader from '@/components/course-detail/CourseHeader';
+import CourseInfo from '@/components/course-detail/CourseInfo';
+import LessonList from '@/components/course-detail/LessonList';
+import ParticipantList from '@/components/course-detail/ParticipantList';
+import TeacherTutorList from '@/components/course-detail/TeacherTutorList';
 import LessonFormDialog from '@/components/dialogs/LessonFormDialog';
 import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
 import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog';
 import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import XLSX from 'xlsx';
 import {
   AlertDialog,
@@ -23,8 +23,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { UserPlus } from "lucide-react";
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
@@ -189,14 +187,6 @@ const DettaglioCorso = () => {
     return company ? company.ragioneSociale : "Non specificata";
   };
 
-  const formatDate = (dateString) => {
-    try {
-      return format(new Date(dateString), 'dd/MM/yyyy');
-    } catch (error) {
-      return dateString || 'Data non disponibile';
-    }
-  };
-
   const downloadTemplate = () => {
     try {
       const template = [
@@ -252,23 +242,11 @@ const DettaglioCorso = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-heading font-bold text-slate-900 dark:text-slate-50">
-            {corso.titolo}
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400">Codice: {corso.codice}</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={handleGeneratePdf}>
-            <FileText className="mr-2 h-4 w-4" />
-            Genera PDF
-          </Button>
-          <Button onClick={() => setIsEditingCourse(true)}>
-            Modifica Corso
-          </Button>
-        </div>
-      </div>
+      <CourseHeader 
+        corso={corso}
+        onEditCourse={() => setIsEditingCourse(true)}
+        onGeneratePdf={handleGeneratePdf}
+      />
 
       <Tabs defaultValue="anagrafica" className="w-full">
         <TabsList className="grid grid-cols-4 md:w-[600px]">
@@ -279,329 +257,48 @@ const DettaglioCorso = () => {
         </TabsList>
 
         <TabsContent value="anagrafica" className="space-y-4 mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Informazioni Corso</CardTitle>
-              <CardDescription>Dati anagrafici del corso</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Codice corso</p>
-                  <p>{corso.codice}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Titolo</p>
-                  <p>{corso.titolo}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Data inizio</p>
-                  <p>{formatDate(corso.dataInizio)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Data fine</p>
-                  <p>{formatDate(corso.dataFine)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sede</p>
-                  <p>{corso.sede}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Modulo formativo</p>
-                  <p>{corso.moduloFormativo}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Documenti</CardTitle>
-              <CardDescription>File allegati al corso</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between border border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4">
-                <div className="flex items-center">
-                  <File className="h-10 w-10 text-slate-400" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium">Nessun documento caricato</p>
-                    <p className="text-sm text-slate-500">Carica i documenti relativi al corso</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Carica
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CourseInfo corso={corso} />
         </TabsContent>
 
         <TabsContent value="calendario" className="mt-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Calendario Didattico</CardTitle>
-                <CardDescription>Giornate di lezione programmate</CardDescription>
-              </div>
-              <Button size="sm" onClick={() => {
-                setSelectedLesson(null);
-                setIsAddingLesson(true);
-                setIsEditingLesson(false);
-              }}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Aggiungi Giornata
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                  <thead className="bg-slate-50 dark:bg-slate-800">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Data</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Orario</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sede</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azioni</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.giornateDiLezione && corso.giornateDiLezione.map((giornata, index) => (
-                      <tr key={giornata.id || index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{formatDate(giornata.data)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.orario}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.sede}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleEditLesson(giornata)}
-                              className="flex items-center"
-                            >
-                              <PenIcon className="h-4 w-4 mr-1" />
-                              Modifica
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {(!corso.giornateDiLezione || corso.giornateDiLezione.length === 0) && (
-                      <tr>
-                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
-                          Nessuna giornata di lezione programmata
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <LessonList 
+            giornateDiLezione={corso.giornateDiLezione} 
+            onAddLesson={() => {
+              setSelectedLesson(null);
+              setIsAddingLesson(true);
+            }}
+            onEditLesson={handleEditLesson}
+          />
         </TabsContent>
 
         <TabsContent value="partecipanti" className="mt-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Elenco Partecipanti</CardTitle>
-                <CardDescription>Studenti iscritti al corso</CardDescription>
-              </div>
-              <div className="flex gap-3">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={downloadTemplate}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Scarica Template Excel
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-sm">
-                    Scarica un template Excel con tutti i campi necessari per importare i partecipanti
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => document.getElementById('import-file')?.click()}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Importa Excel
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-sm">
-                    Importa un file Excel contenente l'elenco dei partecipanti
-                  </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={handleLoadExistingParticipant}>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Carica Partecipante
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-sm">
-                    Seleziona un partecipante già inserito in un altro corso
-                  </TooltipContent>
-                </Tooltip>
-
-                <Button variant="outline" size="sm">
-                  <Download className="mr-2 h-4 w-4" />
-                  Esporta
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                  <thead className="bg-slate-50 dark:bg-slate-800">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nome</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cognome</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Codice Fiscale</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azienda</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azioni</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.partecipantiList && corso.partecipantiList.map((partecipante, index) => (
-                      <tr key={partecipante.id || index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.nome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.cognome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.codiceFiscale || "-"}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
-                          <div className="flex items-center space-x-2">
-                            <Building className="h-4 w-4 text-slate-500" />
-                            <span>{partecipante.aziendaId ? getCompanyName(partecipante.aziendaId) : partecipante.azienda || "Non specificata"}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleEditParticipant(partecipante)}
-                            >
-                              <PenIcon className="h-4 w-4 mr-1" />
-                              Modifica
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                              onClick={() => handleDeleteParticipant(partecipante.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Elimina
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {(!corso.partecipantiList || corso.partecipantiList.length === 0) && (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-4 text-center text-sm text-slate-500">
-                          Nessun partecipante iscritto
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <ParticipantList 
+            partecipantiList={corso.partecipantiList}
+            onEditParticipant={handleEditParticipant}
+            onDeleteParticipant={handleDeleteParticipant}
+            onDownloadTemplate={downloadTemplate}
+            onImportExcel={() => document.getElementById('import-file')?.click()}
+            onLoadExistingParticipant={handleLoadExistingParticipant}
+            getCompanyName={getCompanyName}
+          />
         </TabsContent>
 
         <TabsContent value="docenti" className="mt-4 space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Docenti</CardTitle>
-                <CardDescription>Professori e specialisti</CardDescription>
-              </div>
-              <Button size="sm" onClick={() => setIsAddingTeacher(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Aggiungi Docente
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                  <thead className="bg-slate-50 dark:bg-slate-800">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nome</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cognome</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Specializzazione</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azioni</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.docentiList && corso.docentiList.map((docente, index) => (
-                      <tr key={docente.id || index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{docente.nome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{docente.cognome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{docente.specializzazione}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button variant="ghost" size="sm">Modifica</Button>
-                        </td>
-                      </tr>
-                    ))}
-                    {(!corso.docentiList || corso.docentiList.length === 0) && (
-                      <tr>
-                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
-                          Nessun docente assegnato
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <TeacherTutorList
+            title="Docenti"
+            description="Professori e specialisti"
+            list={corso.docentiList}
+            onAdd={() => setIsAddingTeacher(true)}
+            type="docenti"
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Tutor</CardTitle>
-                <CardDescription>Assistenti e supporto</CardDescription>
-              </div>
-              <Button size="sm" onClick={() => setIsAddingTutor(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Aggiungi Tutor
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                  <thead className="bg-slate-50 dark:bg-slate-800">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nome</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cognome</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ruolo</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azioni</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-                    {corso.tutorList && corso.tutorList.map((tutor, index) => (
-                      <tr key={tutor.id || index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{tutor.nome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{tutor.cognome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{tutor.ruolo}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button variant="ghost" size="sm">Modifica</Button>
-                        </td>
-                      </tr>
-                    ))}
-                    {(!corso.tutorList || corso.tutorList.length === 0) && (
-                      <tr>
-                        <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
-                          Nessun tutor assegnato
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <TeacherTutorList
+            title="Tutor"
+            description="Assistenti e supporto"
+            list={corso.tutorList}
+            onAdd={() => setIsAddingTutor(true)}
+            type="tutor"
+          />
         </TabsContent>
       </Tabs>
 
