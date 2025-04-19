@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -61,9 +60,17 @@ const DettaglioCorso = () => {
     setIsEditingLesson(true);
   };
 
-  const handleEditParticipant = (participant: any) => {
-    setSelectedParticipant(participant);
-    setIsEditingParticipant(true);
+  const handleEditParticipant = (participantId: string) => {
+    const participantToEdit = corso?.partecipantiList?.find(
+      (p: any) => p.id === participantId
+    );
+    
+    if (participantToEdit) {
+      setSelectedParticipant(participantToEdit);
+      setIsEditingParticipant(true);
+    } else {
+      toast.error("Partecipante non trovato");
+    }
   };
 
   const handleGeneratePdf = () => {

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Download, FileText, PenIcon, Trash2, Upload, UserPlus } from "lucide-react";
@@ -6,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 interface ParticipantListProps {
   partecipantiList: any[];
-  onEditParticipant: (participant: any) => void;
+  onEditParticipant: (participantId: string) => void;
   onDeleteParticipant: (participantId: string) => void;
   onDownloadTemplate: () => void;
   onImportExcel: () => void;
@@ -102,7 +101,7 @@ const ParticipantList = ({
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => onEditParticipant(partecipante)}
+                        onClick={() => onEditParticipant(partecipante.id)}
                       >
                         <PenIcon className="h-4 w-4 mr-1" />
                         Modifica
