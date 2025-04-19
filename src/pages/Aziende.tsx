@@ -11,6 +11,7 @@ import { Plus, Building } from 'lucide-react';
 import CompanyFormDialog from '@/components/dialogs/CompanyFormDialog';
 import { toast } from 'sonner';
 
+// Make sure this interface matches CompanyFormValues in CompanyFormDialog.tsx
 interface Company {
   id: string;
   ragioneSociale: string;
@@ -146,7 +147,7 @@ const Aziende: React.FC = () => {
       <CompanyFormDialog
         isOpen={isCompanyFormOpen}
         onClose={() => setIsCompanyFormOpen(false)}
-        onCompanyAdded={(newCompany) => {
+        onCompanyAdded={(newCompany: Company) => {
           const updatedCompanies = [...companies, newCompany];
           setCompanies(updatedCompanies);
           localStorage.setItem('companies', JSON.stringify(updatedCompanies));

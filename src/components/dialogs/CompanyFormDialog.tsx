@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { 
@@ -23,7 +22,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 
 interface CompanyFormValues {
-  id?: string;
+  id: string;
   ragioneSociale: string;
   partitaIva: string;
   indirizzo: string;
@@ -53,7 +52,6 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
 }) => {
   const [existingCompanies, setExistingCompanies] = useState<CompanyFormValues[]>([]);
   
-  // Load existing companies on mount
   useEffect(() => {
     const storedCompanies = localStorage.getItem('companies');
     if (storedCompanies) {
@@ -63,6 +61,7 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
   
   const form = useForm<CompanyFormValues>({
     defaultValues: {
+      id: initialData.id || uuidv4(),
       ragioneSociale: initialData.ragioneSociale || "",
       partitaIva: initialData.partitaIva || "",
       indirizzo: initialData.indirizzo || "",
@@ -77,7 +76,6 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
   });
 
   const onSubmit = (data: CompanyFormValues) => {
-    // Check if company with same VAT ID already exists
     const duplicateCompany = existingCompanies.find(
       company => company.partitaIva === data.partitaIva && company.id !== initialData.id
     );
@@ -87,13 +85,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
       return;
     }
     
-    // Create new company with ID
     const companyToSave = {
-      id: isEditing && initialData.id ? initialData.id : uuidv4(),
-      ...data
+      ...data,
+      id: isEditing && initialData.id ? initialData.id : data.id || uuidv4()
     };
     
-    // Update or add company to the list
     let updatedCompanies;
     if (isEditing && initialData.id) {
       updatedCompanies = existingCompanies.map(company => 
@@ -103,21 +99,17 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
       updatedCompanies = [...existingCompanies, companyToSave];
     }
     
-    // Save to localStorage
     localStorage.setItem('companies', JSON.stringify(updatedCompanies));
     
-    // Show success message
     toast.success(isEditing 
       ? "Azienda aggiornata con successo" 
       : "Azienda aggiunta con successo"
     );
     
-    // Call the callback if provided
     if (onCompanyAdded && !isEditing) {
       onCompanyAdded(companyToSave);
     }
     
-    // Close the dialog
     onClose();
   };
 
