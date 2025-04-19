@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, File, FileText, Users, BookOpen, PlusCircle, Download, Upload, Trash2, PenIcon } from "lucide-react";
+import { Calendar, File, FileText, Users, BookOpen, PlusCircle, Download, Upload, Trash2, PenIcon, Building } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import LessonFormDialog from '@/components/dialogs/LessonFormDialog';
 import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
@@ -12,6 +13,16 @@ import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
 import PdfViewer from '@/components/pdf/PdfViewer';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,10 +40,18 @@ const DettaglioCorso = () => {
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   
+  // State to handle participant editing and deletion
+  const [isEditingParticipant, setIsEditingParticipant] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
+  const [isDeleteParticipantDialogOpen, setIsDeleteParticipantDialogOpen] = useState(false);
+  const [participantToDelete, setParticipantToDelete] = useState<string | null>(null);
+  
   // State to store the course data
   const [corso, setCorso] = useState<any>(null);
+  // State to store companies for linking
+  const [companies, setCompanies] = useState<any[]>([]);
   
-  // Load course data from localStorage
+  // Load course data and companies from localStorage
   useEffect(() => {
     const loadCourseData = () => {
       // First check for user-created courses in localStorage
@@ -111,6 +130,12 @@ const DettaglioCorso = () => {
       toast.error("Corso non trovato");
       navigate("/corsi");
     }
+    
+    // Load companies
+    const storedCompanies = localStorage.getItem('companies');
+    if (storedCompanies) {
+      setCompanies(JSON.parse(storedCompanies));
+    }
   }, [id, navigate]);
 
   const handleEditLesson = (lesson) => {
@@ -118,8 +143,66 @@ const DettaglioCorso = () => {
     setIsEditingLesson(true);
   };
 
+  const handleEditParticipant = (participant) => {
+    setSelectedParticipant(participant);
+    setIsEditingParticipant(true);
+  };
+  
+  const handleDeleteParticipant = (participantId) => {
+    setParticipantToDelete(participantId);
+    setIsDeleteParticipantDialogOpen(true);
+  };
+  
+  const confirmDeleteParticipant = () => {
+    if (!participantToDelete) return;
+    
+    // Get existing courses
+    const existingCourses = localStorage.getItem('courses') 
+      ? JSON.parse(localStorage.getItem('courses')!) 
+      : [];
+    
+    // Find the course to update
+    const courseIndex = existingCourses.findIndex(course => course.id === id);
+    
+    if (courseIndex === -1) {
+      toast.error("Corso non trovato");
+      return;
+    }
+    
+    // Remove participant from the list
+    const updatedParticipantsList = existingCourses[courseIndex].partecipantiList.filter(
+      participant => participant.id !== participantToDelete
+    );
+    
+    // Update course with new participants list
+    existingCourses[courseIndex].partecipantiList = updatedParticipantsList;
+    
+    // Update participant count
+    existingCourses[courseIndex].partecipanti = updatedParticipantsList.length;
+    
+    // Save updated courses
+    localStorage.setItem('courses', JSON.stringify(existingCourses));
+    
+    // Update the local state
+    setCorso({
+      ...corso,
+      partecipantiList: updatedParticipantsList,
+      partecipanti: updatedParticipantsList.length
+    });
+    
+    // Show success message
+    toast.success("Partecipante eliminato con successo");
+    setIsDeleteParticipantDialogOpen(false);
+  };
+
   const handleGeneratePdf = () => {
     setSelectedPdfType('inizioCorso');
+  };
+
+  // Function to get company name by id
+  const getCompanyName = (companyId) => {
+    const company = companies.find(company => company.id === companyId);
+    return company ? company.ragioneSociale : "Non specificata";
   };
 
   // Function to format the date for display
@@ -312,8 +395,8 @@ const DettaglioCorso = () => {
                     <tr>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nome</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cognome</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Codice Fiscale</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azienda</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ruolo</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Azioni</th>
                     </tr>
                   </thead>
@@ -322,10 +405,33 @@ const DettaglioCorso = () => {
                       <tr key={partecipante.id || index}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.nome}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.cognome}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.azienda}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.ruolo}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.codiceFiscale || "-"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
+                          <div className="flex items-center space-x-2">
+                            <Building className="h-4 w-4 text-slate-500" />
+                            <span>{partecipante.aziendaId ? getCompanyName(partecipante.aziendaId) : partecipante.azienda || "Non specificata"}</span>
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button variant="ghost" size="sm">Modifica</Button>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleEditParticipant(partecipante)}
+                            >
+                              <PenIcon className="h-4 w-4 mr-1" />
+                              Modifica
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                              onClick={() => handleDeleteParticipant(partecipante.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Elimina
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -464,6 +570,13 @@ const DettaglioCorso = () => {
         onClose={() => setIsAddingParticipant(false)}
       />
       
+      <ParticipantFormDialog
+        isOpen={isEditingParticipant}
+        onClose={() => setIsEditingParticipant(false)}
+        initialData={selectedParticipant}
+        isEditing={true}
+      />
+      
       <TeacherTutorFormDialog
         isOpen={isAddingTeacher}
         onClose={() => setIsAddingTeacher(false)}
@@ -484,6 +597,30 @@ const DettaglioCorso = () => {
           onClose={() => setSelectedPdfType(null)}
         />
       )}
+      
+      {/* Delete Participant Confirmation Dialog */}
+      <AlertDialog 
+        open={isDeleteParticipantDialogOpen} 
+        onOpenChange={setIsDeleteParticipantDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler eliminare questo partecipante? Questa azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteParticipant}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
