@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import UserPlus from "lucide-react/dist/icons/user-plus";
+import { UserPlus } from "lucide-react";
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
