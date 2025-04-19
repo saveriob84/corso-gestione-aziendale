@@ -41,13 +41,15 @@ interface CompanyFormDialogProps {
   onClose: () => void;
   initialData?: Partial<CompanyFormValues>;
   isEditing?: boolean;
+  onCompanyAdded?: (newCompany: CompanyFormValues) => void;
 }
 
 const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
   isOpen,
   onClose,
   initialData = {},
-  isEditing = false
+  isEditing = false,
+  onCompanyAdded
 }) => {
   const [existingCompanies, setExistingCompanies] = useState<CompanyFormValues[]>([]);
   
@@ -109,6 +111,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
       ? "Azienda aggiornata con successo" 
       : "Azienda aggiunta con successo"
     );
+    
+    // Call the callback if provided
+    if (onCompanyAdded && !isEditing) {
+      onCompanyAdded(companyToSave);
+    }
     
     // Close the dialog
     onClose();
