@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import ParticipantSearchDialog from '@/components/dialogs/ParticipantSearchDialog';
+import { getParticipantTemplate } from '@/utils/excelTemplates';
 
 const DettaglioCorso = () => {
   const { id } = useParams<{ id: string }>();
@@ -192,25 +193,7 @@ const DettaglioCorso = () => {
 
   const downloadTemplate = () => {
     try {
-      const template = [
-        {
-          'Nome*': '',
-          'Cognome*': '',
-          'Codice Fiscale*': '',
-          'Data di Nascita (GG/MM/AAAA)': '',
-          'Username': '',
-          'Password': '',
-          'Numero di cellulare': '',
-          'Azienda': '',
-          'Assunzione ex lege 68/99': '',
-          'Titolo di Studio': '',
-          'CCNL': '',
-          'Tipologia contrattuale': '',
-          'Qualifica professionale': '',
-          'Anno di assunzione': ''
-        }
-      ];
-
+      const template = getParticipantTemplate();
       const worksheet = XLSX.utils.json_to_sheet(template);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');

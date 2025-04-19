@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getParticipantTemplate } from '@/utils/excelTemplates';
 
 interface Participant {
   id: string;
@@ -33,18 +34,7 @@ const Partecipanti = () => {
 
   const downloadTemplate = () => {
     try {
-      const template = [
-        {
-          'Nome*': '',
-          'Cognome*': '',
-          'Codice Fiscale*': '',
-          'Data di Nascita (GG/MM/AAAA)': '',
-          'Azienda': '',
-          'Titolo di Studio': '',
-          'Qualifica': ''
-        }
-      ];
-
+      const template = getParticipantTemplate();
       const worksheet = XLSX.utils.json_to_sheet(template);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
