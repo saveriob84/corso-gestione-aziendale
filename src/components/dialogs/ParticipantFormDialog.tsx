@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, PlusCircle } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 import { 
   Form,
@@ -81,6 +81,35 @@ interface Company {
   codiceAteco: string;
 }
 
+// Helper function to parse date if it's a string
+const parseDateIfNeeded = (dateValue: any): Date | undefined => {
+  if (!dateValue) return undefined;
+  
+  // If already a Date object, return as is
+  if (dateValue instanceof Date) return dateValue;
+  
+  // If it's a string, try to parse it
+  if (typeof dateValue === 'string') {
+    // Try common formats
+    const formats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
+    
+    for (const dateFormat of formats) {
+      const parsedDate = parse(dateValue, dateFormat, new Date());
+      if (isValid(parsedDate)) {
+        return parsedDate;
+      }
+    }
+    
+    // If it's a timestamp
+    const timestamp = Date.parse(dateValue);
+    if (!isNaN(timestamp)) {
+      return new Date(timestamp);
+    }
+  }
+  
+  return undefined;
+};
+
 const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   isOpen,
   onClose,
@@ -90,6 +119,13 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   const { id: courseId } = useParams();
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
+  
+  // Process initialData to ensure dates are properly formatted
+  const formattedInitialData = {
+    ...initialData,
+    dataNascita: parseDateIfNeeded(initialData?.dataNascita),
+    exLege: Boolean(initialData?.exLege)
+  };
   
   // Load companies from localStorage
   useEffect(() => {
@@ -101,23 +137,47 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   
   const form = useForm<ParticipantFormValues>({
     defaultValues: {
-      nome: initialData?.nome || "",
-      cognome: initialData?.cognome || "",
-      codiceFiscale: initialData?.codiceFiscale || "",
-      luogoNascita: initialData?.luogoNascita || "",
-      dataNascita: initialData?.dataNascita,
-      username: initialData?.username || "",
-      password: initialData?.password || "",
-      cellulare: initialData?.cellulare || "",
-      aziendaId: initialData?.aziendaId || "",
-      exLege: initialData?.exLege || false,
-      titoloStudio: initialData?.titoloStudio || "",
-      ccnl: initialData?.ccnl || "",
-      contratto: initialData?.contratto || "",
-      qualifica: initialData?.qualifica || "",
-      annoAssunzione: initialData?.annoAssunzione || new Date().getFullYear().toString(),
+      nome: formattedInitialData?.nome || "",
+      cognome: formattedInitialData?.cognome || "",
+      codiceFiscale: formattedInitialData?.codiceFiscale || "",
+      luogoNascita: formattedInitialData?.luogoNascita || "",
+      dataNascita: formattedInitialData?.dataNascita,
+      username: formattedInitialData?.username || "",
+      password: formattedInitialData?.password || "",
+      cellulare: formattedInitialData?.cellulare || "",
+      aziendaId: formattedInitialData?.aziendaId || "",
+      exLege: formattedInitialData?.exLege || false,
+      titoloStudio: formattedInitialData?.titoloStudio || "",
+      ccnl: formattedInitialData?.ccnl || "",
+      contratto: formattedInitialData?.contratto || "",
+      qualifica: formattedInitialData?.qualifica || "",
+      annoAssunzione: formattedInitialData?.annoAssunzione || new Date().getFullYear().toString(),
     }
   });
+
+  // Reset form when initialData changes
+  useEffect(() => {
+    if (isEditing && initialData) {
+      // Reset form with properly formatted data
+      form.reset({
+        nome: initialData?.nome || "",
+        cognome: initialData?.cognome || "",
+        codiceFiscale: initialData?.codiceFiscale || "",
+        luogoNascita: initialData?.luogoNascita || "",
+        dataNascita: parseDateIfNeeded(initialData?.dataNascita),
+        username: initialData?.username || "",
+        password: initialData?.password || "",
+        cellulare: initialData?.cellulare || "",
+        aziendaId: initialData?.aziendaId || "",
+        exLege: Boolean(initialData?.exLege) || false,
+        titoloStudio: initialData?.titoloStudio || "",
+        ccnl: initialData?.ccnl || "",
+        contratto: initialData?.contratto || "",
+        qualifica: initialData?.qualifica || "",
+        annoAssunzione: initialData?.annoAssunzione || new Date().getFullYear().toString(),
+      });
+    }
+  }, [initialData, isEditing, form]);
 
   const onSubmit = (data: ParticipantFormValues) => {
     if (!courseId) {
