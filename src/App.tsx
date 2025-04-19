@@ -10,6 +10,7 @@ import Corsi from "./pages/Corsi";
 import DettaglioCorso from "./pages/DettaglioCorso";
 import ArchivioComunicazioni from "./pages/ArchivioComunicazioni";
 import Aziende from "./pages/Aziende";
+import Partecipanti from "./pages/Partecipanti";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

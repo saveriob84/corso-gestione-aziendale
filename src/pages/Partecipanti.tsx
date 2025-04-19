@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from "@/components/ui/table";
-import { FileExcel, Import, Export } from "lucide-react";
+import { File, Download, Upload } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 
@@ -100,7 +100,7 @@ const Partecipanti = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => document.getElementById('import-file')?.click()}>
-            <Import className="mr-2 h-4 w-4" />
+            <Upload className="mr-2 h-4 w-4" />
             Importa Excel/CSV
           </Button>
           <input
@@ -111,7 +111,7 @@ const Partecipanti = () => {
             onChange={handleImport}
           />
           <Button variant="outline" onClick={handleExport}>
-            <Export className="mr-2 h-4 w-4" />
+            <Download className="mr-2 h-4 w-4" />
             Esporta Excel
           </Button>
         </div>
