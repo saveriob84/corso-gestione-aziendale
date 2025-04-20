@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   DayPicker, 
   CaptionProps, 
-  UseNavigation 
+  useNavigation 
 } from "react-day-picker";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -25,7 +25,7 @@ function Calendar({
   const today = new Date();
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
-  const CustomCaption = (props: CaptionProps & { navigation: UseNavigation }) => {
+  const CustomCaption = (props: CaptionProps & { navigation: ReturnType<typeof useNavigation> }) => {
     const { displayMonth, navigation } = props;
     
     const handleYearSelect = (year: string) => {
@@ -112,4 +112,3 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
-
