@@ -64,15 +64,15 @@ function Calendar({
         
         <div className="flex items-center gap-1">
           <Select
-            value={displayMonth.getFullYear().toString()}
+            value={String(displayMonth.getFullYear())}
             onValueChange={handleYearSelect}
           >
             <SelectTrigger className="h-7 text-sm w-[70px]">
-              <SelectValue placeholder={displayMonth.getFullYear().toString()} />
+              <SelectValue placeholder={String(displayMonth.getFullYear())} />
             </SelectTrigger>
             <SelectContent className="max-h-[200px] overflow-y-auto">
               {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
+                <SelectItem key={year} value={String(year)}>
                   {year}
                 </SelectItem>
               ))}
@@ -80,7 +80,7 @@ function Calendar({
           </Select>
           
           <Select
-            value={displayMonth.getMonth().toString()}
+            value={String(displayMonth.getMonth())}
             onValueChange={(value) => handleMonthSelect(parseInt(value))}
           >
             <SelectTrigger className="h-7 text-sm w-[100px]">
@@ -88,7 +88,7 @@ function Calendar({
             </SelectTrigger>
             <SelectContent>
               {monthNames.map((month, index) => (
-                <SelectItem key={index} value={index.toString()}>
+                <SelectItem key={index} value={String(index)}>
                   {month}
                 </SelectItem>
               ))}
