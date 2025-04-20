@@ -1,139 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter, 
-  DialogDescription
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, PlusCircle } from "lucide-react";
-import { format, parse, isValid } from "date-fns";
-import { it } from "date-fns/locale";
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import CompanyFormDialog from './CompanyFormDialog';
 import { useParticipantActions } from '@/hooks/useParticipantActions';
-import { cn } from '@/lib/utils';
-
-interface ParticipantFormValues {
-  id?: string;
-  nome: string;
-  cognome: string;
-  codiceFiscale: string;
-  luogoNascita: string;
-  dataNascita: Date | undefined;
-  username: string;
-  password: string;
-  cellulare: string;
-  aziendaId: string;
-  exLege: boolean;
-  titoloStudio: string;
-  ccnl: string;
-  contratto: string;
-  qualifica: string;
-  annoAssunzione: string;
-}
-
-interface ParticipantFormDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  initialData?: Partial<ParticipantFormValues>;
-  isEditing?: boolean;
-}
-
-interface Company {
-  id: string;
-  ragioneSociale: string;
-  partitaIva: string;
-  indirizzo: string;
-  comune: string;
-  cap: string;
-  provincia: string;
-  telefono: string;
-  email: string;
-  referente: string;
-  codiceAteco: string;
-}
-
-const parseDateIfNeeded = (dateValue: any): Date | undefined => {
-  if (!dateValue) return undefined;
-  
-  if (dateValue instanceof Date) return dateValue;
-  
-  if (typeof dateValue === 'string') {
-    const formats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
-    
-    for (const dateFormat of formats) {
-      const parsedDate = parse(dateValue, dateFormat, new Date());
-      if (isValid(parsedDate)) {
-        return parsedDate;
-      }
-    }
-    
-    const timestamp = Date.parse(dateValue);
-    if (!isNaN(timestamp)) {
-      return new Date(timestamp);
-    }
-  }
-  
-  return undefined;
-};
-
-const parseInitialDate = (dateString?: string | Date): Date | undefined => {
-  if (!dateString) return undefined;
-  
-  if (dateString instanceof Date) return dateString;
-  
-  if (/^\d+$/.test(dateString)) {
-    const date = new Date(1899, 11, 30);
-    date.setDate(date.getDate() + parseInt(dateString));
-    if (!isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < new Date().getFullYear()) {
-      return date;
-    }
-  }
-  
-  const parsedDate = new Date(dateString);
-  if (!isNaN(parsedDate.getTime())) {
-    return parsedDate;
-  }
-  
-  const parts = dateString.split('/');
-  if (parts.length === 3) {
-    const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-    if (!isNaN(date.getTime())) {
-      return date;
-    }
-  }
-  
-  return undefined;
-};
+import { parseDateIfNeeded, parseInitialDate } from '@/utils/dateUtils';
+import { PersonalInfoFields } from '../participant-form/PersonalInfoFields';
+import { CredentialFields } from '../participant-form/CredentialFields';
+import { EmploymentFields } from '../participant-form/EmploymentFields';
+import { ParticipantFormValues, ParticipantFormDialogProps } from '@/types/participant';
 
 const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   isOpen,
@@ -143,7 +24,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
 }) => {
   const { id: courseId } = useParams();
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
   const [corso, setCorso] = useState<any>(null);
   
   const { updateParticipantGlobally } = useParticipantActions(
@@ -181,7 +62,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
       cognome: formattedInitialData?.cognome || "",
       codiceFiscale: formattedInitialData?.codiceFiscale || "",
       luogoNascita: formattedInitialData?.luogoNascita || "",
-      dataNascita: parseDateIfNeeded(initialData?.dataNascita),
+      dataNascita: parseInitialDate(initialData?.dataNascita),
       username: formattedInitialData?.username || "",
       password: formattedInitialData?.password || "",
       cellulare: formattedInitialData?.cellulare || "",
@@ -300,146 +181,9 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="nome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. Mario" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <PersonalInfoFields form={form} />
+                <CredentialFields form={form} />
                 
-                <FormField
-                  control={form.control}
-                  name="cognome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cognome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. Rossi" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="codiceFiscale"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Codice Fiscale</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. RSSMRA80A01H501U" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="luogoNascita"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Luogo di nascita</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. Roma" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="dataNascita"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Data di nascita</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "dd/MM/yyyy", { locale: it })
-                              ) : (
-                                <span>Seleziona data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            defaultMonth={field.value || new Date()}
-                            initialFocus
-                            disabled={(date) => date > new Date()}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. mario.rossi" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="cellulare"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Numero di cellulare</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. +39 333 1234567" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="aziendaId"
@@ -447,155 +191,35 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                     <FormItem>
                       <FormLabel>Azienda di appartenenza</FormLabel>
                       <div className="flex space-x-2">
-                        <FormControl>
-                          <Select 
-                            value={field.value} 
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Seleziona un'azienda" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {companies.length > 0 ? 
-                                companies.map(company => (
-                                  <SelectItem key={company.id} value={company.id}>
-                                    {company.ragioneSociale}
-                                  </SelectItem>
-                                )) : 
-                                <SelectItem value="none" disabled>
-                                  Nessuna azienda disponibile
+                        <Select 
+                          value={field.value} 
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Seleziona un'azienda" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {companies.length > 0 ? 
+                              companies.map(company => (
+                                <SelectItem key={company.id} value={company.id}>
+                                  {company.ragioneSociale}
                                 </SelectItem>
-                              }
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
+                              )) : 
+                              <SelectItem value="none" disabled>
+                                Nessuna azienda disponibile
+                              </SelectItem>
+                            }
+                          </SelectContent>
+                        </Select>
                         <Button type="button" variant="outline" size="icon" onClick={handleOpenCompanyForm}>
                           <PlusCircle className="h-4 w-4" />
                         </Button>
                       </div>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="exLege"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Assunzione ai sensi ex lege 68/99
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="titoloStudio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Titolo di studio</FormLabel>
-                      <FormControl>
-                        <Select 
-                          value={field.value} 
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleziona titolo di studio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="licenzaMedia">Licenza media</SelectItem>
-                            <SelectItem value="diplomaSuperiore">Diploma superiore</SelectItem>
-                            <SelectItem value="laurea">Laurea</SelectItem>
-                            <SelectItem value="masterPost">Master post-laurea</SelectItem>
-                            <SelectItem value="dottorato">Dottorato</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="ccnl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CCNL di riferimento</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. Commercio" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="contratto"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipologia contrattuale</FormLabel>
-                      <FormControl>
-                        <Select 
-                          value={field.value} 
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleziona tipologia" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="determinato">Tempo determinato</SelectItem>
-                            <SelectItem value="indeterminato">Tempo indeterminato</SelectItem>
-                            <SelectItem value="apprendistato">Apprendistato</SelectItem>
-                            <SelectItem value="stagionale">Stagionale</SelectItem>
-                            <SelectItem value="collaborazione">Collaborazione</SelectItem>
-                            <SelectItem value="partita-iva">Partita IVA</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="qualifica"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Qualifica professionale</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. Impiegato" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="annoAssunzione"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Anno di assunzione</FormLabel>
-                      <FormControl>
-                        <Input placeholder="es. 2020" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <EmploymentFields form={form} />
               </div>
               
               <DialogFooter>
