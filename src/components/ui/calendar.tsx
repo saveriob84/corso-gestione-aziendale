@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps } from "react-day-picker";
+import { DayPicker, CaptionProps, useNavigation } from "react-day-picker";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -17,7 +17,6 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  // Range di anni dal 1900 all'anno corrente
   const today = new Date();
   const years = React.useMemo(
     () =>
@@ -30,30 +29,30 @@ function Calendar({
 
   const CustomCaption = (props: CaptionProps) => {
     const { displayMonth } = props;
+    const navigation = useNavigation();
     
-    // React-day-picker exposes functions to change months through onMonthChange
     const previousMonth = () => {
       const prevMonth = new Date(displayMonth);
       prevMonth.setMonth(prevMonth.getMonth() - 1);
-      props.goToMonth(prevMonth);
+      navigation.goToMonth(prevMonth);
     };
     
     const nextMonth = () => {
       const nxtMonth = new Date(displayMonth);
       nxtMonth.setMonth(nxtMonth.getMonth() + 1);
-      props.goToMonth(nxtMonth);
+      navigation.goToMonth(nxtMonth);
     };
 
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year, 10));
-      props.goToMonth(newDate);
+      navigation.goToMonth(newDate);
     };
 
     const handleMonthSelect = (monthIndex: string) => {
       const newDate = new Date(displayMonth);
       newDate.setMonth(parseInt(monthIndex, 10));
-      props.goToMonth(newDate);
+      navigation.goToMonth(newDate);
     };
 
     const monthNames = React.useMemo(
@@ -78,7 +77,6 @@ function Calendar({
         </button>
 
         <div className="flex items-center gap-2">
-          {/* Select Anno */}
           <Select
             value={String(displayMonth.getFullYear())}
             onValueChange={handleYearSelect}
@@ -98,7 +96,6 @@ function Calendar({
             </SelectContent>
           </Select>
 
-          {/* Select Mese */}
           <Select
             value={String(displayMonth.getMonth())}
             onValueChange={handleMonthSelect}
