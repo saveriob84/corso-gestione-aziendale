@@ -32,11 +32,13 @@ function Calendar({
     const { displayMonth } = props;
     // Access these functions from props directly as they may be nested differently in the CaptionProps
     const goToMonth = props.onMonthChange;
+    
     const previousMonth = () => {
       const prevMonth = new Date(displayMonth);
       prevMonth.setMonth(prevMonth.getMonth() - 1);
       goToMonth(prevMonth);
     };
+    
     const nextMonth = () => {
       const nxtMonth = new Date(displayMonth);
       nxtMonth.setMonth(nxtMonth.getMonth() + 1);
