@@ -49,6 +49,7 @@ function Calendar({
         date.setMonth(i);
         date.setDate(1);
         // Format the date to get the month name
+        // Fix: Using format directly with date object
         return format(date, 'MMMM', { locale: it });
       });
     }, []);
