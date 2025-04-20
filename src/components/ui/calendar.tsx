@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { 
@@ -31,7 +32,6 @@ function Calendar({
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
-      
       navigation.goToMonth(newDate);
     };
 
@@ -44,8 +44,7 @@ function Calendar({
     // Array of month names in Italian using proper date formatting
     const monthNames = React.useMemo(() => {
       return Array.from({ length: 12 }, (_, i) => {
-        const monthDate = new Date(2000, i, 1); // Use a consistent year to avoid any potential quirks
-        return format(monthDate, 'MMMM', { locale: it });
+        return format(new Date(2000, i, 1), 'MMMM', { locale: it });
       });
     }, []);
 
