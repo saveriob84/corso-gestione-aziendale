@@ -47,6 +47,7 @@ function Calendar({
       return Array.from({ length: 12 }, (_, i) => {
         const date = new Date();
         date.setMonth(i);
+        // Format date directly without calling it
         return format(date, 'MMMM', { locale: it });
       });
     }, []);
