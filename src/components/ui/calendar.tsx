@@ -25,25 +25,46 @@ function Calendar({
   const today = new Date();
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
-  const CustomCaption = (props: CaptionProps & { navigation: ReturnType<typeof useNavigation> }) => {
-    const { displayMonth, navigation } = props;
+  const CustomCaption = (props: CaptionProps) => {
+    const { displayMonth } = props;
+    const navigation = useNavigation();
     
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
       
-      // Use goToMonth instead of setMonth
       navigation.goToMonth(newDate);
     };
 
+    const handleMonthSelect = (monthIndex: number) => {
+      const newDate = new Date(displayMonth);
+      newDate.setMonth(monthIndex);
+      navigation.goToMonth(newDate);
+    };
+
+    // Array di nomi dei mesi in italiano
+    const monthNames = Array.from({ length: 12 }, (_, i) => 
+      format(new Date(2023, i, 1), 'MMMM', { locale: it })
+    );
+
     return (
-      <div className="flex justify-center pt-1 relative items-center">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between pt-1 relative items-center px-2">
+        <button
+          onClick={() => navigation.previousMonth()}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        
+        <div className="flex items-center gap-1">
           <Select
             value={displayMonth.getFullYear().toString()}
             onValueChange={handleYearSelect}
           >
-            <SelectTrigger className="w-[100px] h-7 text-sm">
+            <SelectTrigger className="h-7 text-sm w-[70px]">
               <SelectValue placeholder={displayMonth.getFullYear().toString()} />
             </SelectTrigger>
             <SelectContent className="max-h-[200px] overflow-y-auto">
@@ -54,10 +75,33 @@ function Calendar({
               ))}
             </SelectContent>
           </Select>
-          <span className="text-sm font-medium">
-            {format(displayMonth, 'MMMM', { locale: it })}
-          </span>
+          
+          <Select
+            value={displayMonth.getMonth().toString()}
+            onValueChange={(value) => handleMonthSelect(parseInt(value))}
+          >
+            <SelectTrigger className="h-7 text-sm w-[100px]">
+              <SelectValue placeholder={format(displayMonth, 'MMMM', { locale: it })} />
+            </SelectTrigger>
+            <SelectContent>
+              {monthNames.map((month, index) => (
+                <SelectItem key={month} value={index.toString()}>
+                  {month}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+        
+        <button
+          onClick={() => navigation.nextMonth()}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
     );
   };
