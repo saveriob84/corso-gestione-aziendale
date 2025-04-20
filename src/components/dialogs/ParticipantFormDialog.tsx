@@ -105,6 +105,35 @@ const parseDateIfNeeded = (dateValue: any): Date | undefined => {
   return undefined;
 };
 
+const parseInitialDate = (dateString?: string | Date): Date | undefined => {
+  if (!dateString) return undefined;
+  
+  if (dateString instanceof Date) return dateString;
+  
+  if (/^\d+$/.test(dateString)) {
+    const date = new Date(1899, 11, 30);
+    date.setDate(date.getDate() + parseInt(dateString));
+    if (!isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < new Date().getFullYear()) {
+      return date;
+    }
+  }
+  
+  const parsedDate = new Date(dateString);
+  if (!isNaN(parsedDate.getTime())) {
+    return parsedDate;
+  }
+  
+  const parts = dateString.split('/');
+  if (parts.length === 3) {
+    const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+  }
+  
+  return undefined;
+};
+
 const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
   isOpen,
   onClose,
@@ -151,7 +180,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
       cognome: formattedInitialData?.cognome || "",
       codiceFiscale: formattedInitialData?.codiceFiscale || "",
       luogoNascita: formattedInitialData?.luogoNascita || "",
-      dataNascita: formattedInitialData?.dataNascita,
+      dataNascita: parseDateIfNeeded(initialData?.dataNascita),
       username: formattedInitialData?.username || "",
       password: formattedInitialData?.password || "",
       cellulare: formattedInitialData?.cellulare || "",
@@ -172,7 +201,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
         cognome: initialData?.cognome || "",
         codiceFiscale: initialData?.codiceFiscale || "",
         luogoNascita: initialData?.luogoNascita || "",
-        dataNascita: parseDateIfNeeded(initialData?.dataNascita),
+        dataNascita: parseInitialDate(initialData?.dataNascita),
         username: initialData?.username || "",
         password: initialData?.password || "",
         cellulare: initialData?.cellulare || "",
@@ -337,7 +366,10 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                           <FormControl>
                             <Button
                               variant="outline"
-                              className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
                             >
                               {field.value ? (
                                 format(field.value, "dd/MM/yyyy", { locale: it })
@@ -348,14 +380,15 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                        <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
+                            defaultMonth={field.value || new Date()}
                             initialFocus
                             disabled={(date) => date > new Date()}
-                            className="p-3 pointer-events-auto"
+                            className={cn("p-3 pointer-events-auto")}
                           />
                         </PopoverContent>
                       </Popover>

@@ -1,10 +1,13 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, CaptionProps } from "react-day-picker";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -14,6 +17,43 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  // Get current year and create a range of years (from 1900 to current year)
+  const today = new Date();
+  const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
+
+  const CustomCaption = ({ displayMonth, onMonthChange }: CaptionProps) => {
+    const handleYearSelect = (year: string) => {
+      const newDate = new Date(displayMonth);
+      newDate.setFullYear(parseInt(year));
+      onMonthChange(newDate);
+    };
+
+    return (
+      <div className="flex justify-center pt-1 relative items-center">
+        <div className="flex items-center gap-2">
+          <Select
+            value={displayMonth.getFullYear().toString()}
+            onValueChange={handleYearSelect}
+          >
+            <SelectTrigger className="w-[100px] h-7 text-sm">
+              <SelectValue placeholder={displayMonth.getFullYear().toString()} />
+            </SelectTrigger>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
+              {years.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-sm font-medium">
+            {format(displayMonth, 'MMMM', { locale: it })}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -55,6 +95,7 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
+        Caption: CustomCaption
       }}
       {...props}
     />
@@ -63,3 +104,4 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
+
