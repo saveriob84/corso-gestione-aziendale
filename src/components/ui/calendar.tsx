@@ -31,29 +31,29 @@ function Calendar({
   const CustomCaption = (props: CaptionProps) => {
     const { displayMonth } = props;
     
-    // We need to use props.onMonthSelect which is the correct property according to react-day-picker v8+
+    // React-day-picker exposes functions to change months through onMonthChange
     const previousMonth = () => {
       const prevMonth = new Date(displayMonth);
       prevMonth.setMonth(prevMonth.getMonth() - 1);
-      props.onMonthSelect(prevMonth);
+      props.goToMonth(prevMonth);
     };
     
     const nextMonth = () => {
       const nxtMonth = new Date(displayMonth);
       nxtMonth.setMonth(nxtMonth.getMonth() + 1);
-      props.onMonthSelect(nxtMonth);
+      props.goToMonth(nxtMonth);
     };
 
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year, 10));
-      props.onMonthSelect(newDate);
+      props.goToMonth(newDate);
     };
 
     const handleMonthSelect = (monthIndex: string) => {
       const newDate = new Date(displayMonth);
       newDate.setMonth(parseInt(monthIndex, 10));
-      props.onMonthSelect(newDate);
+      props.goToMonth(newDate);
     };
 
     const monthNames = React.useMemo(
