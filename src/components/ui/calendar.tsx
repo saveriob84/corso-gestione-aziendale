@@ -32,8 +32,8 @@ function Calendar({
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
       
-      // Use the navigation prop to change month
-      navigation.setMonth(newDate);
+      // Use goToMonth instead of setMonth
+      navigation.goToMonth(newDate);
     };
 
     return (
