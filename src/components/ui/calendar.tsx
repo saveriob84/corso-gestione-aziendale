@@ -43,9 +43,10 @@ function Calendar({
     };
 
     // Array di nomi dei mesi in italiano
-    const monthNames = Array.from({ length: 12 }, (_, i) => 
-      format(new Date(2023, i, 1), 'MMMM', { locale: it })
-    );
+    const monthNames = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date(2023, i, 1);
+      return format(date, 'MMMM', { locale: it });
+    });
 
     return (
       <div className="flex justify-between pt-1 relative items-center px-2">
