@@ -1,6 +1,7 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps, useNavigation } from "react-day-picker";
+import { DayPicker, CaptionProps } from "react-day-picker";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -16,36 +17,45 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  // Range di anni dal 1900 all'anno corrente
   const today = new Date();
-  const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
+  const years = React.useMemo(
+    () =>
+      Array.from(
+        { length: today.getFullYear() - 1899 },
+        (_, i) => today.getFullYear() - i
+      ),
+    [today]
+  );
 
   const CustomCaption = (props: CaptionProps) => {
-    const { displayMonth } = props;
-    const navigation = useNavigation();
-    
+    const { displayMonth, goToMonth, previousMonth, nextMonth } = props;
+
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
-      newDate.setFullYear(parseInt(year));
-      navigation.goToMonth(newDate);
+      newDate.setFullYear(parseInt(year, 10));
+      goToMonth?.(newDate);
     };
 
     const handleMonthSelect = (monthIndex: string) => {
       const newDate = new Date(displayMonth);
-      newDate.setMonth(parseInt(monthIndex));
-      navigation.goToMonth(newDate);
+      newDate.setMonth(parseInt(monthIndex, 10));
+      goToMonth?.(newDate);
     };
 
-    const monthNames = React.useMemo(() => {
-      return Array.from({ length: 12 }, (_, i) => {
-        const date = new Date(2000, i, 1);
-        return format(date, 'MMMM', { locale: it });
-      });
-    }, []);
+    const monthNames = React.useMemo(
+      () =>
+        Array.from({ length: 12 }, (_, i) =>
+          format(new Date(2000, i, 1), "MMMM", { locale: it })
+        ),
+      []
+    );
 
     return (
-      <div className="flex justify-between pt-1 relative items-center px-2">
+      <div className="flex justify-between items-center px-2 pt-1">
         <button
-          onClick={() => navigation.previousMonth()}
+          onClick={() => previousMonth?.()}
+          aria-label="Mese precedente"
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
@@ -53,14 +63,18 @@ function Calendar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        
-        <div className="flex items-center gap-1">
+
+        <div className="flex items-center gap-2">
+          {/* Select Anno */}
           <Select
-            value={String(displayMonth.getFullYear())}
+            value={String(displayMonth.getFullYear)}
             onValueChange={handleYearSelect}
           >
-            <SelectTrigger className="h-7 text-sm w-[70px]">
-              <SelectValue placeholder={String(displayMonth.getFullYear())} />
+            <SelectTrigger
+              aria-label="Seleziona anno"
+              className="h-7 w-[70px] text-sm"
+            >
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-[200px] overflow-y-auto">
               {years.map((year) => (
@@ -70,15 +84,19 @@ function Calendar({
               ))}
             </SelectContent>
           </Select>
-          
+
+          {/* Select Mese */}
           <Select
-            value={String(displayMonth.getMonth())}
+            value={String(displayMonth.getMonth)}
             onValueChange={handleMonthSelect}
           >
-            <SelectTrigger className="h-7 text-sm w-[100px]">
-              <SelectValue placeholder={format(displayMonth, 'MMMM', { locale: it })} />
+            <SelectTrigger
+              aria-label="Seleziona mese"
+              className="h-7 w-[100px] text-sm"
+            >
+              <SelectValue placeholder={format(displayMonth, "MMMM", { locale: it })} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[200px] overflow-y-auto">
               {monthNames.map((month, index) => (
                 <SelectItem key={index} value={String(index)}>
                   {month}
@@ -87,9 +105,10 @@ function Calendar({
             </SelectContent>
           </Select>
         </div>
-        
+
         <button
-          onClick={() => navigation.nextMonth()}
+          onClick={() => nextMonth?.()}
+          aria-label="Mese successivo"
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
@@ -104,13 +123,14 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      locale={it}
       className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium",
-        nav: "space-x-1 flex items-center",
+        nav: "flex items-center space-x-1",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
@@ -119,10 +139,10 @@ function Calendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
         head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+        head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell:
+          "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
@@ -142,13 +162,13 @@ function Calendar({
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
         IconRight: () => <ChevronRight className="h-4 w-4" />,
-        Caption: CustomCaption
+        Caption: CustomCaption,
       }}
-      locale={it}
       {...props}
     />
   );
 }
+
 Calendar.displayName = "Calendar";
 
 export { Calendar };
