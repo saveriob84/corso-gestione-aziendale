@@ -44,7 +44,9 @@ function Calendar({
     // Array of month names in Italian using proper date formatting
     const monthNames = React.useMemo(() => {
       return Array.from({ length: 12 }, (_, i) => {
-        return format(new Date(2000, i, 1), 'MMMM', { locale: it });
+        // Create a date object for each month and format it correctly
+        const date = new Date(2000, i, 1);
+        return format(date, 'MMMM', { locale: it });
       });
     }, []);
 
