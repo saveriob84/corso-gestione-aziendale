@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { 
@@ -45,10 +44,8 @@ function Calendar({
     // Array of month names in Italian using proper date formatting
     const monthNames = React.useMemo(() => {
       return Array.from({ length: 12 }, (_, i) => {
-        const date = new Date();
-        date.setMonth(i);
-        // Use format function properly with the date object
-        return format(date, 'MMMM', { locale: it });
+        const monthDate = new Date(2000, i, 1); // Use a consistent year to avoid any potential quirks
+        return format(monthDate, 'MMMM', { locale: it });
       });
     }, []);
 
