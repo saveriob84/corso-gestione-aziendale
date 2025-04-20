@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { 
@@ -41,14 +42,14 @@ function Calendar({
       navigation.goToMonth(newDate);
     };
 
-    // Array di nomi dei mesi in italiano
+    // Array of month names in Italian using proper date formatting
     const monthNames = React.useMemo(() => {
       return Array.from({ length: 12 }, (_, i) => {
-        // Create a new date object properly
         const date = new Date();
         date.setMonth(i);
         date.setDate(1);
         date.setFullYear(2023);
+        // Use the formatted date directly
         return format(date, 'MMMM', { locale: it });
       });
     }, []);
