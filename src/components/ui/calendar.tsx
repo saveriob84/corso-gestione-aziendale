@@ -49,7 +49,7 @@ function Calendar({
         date.setMonth(i);
         date.setDate(1);
         date.setFullYear(2023);
-        // Use the formatted date directly
+        // Format the date to get the month name
         return format(date, 'MMMM', { locale: it });
       });
     }, []);
