@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, CaptionProps } from "react-day-picker";
@@ -21,12 +22,12 @@ function Calendar({
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
   const CustomCaption = (props: CaptionProps) => {
-    const { displayMonth, onMonthChange } = props;
+    const { displayMonth, goToMonth } = props;
 
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
-      onMonthChange(newDate);
+      goToMonth(newDate);
     };
 
     return (
