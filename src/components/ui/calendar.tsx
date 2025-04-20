@@ -1,11 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { 
-  DayPicker, 
-  CaptionProps, 
-  useNavigation 
-} from "react-day-picker";
+import { DayPicker, CaptionProps, useNavigation } from "react-day-picker";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -21,7 +17,6 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  // Get current year and create a range of years (from 1900 to current year)
   const today = new Date();
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
@@ -41,10 +36,8 @@ function Calendar({
       navigation.goToMonth(newDate);
     };
 
-    // Array of month names in Italian using proper date formatting
     const monthNames = React.useMemo(() => {
       return Array.from({ length: 12 }, (_, i) => {
-        // Create a date object for each month and format it correctly
         const date = new Date(2000, i, 1);
         return format(date, 'MMMM', { locale: it });
       });
@@ -152,6 +145,7 @@ function Calendar({
         IconRight: () => <ChevronRight className="h-4 w-4" />,
         Caption: CustomCaption
       }}
+      locale={it}
       {...props}
     />
   );
