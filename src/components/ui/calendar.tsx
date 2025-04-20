@@ -48,7 +48,7 @@ function Calendar({
         const date = new Date();
         date.setMonth(i);
         date.setDate(1);
-        // Format the date to get the month name - fixing the error here
+        // Format the date to get the month name
         return format(date, 'MMMM', { locale: it });
       });
     }, []);
