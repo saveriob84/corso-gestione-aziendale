@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, CaptionProps, useNavigation } from "react-day-picker";
@@ -30,9 +29,9 @@ function Calendar({
       navigation.goToMonth(newDate);
     };
 
-    const handleMonthSelect = (monthIndex: number) => {
+    const handleMonthSelect = (monthIndex: string) => {
       const newDate = new Date(displayMonth);
-      newDate.setMonth(monthIndex);
+      newDate.setMonth(parseInt(monthIndex));
       navigation.goToMonth(newDate);
     };
 
@@ -74,7 +73,7 @@ function Calendar({
           
           <Select
             value={String(displayMonth.getMonth())}
-            onValueChange={(value) => handleMonthSelect(parseInt(value))}
+            onValueChange={handleMonthSelect}
           >
             <SelectTrigger className="h-7 text-sm w-[100px]">
               <SelectValue placeholder={format(displayMonth, 'MMMM', { locale: it })} />
