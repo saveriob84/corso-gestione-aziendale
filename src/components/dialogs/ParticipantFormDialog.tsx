@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import CompanyFormDialog from './CompanyFormDialog';
 import { useParticipantActions } from '@/hooks/useParticipantActions';
+import { cn } from '@/lib/utils';
 
 interface ParticipantFormValues {
   id?: string;
