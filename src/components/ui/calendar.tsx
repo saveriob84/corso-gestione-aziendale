@@ -1,7 +1,11 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, CaptionProps } from "react-day-picker";
+import { 
+  DayPicker, 
+  CaptionProps, 
+  UseNavigation 
+} from "react-day-picker";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -21,13 +25,15 @@ function Calendar({
   const today = new Date();
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
-  const CustomCaption = (props: CaptionProps) => {
-    const { displayMonth } = props;
+  const CustomCaption = (props: CaptionProps & { navigation: UseNavigation }) => {
+    const { displayMonth, navigation } = props;
     
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
-      props.onMonthChange?.(newDate);
+      
+      // Use the navigation prop to change month
+      navigation.setMonth(newDate);
     };
 
     return (
@@ -106,3 +112,4 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
+
