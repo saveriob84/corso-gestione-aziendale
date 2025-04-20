@@ -22,12 +22,12 @@ function Calendar({
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
   const CustomCaption = (props: CaptionProps) => {
-    const { displayMonth, onMonthChange } = props;
+    const { displayMonth } = props;
 
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
-      onMonthChange(newDate);
+      props.goToDate(newDate);
     };
 
     return (
@@ -106,4 +106,3 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
-
