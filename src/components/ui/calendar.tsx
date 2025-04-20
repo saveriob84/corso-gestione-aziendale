@@ -21,11 +21,13 @@ function Calendar({
   const today = new Date();
   const years = Array.from({ length: today.getFullYear() - 1899 }, (_, i) => today.getFullYear() - i);
 
-  const CustomCaption = ({ displayMonth, goToMonth }: CaptionProps) => {
+  const CustomCaption = (props: CaptionProps) => {
+    const { displayMonth, onMonthChange } = props;
+
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
-      goToMonth(newDate);
+      onMonthChange(newDate);
     };
 
     return (
@@ -104,3 +106,4 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
+
