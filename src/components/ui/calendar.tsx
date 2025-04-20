@@ -24,7 +24,7 @@ function Calendar({
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year));
-      props.onMonthChange?.(newDate);
+      props.goToMonth?.(newDate);
     };
 
     return (
