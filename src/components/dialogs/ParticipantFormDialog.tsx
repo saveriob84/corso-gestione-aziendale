@@ -216,6 +216,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
                           <PlusCircle className="h-4 w-4" />
                         </Button>
                       </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
