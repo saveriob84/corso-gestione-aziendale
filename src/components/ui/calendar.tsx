@@ -29,18 +29,30 @@ function Calendar({
   );
 
   const CustomCaption = (props: CaptionProps) => {
-    const { displayMonth, goToMonth, previousMonth, nextMonth } = props;
+    const { displayMonth } = props;
+    // Access these functions from props directly as they may be nested differently in the CaptionProps
+    const goToMonth = props.onMonthChange;
+    const previousMonth = () => {
+      const prevMonth = new Date(displayMonth);
+      prevMonth.setMonth(prevMonth.getMonth() - 1);
+      goToMonth(prevMonth);
+    };
+    const nextMonth = () => {
+      const nxtMonth = new Date(displayMonth);
+      nxtMonth.setMonth(nxtMonth.getMonth() + 1);
+      goToMonth(nxtMonth);
+    };
 
     const handleYearSelect = (year: string) => {
       const newDate = new Date(displayMonth);
       newDate.setFullYear(parseInt(year, 10));
-      goToMonth?.(newDate);
+      goToMonth(newDate);
     };
 
     const handleMonthSelect = (monthIndex: string) => {
       const newDate = new Date(displayMonth);
       newDate.setMonth(parseInt(monthIndex, 10));
-      goToMonth?.(newDate);
+      goToMonth(newDate);
     };
 
     const monthNames = React.useMemo(
@@ -54,7 +66,7 @@ function Calendar({
     return (
       <div className="flex justify-between items-center px-2 pt-1">
         <button
-          onClick={() => previousMonth?.()}
+          onClick={previousMonth}
           aria-label="Mese precedente"
           className={cn(
             buttonVariants({ variant: "outline" }),
@@ -67,7 +79,7 @@ function Calendar({
         <div className="flex items-center gap-2">
           {/* Select Anno */}
           <Select
-            value={String(displayMonth.getFullYear)}
+            value={String(displayMonth.getFullYear())}
             onValueChange={handleYearSelect}
           >
             <SelectTrigger
@@ -87,7 +99,7 @@ function Calendar({
 
           {/* Select Mese */}
           <Select
-            value={String(displayMonth.getMonth)}
+            value={String(displayMonth.getMonth())}
             onValueChange={handleMonthSelect}
           >
             <SelectTrigger
@@ -107,7 +119,7 @@ function Calendar({
         </div>
 
         <button
-          onClick={() => nextMonth?.()}
+          onClick={nextMonth}
           aria-label="Mese successivo"
           className={cn(
             buttonVariants({ variant: "outline" }),
