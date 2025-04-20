@@ -43,10 +43,12 @@ function Calendar({
     };
 
     // Array di nomi dei mesi in italiano
-    const monthNames = Array.from({ length: 12 }, (_, i) => {
-      const date = new Date(2023, i, 1);
-      return format(date, 'MMMM', { locale: it });
-    });
+    const monthNames = React.useMemo(() => {
+      return Array.from({ length: 12 }, (_, i) => {
+        const date = new Date(2023, i, 1);
+        return format(date, 'MMMM', { locale: it });
+      });
+    }, []);
 
     return (
       <div className="flex justify-between pt-1 relative items-center px-2">
@@ -86,7 +88,7 @@ function Calendar({
             </SelectTrigger>
             <SelectContent>
               {monthNames.map((month, index) => (
-                <SelectItem key={month} value={index.toString()}>
+                <SelectItem key={index} value={index.toString()}>
                   {month}
                 </SelectItem>
               ))}
