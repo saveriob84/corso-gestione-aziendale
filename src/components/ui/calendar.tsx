@@ -48,8 +48,7 @@ function Calendar({
         const date = new Date();
         date.setMonth(i);
         date.setDate(1);
-        date.setFullYear(2023);
-        // Format the date to get the month name
+        // Format the date to get the month name - fixing the error here
         return format(date, 'MMMM', { locale: it });
       });
     }, []);
