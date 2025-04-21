@@ -245,9 +245,9 @@ const CourseFormDialog = ({
                     <FormControl>
                       <Input 
                         type="number" 
-                        min="1" 
-                        {...field} 
-                        onChange={(e) => field.onChange(e.target.valueAsNumber || 1)}
+                        min="1"
+                        value={field.value} 
+                        onChange={(e) => field.onChange(Number(e.target.value) || 1)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -265,8 +265,8 @@ const CourseFormDialog = ({
                       <Input 
                         type="number" 
                         min="0" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -284,8 +284,8 @@ const CourseFormDialog = ({
                       <Input 
                         type="number" 
                         min="0" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -303,8 +303,8 @@ const CourseFormDialog = ({
                       <Input 
                         type="number" 
                         min="0" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -323,8 +323,8 @@ const CourseFormDialog = ({
                     <Input 
                       type="number" 
                       min="0" 
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                      value={field.value}
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
