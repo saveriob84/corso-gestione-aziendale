@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -88,10 +89,11 @@ const CourseFormDialog = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
+    mode: "onBlur",
   });
 
   // Reset form when dialog is opened or closed
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       form.reset(defaultValues);
     }
@@ -169,6 +171,9 @@ const CourseFormDialog = ({
           <DialogTitle>
             {isEditing ? "Modifica Corso" : "Nuovo Corso"}
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? "Modifica i dettagli del corso esistente" : "Inserisci i dettagli per creare un nuovo corso"}
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -197,6 +202,7 @@ const CourseFormDialog = ({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
