@@ -200,9 +200,8 @@ const CourseFormDialog = ({
                   <FormItem>
                     <FormLabel>Stato</FormLabel>
                     <Select 
-                      onValueChange={field.onChange} 
+                      onValueChange={field.onChange}
                       value={field.value}
-                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -246,8 +245,11 @@ const CourseFormDialog = ({
                       <Input 
                         type="number" 
                         min="1"
-                        value={field.value} 
-                        onChange={(e) => field.onChange(Number(e.target.value) || 1)}
+                        value={field.value}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? '' : Number(e.target.value);
+                          field.onChange(value === '' ? 1 : value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -264,9 +266,12 @@ const CourseFormDialog = ({
                     <FormControl>
                       <Input 
                         type="number" 
-                        min="0" 
+                        min="0"
                         value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? '' : Number(e.target.value);
+                          field.onChange(value === '' ? 0 : value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -283,9 +288,12 @@ const CourseFormDialog = ({
                     <FormControl>
                       <Input 
                         type="number" 
-                        min="0" 
+                        min="0"
                         value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? '' : Number(e.target.value);
+                          field.onChange(value === '' ? 0 : value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -302,9 +310,12 @@ const CourseFormDialog = ({
                     <FormControl>
                       <Input 
                         type="number" 
-                        min="0" 
+                        min="0"
                         value={field.value}
-                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? '' : Number(e.target.value);
+                          field.onChange(value === '' ? 0 : value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -322,9 +333,12 @@ const CourseFormDialog = ({
                   <FormControl>
                     <Input 
                       type="number" 
-                      min="0" 
+                      min="0"
                       value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? '' : Number(e.target.value);
+                        field.onChange(value === '' ? 0 : value);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
