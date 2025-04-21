@@ -17,9 +17,9 @@ const Index = () => {
   
   const { courses, loadCourses, deleteCourse } = useCourses();
 
-  const handleDeleteCourse = () => {
+  const handleDeleteCourse = async () => {
     if (deletingCourse) {
-      const success = deleteCourse(deletingCourse.id, deleteConfirmation);
+      const success = await deleteCourse(deletingCourse.id, deleteConfirmation);
       if (success) {
         setDeletingCourse(null);
         setDeleteConfirmation('');
@@ -97,4 +97,3 @@ const Index = () => {
 };
 
 export default Index;
-

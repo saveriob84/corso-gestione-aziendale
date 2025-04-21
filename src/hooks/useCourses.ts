@@ -14,7 +14,7 @@ export interface Course {
   tutor: number;
   aziende: number;
   stato: string;
-  dataCreazione?: string;
+  datacreazione?: string; // Changed from dataCreazione to datacreazione
   user_id?: string;
 }
 
@@ -32,7 +32,7 @@ export const useCourses = () => {
       const { data, error } = await supabase
         .from('courses')
         .select('*')
-        .order('dataCreazione', { ascending: false });
+        .order('datacreazione', { ascending: false }); // Changed from dataCreazione to datacreazione
 
       if (error) throw error;
       

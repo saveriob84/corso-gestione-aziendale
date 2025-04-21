@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { z } from "zod";
@@ -138,7 +137,7 @@ const CourseFormDialog = ({
           tutor: values.tutor,
           aziende: values.aziende,
           stato: values.stato,
-          dataCreazione: new Date().toISOString(),
+          datacreazione: new Date().toISOString(),
           user_id: user.id
         };
         
