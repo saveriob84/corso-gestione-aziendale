@@ -1,35 +1,16 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CourseHeader from '@/components/course-detail/CourseHeader';
-import CourseInfo from '@/components/course-detail/CourseInfo';
-import LessonList from '@/components/course-detail/LessonList';
-import ParticipantList from '@/components/course-detail/ParticipantList';
-import TeacherTutorList from '@/components/course-detail/TeacherTutorList';
-import LessonFormDialog from '@/components/dialogs/LessonFormDialog';
-import ParticipantFormDialog from '@/components/dialogs/ParticipantFormDialog';
-import TeacherTutorFormDialog from '@/components/dialogs/TeacherTutorFormDialog';
-import CourseFormDialog from '@/components/dialogs/CourseFormDialog';
-import PdfViewer from '@/components/pdf/PdfViewer';
-import ParticipantSearchDialog from '@/components/dialogs/ParticipantSearchDialog';
-import { useCourseDetail } from '@/hooks/useCourseDetail';
-import { useParticipantActions } from '@/hooks/useParticipantActions';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { useDetailedCourse } from '@/hooks/useDetailedCourse';
+import { useParticipantActions } from '@/hooks/useParticipantActions';
 import { getParticipantTemplate } from '@/utils/excelTemplates';
+import CourseHeader from '@/components/course-detail/CourseHeader';
+import CourseDetailTabs from '@/components/course-detail/CourseDetailTabs';
+import CourseDetailDialogs from '@/components/course-detail/CourseDetailDialogs';
 
 const DettaglioCorso = () => {
-  const { id } = useParams<{ id: string }>();
+  const { corso, setCorso } = useDetailedCourse();
   
   const [isEditingCourse, setIsEditingCourse] = useState(false);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
@@ -37,23 +18,28 @@ const DettaglioCorso = () => {
   const [isAddingTeacher, setIsAddingTeacher] = useState(false);
   const [isAddingTutor, setIsAddingTutor] = useState(false);
   const [selectedPdfType, setSelectedPdfType] = useState<null | 'inizioCorso' | 'fineCorso' | 'elencoPartecipanti' | 'elencoDocenti'>(null);
-  
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
-  
   const [isEditingParticipant, setIsEditingParticipant] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
   const [isParticipantSearchOpen, setIsParticipantSearchOpen] = useState(false);
+  const [companies, setCompanies] = useState<any[]>([]);
 
-  const { corso, setCorso, companies } = useCourseDetail(id!);
-  
   const {
     isDeleteParticipantDialogOpen,
     setIsDeleteParticipantDialogOpen,
     handleDeleteParticipant,
     confirmDeleteParticipant,
     handleAddExistingParticipant
-  } = useParticipantActions(id!, corso, setCorso);
+  } = useParticipantActions(corso?.id || '', corso, setCorso);
+
+  useEffect(() => {
+    const loadCompanies = async () => {
+      const { data } = await supabase.from('companies').select('*');
+      if (data) setCompanies(data);
+    };
+    loadCompanies();
+  }, []);
 
   const handleEditLesson = (lesson: any) => {
     setSelectedLesson(lesson);
@@ -109,139 +95,49 @@ const DettaglioCorso = () => {
         onGeneratePdf={handleGeneratePdf}
       />
 
-      <Tabs defaultValue="anagrafica" className="w-full">
-        <TabsList className="grid grid-cols-4 md:w-[600px]">
-          <TabsTrigger value="anagrafica">Anagrafica</TabsTrigger>
-          <TabsTrigger value="calendario">Calendario</TabsTrigger>
-          <TabsTrigger value="partecipanti">Partecipanti</TabsTrigger>
-          <TabsTrigger value="docenti">Docenti e Tutor</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="anagrafica" className="space-y-4 mt-4">
-          <CourseInfo corso={corso} />
-        </TabsContent>
-
-        <TabsContent value="calendario" className="mt-4">
-          <LessonList 
-            giornateDiLezione={corso.giornateDiLezione} 
-            onAddLesson={() => {
-              setSelectedLesson(null);
-              setIsAddingLesson(true);
-            }}
-            onEditLesson={handleEditLesson}
-          />
-        </TabsContent>
-
-        <TabsContent value="partecipanti" className="mt-4">
-          <ParticipantList 
-            partecipantiList={corso.partecipantiList}
-            onEditParticipant={handleEditParticipant}
-            onDeleteParticipant={handleDeleteParticipant}
-            onDownloadTemplate={downloadTemplate}
-            onImportExcel={() => document.getElementById('import-file')?.click()}
-            onLoadExistingParticipant={() => setIsParticipantSearchOpen(true)}
-            getCompanyName={getCompanyName}
-          />
-        </TabsContent>
-
-        <TabsContent value="docenti" className="mt-4 space-y-6">
-          <TeacherTutorList
-            title="Docenti"
-            description="Professori e specialisti"
-            list={corso.docentiList}
-            onAdd={() => setIsAddingTeacher(true)}
-            type="docenti"
-          />
-
-          <TeacherTutorList
-            title="Tutor"
-            description="Assistenti e supporto"
-            list={corso.tutorList}
-            onAdd={() => setIsAddingTutor(true)}
-            type="tutor"
-          />
-        </TabsContent>
-      </Tabs>
-
-      <CourseFormDialog
-        isOpen={isEditingCourse}
-        onClose={() => setIsEditingCourse(false)}
-        initialData={corso}
-        isEditing={true}
+      <CourseDetailTabs
+        corso={corso}
+        onAddLesson={() => {
+          setSelectedLesson(null);
+          setIsAddingLesson(true);
+        }}
+        onEditLesson={handleEditLesson}
+        onEditParticipant={handleEditParticipant}
+        onDeleteParticipant={handleDeleteParticipant}
+        onDownloadTemplate={downloadTemplate}
+        onImportExcel={() => document.getElementById('import-file')?.click()}
+        onLoadExistingParticipant={() => setIsParticipantSearchOpen(true)}
+        onAddTeacher={() => setIsAddingTeacher(true)}
+        onAddTutor={() => setIsAddingTutor(true)}
+        getCompanyName={getCompanyName}
       />
-      
-      <LessonFormDialog
-        isOpen={isAddingLesson}
-        onClose={() => setIsAddingLesson(false)}
-      />
-      
-      <LessonFormDialog
-        isOpen={isEditingLesson}
-        onClose={() => setIsEditingLesson(false)}
-        initialData={selectedLesson}
-        isEditing={true}
-      />
-      
-      <ParticipantFormDialog
-        isOpen={isAddingParticipant}
-        onClose={() => setIsAddingParticipant(false)}
-      />
-      
-      <ParticipantFormDialog
-        isOpen={isEditingParticipant}
-        onClose={() => setIsEditingParticipant(false)}
-        initialData={selectedParticipant}
-        isEditing={true}
-      />
-      
-      <TeacherTutorFormDialog
-        isOpen={isAddingTeacher}
-        onClose={() => setIsAddingTeacher(false)}
-        type="docente"
-      />
-      
-      <TeacherTutorFormDialog
-        isOpen={isAddingTutor}
-        onClose={() => setIsAddingTutor(false)}
-        type="tutor"
-      />
-      
-      {selectedPdfType && (
-        <PdfViewer
-          pdfType={selectedPdfType}
-          corso={corso}
-          isOpen={Boolean(selectedPdfType)}
-          onClose={() => setSelectedPdfType(null)}
-        />
-      )}
-      
-      <AlertDialog 
-        open={isDeleteParticipantDialogOpen} 
-        onOpenChange={setIsDeleteParticipantDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
-            <AlertDialogDescription>
-              Sei sicuro di voler eliminare questo partecipante? Questa azione non può essere annullata.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDeleteParticipant}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Elimina
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
-      <ParticipantSearchDialog
-        isOpen={isParticipantSearchOpen}
-        onClose={() => setIsParticipantSearchOpen(false)}
-        onSelectParticipant={handleAddExistingParticipant}
+      <CourseDetailDialogs
+        corso={corso}
+        isEditingCourse={isEditingCourse}
+        isAddingLesson={isAddingLesson}
+        isEditingLesson={isEditingLesson}
+        isAddingParticipant={isAddingParticipant}
+        isEditingParticipant={isEditingParticipant}
+        isAddingTeacher={isAddingTeacher}
+        isAddingTutor={isAddingTutor}
+        isParticipantSearchOpen={isParticipantSearchOpen}
+        selectedPdfType={selectedPdfType}
+        selectedLesson={selectedLesson}
+        selectedParticipant={selectedParticipant}
+        isDeleteParticipantDialogOpen={isDeleteParticipantDialogOpen}
+        onCloseEditCourse={() => setIsEditingCourse(false)}
+        onCloseAddLesson={() => setIsAddingLesson(false)}
+        onCloseEditLesson={() => setIsEditingLesson(false)}
+        onCloseAddParticipant={() => setIsAddingParticipant(false)}
+        onCloseEditParticipant={() => setIsEditingParticipant(false)}
+        onCloseAddTeacher={() => setIsAddingTeacher(false)}
+        onCloseAddTutor={() => setIsAddingTutor(false)}
+        onCloseParticipantSearch={() => setIsParticipantSearchOpen(false)}
+        onClosePdfViewer={() => setSelectedPdfType(null)}
+        onCloseDeleteDialog={() => setIsDeleteParticipantDialogOpen(false)}
+        onConfirmDelete={confirmDeleteParticipant}
+        handleAddExistingParticipant={handleAddExistingParticipant}
       />
     </div>
   );
