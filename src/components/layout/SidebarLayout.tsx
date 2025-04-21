@@ -1,111 +1,156 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  FileText, 
-  Archive, 
-  Users, 
-  Settings,
-  ChevronRight,
-  LogOut,
-  Building
-} from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BarChart3, BookOpen, Building, FileBox, LogOut, Menu, Users, X } from 'lucide-react';
+import { Button } from '../ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
-interface SidebarItemProps {
-  icon: React.ElementType;
-  label: string;
-  href: string;
-  active?: boolean;
-}
+const Sidebar = ({ children }: { children: React.ReactNode }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, href, active }) => {
-  return (
-    <Link
-      to={href}
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-blue-100 dark:hover:bg-slate-800",
-        active ? "bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-500" : "text-slate-700 dark:text-slate-300"
-      )}
-    >
-      <Icon className="h-5 w-5" />
-      <span>{label}</span>
-      {active && <ChevronRight className="ml-auto h-4 w-4" />}
-    </Link>
-  );
-};
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
 
-const SidebarLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  const currentPath = location.pathname;
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Mobile sidebar button */}
+      <div className="lg:hidden fixed right-4 top-4 z-50">
+        <Button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          variant="outline"
+          size="icon"
+          className="rounded-full"
+        >
+          {isSidebarOpen ? <X /> : <Menu />}
+        </Button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="sticky top-0 h-screen w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4">
+      <div
+        className={`${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } fixed inset-y-0 left-0 z-40 w-64 transform bg-white dark:bg-gray-800 shadow-lg transition-transform duration-300 ease-in-out lg:translate-x-0`}
+      >
         <div className="flex flex-col h-full">
-          <div className="mb-8 p-2">
-            <h1 className="font-heading text-xl font-bold text-blue-600 dark:text-blue-500">
-              Gestione Corsi
-            </h1>
+          <div className="flex items-center justify-center h-16 border-b dark:border-gray-700">
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white">Gestione Corsi</h1>
           </div>
-
-          <nav className="space-y-1.5 flex-grow">
-            <SidebarItem 
-              icon={LayoutDashboard} 
-              label="Dashboard" 
-              href="/" 
-              active={currentPath === "/"} 
+          <nav className="flex-1 space-y-1 px-2 py-4">
+            <SidebarItem
+              icon={<BarChart3 className="h-5 w-5" />}
+              label="Dashboard"
+              href="/"
+              onClick={() => {
+                navigate('/');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
             />
-            <SidebarItem 
-              icon={BookOpen} 
-              label="Corsi" 
-              href="/corsi" 
-              active={currentPath.startsWith("/corsi")} 
+            <SidebarItem
+              icon={<BookOpen className="h-5 w-5" />}
+              label="Gestione Corsi"
+              href="/corsi"
+              onClick={() => {
+                navigate('/corsi');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
             />
-            <SidebarItem 
-              icon={Building} 
-              label="Aziende" 
-              href="/aziende" 
-              active={currentPath.startsWith("/aziende")} 
+            <SidebarItem
+              icon={<Users className="h-5 w-5" />}
+              label="Partecipanti"
+              href="/partecipanti"
+              onClick={() => {
+                navigate('/partecipanti');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
             />
-            <SidebarItem 
-              icon={Archive} 
-              label="Archivio" 
-              href="/archivio" 
-              active={currentPath.startsWith("/archivio")} 
+            <SidebarItem
+              icon={<Building className="h-5 w-5" />}
+              label="Aziende"
+              href="/aziende"
+              onClick={() => {
+                navigate('/aziende');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
             />
-            <SidebarItem 
-              icon={Users} 
-              label="Partecipanti" 
-              href="/partecipanti" 
-              active={currentPath.startsWith("/partecipanti")} 
+            <SidebarItem
+              icon={<FileBox className="h-5 w-5" />}
+              label="Archivio"
+              href="/archivio"
+              onClick={() => {
+                navigate('/archivio');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
             />
           </nav>
-
-          <div className="pt-2 mt-auto border-t border-slate-200 dark:border-slate-800">
-            <SidebarItem 
-              icon={Settings} 
-              label="Impostazioni" 
-              href="/impostazioni" 
-              active={currentPath.startsWith("/impostazioni")} 
-            />
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-slate-700 dark:text-slate-300 transition-all hover:bg-blue-100 dark:hover:bg-slate-800">
-              <LogOut className="h-5 w-5" />
-              <span>Esci</span>
-            </button>
+          <div className="p-4 border-t dark:border-gray-700">
+            {user && (
+              <div className="flex items-center justify-between">
+                <div className="truncate">
+                  <p className="text-sm font-medium">{user.email}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSignOut}
+                  title="Disconnetti"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
-      </aside>
+      </div>
 
-      {/* Main content */}
-      <main className="flex-1 p-6">
+      {/* Content */}
+      <div className="flex-1 p-6 md:p-8 lg:ml-64">
         {children}
-      </main>
+      </div>
     </div>
   );
 };
 
-export default SidebarLayout;
+interface SidebarItemProps {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+  onClick: () => void;
+}
+
+const SidebarItem = ({ icon, label, href, onClick }: SidebarItemProps) => {
+  const isActive = window.location.pathname === href;
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center space-x-3 w-full px-3 py-2 rounded-md transition-colors ${
+        isActive
+          ? 'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+      }`}
+    >
+      {icon}
+      <span className="font-medium">{label}</span>
+    </button>
+  );
+};
+
+export default Sidebar;

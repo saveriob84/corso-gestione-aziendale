@@ -4,8 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import AuthGuard from "@/components/layout/AuthGuard";
 import SidebarLayout from "./components/layout/SidebarLayout";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Corsi from "./pages/Corsi";
 import DettaglioCorso from "./pages/DettaglioCorso";
 import ArchivioComunicazioni from "./pages/ArchivioComunicazioni";
@@ -20,17 +23,44 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<SidebarLayout><Index /></SidebarLayout>} />
-          <Route path="/corsi" element={<SidebarLayout><Corsi /></SidebarLayout>} />
-          <Route path="/corsi/:id" element={<SidebarLayout><DettaglioCorso /></SidebarLayout>} />
-          <Route path="/archivio" element={<SidebarLayout><ArchivioComunicazioni /></SidebarLayout>} />
-          <Route path="/aziende" element={<SidebarLayout><Aziende /></SidebarLayout>} />
-          <Route path="/partecipanti" element={<SidebarLayout><Partecipanti /></SidebarLayout>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={
+              <AuthGuard>
+                <SidebarLayout><Index /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="/corsi" element={
+              <AuthGuard>
+                <SidebarLayout><Corsi /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="/corsi/:id" element={
+              <AuthGuard>
+                <SidebarLayout><DettaglioCorso /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="/archivio" element={
+              <AuthGuard>
+                <SidebarLayout><ArchivioComunicazioni /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="/aziende" element={
+              <AuthGuard>
+                <SidebarLayout><Aziende /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="/partecipanti" element={
+              <AuthGuard>
+                <SidebarLayout><Partecipanti /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

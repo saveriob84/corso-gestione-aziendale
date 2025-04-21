@@ -9,7 +9,259 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          cap: string | null
+          codiceateco: string | null
+          comune: string | null
+          email: string | null
+          id: string
+          indirizzo: string | null
+          partitaiva: string
+          provincia: string | null
+          ragionesociale: string
+          referente: string | null
+          telefono: string | null
+          user_id: string | null
+        }
+        Insert: {
+          cap?: string | null
+          codiceateco?: string | null
+          comune?: string | null
+          email?: string | null
+          id?: string
+          indirizzo?: string | null
+          partitaiva: string
+          provincia?: string | null
+          ragionesociale: string
+          referente?: string | null
+          telefono?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          cap?: string | null
+          codiceateco?: string | null
+          comune?: string | null
+          email?: string | null
+          id?: string
+          indirizzo?: string | null
+          partitaiva?: string
+          provincia?: string | null
+          ragionesociale?: string
+          referente?: string | null
+          telefono?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      courses: {
+        Row: {
+          aziende: number
+          codice: string
+          datacreazione: string | null
+          datafine: string | null
+          datainizio: string | null
+          docenti: number
+          edizioni: number
+          id: string
+          moduloformativo: string | null
+          partecipanti: number
+          sede: string | null
+          stato: string
+          titolo: string
+          tutor: number
+          user_id: string | null
+        }
+        Insert: {
+          aziende?: number
+          codice: string
+          datacreazione?: string | null
+          datafine?: string | null
+          datainizio?: string | null
+          docenti?: number
+          edizioni?: number
+          id?: string
+          moduloformativo?: string | null
+          partecipanti?: number
+          sede?: string | null
+          stato?: string
+          titolo: string
+          tutor?: number
+          user_id?: string | null
+        }
+        Update: {
+          aziende?: number
+          codice?: string
+          datacreazione?: string | null
+          datafine?: string | null
+          datainizio?: string | null
+          docenti?: number
+          edizioni?: number
+          id?: string
+          moduloformativo?: string | null
+          partecipanti?: number
+          sede?: string | null
+          stato?: string
+          titolo?: string
+          tutor?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      lessons: {
+        Row: {
+          course_id: string | null
+          data: string | null
+          id: string
+          orario: string | null
+          sede: string | null
+          user_id: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          data?: string | null
+          id?: string
+          orario?: string | null
+          sede?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          data?: string | null
+          id?: string
+          orario?: string | null
+          sede?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          annoassunzione: string | null
+          azienda: string | null
+          aziendaid: string | null
+          cognome: string
+          course_id: string | null
+          id: string
+          nome: string
+          qualifica: string | null
+          ruolo: string | null
+          user_id: string | null
+        }
+        Insert: {
+          annoassunzione?: string | null
+          azienda?: string | null
+          aziendaid?: string | null
+          cognome: string
+          course_id?: string | null
+          id?: string
+          nome: string
+          qualifica?: string | null
+          ruolo?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          annoassunzione?: string | null
+          azienda?: string | null
+          aziendaid?: string | null
+          cognome?: string
+          course_id?: string | null
+          id?: string
+          nome?: string
+          qualifica?: string | null
+          ruolo?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_aziendaid_fkey"
+            columns: ["aziendaid"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          cognome: string | null
+          created_at: string
+          id: string
+          nome: string | null
+          ruolo: string | null
+        }
+        Insert: {
+          cognome?: string | null
+          created_at?: string
+          id: string
+          nome?: string | null
+          ruolo?: string | null
+        }
+        Update: {
+          cognome?: string | null
+          created_at?: string
+          id?: string
+          nome?: string | null
+          ruolo?: string | null
+        }
+        Relationships: []
+      }
+      teachers_tutors: {
+        Row: {
+          cognome: string
+          corso_id: string | null
+          id: string
+          nome: string
+          ruolo: string | null
+          specializzazione: string | null
+          tipo: string
+          user_id: string | null
+        }
+        Insert: {
+          cognome: string
+          corso_id?: string | null
+          id?: string
+          nome: string
+          ruolo?: string | null
+          specializzazione?: string | null
+          tipo: string
+          user_id?: string | null
+        }
+        Update: {
+          cognome?: string
+          corso_id?: string | null
+          id?: string
+          nome?: string
+          ruolo?: string | null
+          specializzazione?: string | null
+          tipo?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teachers_tutors_corso_id_fkey"
+            columns: ["corso_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
