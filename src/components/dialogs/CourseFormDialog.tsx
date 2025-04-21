@@ -89,7 +89,7 @@ const CourseFormDialog = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   // Reset form when dialog is opened or closed
@@ -165,8 +165,8 @@ const CourseFormDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[500px] overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Modifica Corso" : "Nuovo Corso"}
@@ -199,10 +199,10 @@ const CourseFormDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Stato</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
+                    <Select 
+                      onValueChange={field.onChange} 
                       value={field.value}
+                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -243,7 +243,12 @@ const CourseFormDialog = ({
                   <FormItem>
                     <FormLabel>Edizioni</FormLabel>
                     <FormControl>
-                      <Input type="number" min="1" {...field} />
+                      <Input 
+                        type="number" 
+                        min="1" 
+                        {...field} 
+                        onChange={(e) => field.onChange(e.target.valueAsNumber || 1)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -257,7 +262,12 @@ const CourseFormDialog = ({
                   <FormItem>
                     <FormLabel>Partecipanti</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" {...field} />
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -271,7 +281,12 @@ const CourseFormDialog = ({
                   <FormItem>
                     <FormLabel>Docenti</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" {...field} />
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -285,7 +300,12 @@ const CourseFormDialog = ({
                   <FormItem>
                     <FormLabel>Tutor</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" {...field} />
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -300,7 +320,12 @@ const CourseFormDialog = ({
                 <FormItem>
                   <FormLabel>Aziende</FormLabel>
                   <FormControl>
-                    <Input type="number" min="0" {...field} />
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
