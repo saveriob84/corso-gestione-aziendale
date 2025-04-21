@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -12,11 +12,9 @@ import {
   FileText, 
   Filter, 
   Eye, 
-  Download, 
   PenLine, 
   Plus,
-  Trash2,
-  Calendar
+  Trash2
 } from "lucide-react";
 import {
   AlertDialog,
@@ -30,7 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CourseFormDialog from "@/components/dialogs/CourseFormDialog";
-import { toast } from "sonner";
+import { useCourses } from "@/hooks/useCourses";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,95 +36,17 @@ const Index = () => {
   const [editingCourse, setEditingCourse] = useState<any>(null);
   const [deletingCourse, setDeletingCourse] = useState<any>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [courses, setCourses] = useState<any[]>([]);
-
-  useEffect(() => {
-    loadCourses();
-  }, []);
-
-  const loadCourses = () => {
-    const storedCourses = localStorage.getItem('courses');
-    const userCourses = storedCourses ? JSON.parse(storedCourses) : [];
-    const corsi = [
-      {
-        id: "1",
-        codice: "FORM-001",
-        titolo: "Sicurezza sul Lavoro",
-        edizioni: 3,
-        partecipanti: 28,
-        docenti: 2,
-        tutor: 1,
-        aziende: 5,
-        stato: "Completato"
-      },
-      {
-        id: "2",
-        codice: "FORM-002",
-        titolo: "Marketing Digitale",
-        edizioni: 1,
-        partecipanti: 12,
-        docenti: 1,
-        tutor: 1,
-        aziende: 3,
-        stato: "In corso"
-      },
-      {
-        id: "3",
-        codice: "FORM-003",
-        titolo: "Leadership e Team Management",
-        edizioni: 2,
-        partecipanti: 15,
-        docenti: 2,
-        tutor: 1,
-        aziende: 4,
-        stato: "Pianificato"
-      },
-      {
-        id: "4",
-        codice: "FORM-004",
-        titolo: "Excel Avanzato",
-        edizioni: 4,
-        partecipanti: 30,
-        docenti: 1,
-        tutor: 2,
-        aziende: 6,
-        stato: "Completato"
-      },
-      {
-        id: "5",
-        codice: "FORM-005",
-        titolo: "Tecniche di Vendita",
-        edizioni: 2,
-        partecipanti: 18,
-        docenti: 1,
-        tutor: 1,
-        aziende: 3,
-        stato: "In corso"
-      }
-    ];
-    const allCourses = [...corsi, ...userCourses].sort((a, b) => {
-      const dateA = a.dataCreazione ? new Date(a.dataCreazione) : new Date(0);
-      const dateB = b.dataCreazione ? new Date(b.dataCreazione) : new Date(0);
-      return dateB.getTime() - dateA.getTime();
-    });
-    setCourses(allCourses);
-  };
+  
+  // Utilizzo dell'hook personalizzato
+  const { courses, loadCourses, deleteCourse } = useCourses();
 
   const handleDeleteCourse = () => {
-    if (deletingCourse && deleteConfirmation === deletingCourse.titolo) {
-      const existingCourses = localStorage.getItem('courses') 
-        ? JSON.parse(localStorage.getItem('courses')!) 
-        : [];
-      
-      const updatedCourses = existingCourses.filter(course => course.id !== deletingCourse.id);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      
-      loadCourses();
-      setDeletingCourse(null);
-      setDeleteConfirmation('');
-      toast.success("Corso eliminato con successo");
-    } else {
-      toast.error("Il nome del corso non corrisponde");
+    if (deletingCourse) {
+      const success = deleteCourse(deletingCourse.id, deleteConfirmation);
+      if (success) {
+        setDeletingCourse(null);
+        setDeleteConfirmation('');
+      }
     }
   };
 

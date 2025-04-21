@@ -1,11 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, Search, FileText, Filter, Eye, Download, PenLine, Plus } from "lucide-react";
+import { Search, FileText, Filter, Eye, PenLine, Plus } from "lucide-react";
 import { 
   Table,
   TableBody,
@@ -15,50 +15,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CourseFormDialog from "@/components/dialogs/CourseFormDialog";
-import { useState } from "react";
+import { useCourses } from "@/hooks/useCourses";
 
 const Corsi = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddingCourse, setIsAddingCourse] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any>(null);
-
-  // To store the created courses, we'll use localStorage
-  const getStoredCourses = () => {
-    const storedCourses = localStorage.getItem('courses');
-    return storedCourses ? JSON.parse(storedCourses) : [];
-  };
-
-  // Mock data combined with any saved courses
-  const defaultCourses = [
-    {
-      id: "1",
-      codice: "FORM-001",
-      titolo: "Sicurezza sul Lavoro",
-      edizioni: 3,
-      partecipanti: 28,
-      docenti: 2,
-      tutor: 1,
-      aziende: 5,
-      stato: "Completato"
-    },
-    {
-      id: "2",
-      codice: "FORM-002",
-      titolo: "Marketing Digitale",
-      edizioni: 1,
-      partecipanti: 12,
-      docenti: 1,
-      tutor: 1,
-      aziende: 3,
-      stato: "In corso"
-    }
-  ];
   
-  const userCourses = getStoredCourses();
-  const allCourses = [...defaultCourses, ...userCourses];
+  // Utilizzo dell'hook personalizzato
+  const { courses, loadCourses } = useCourses();
   
   // Filtra i corsi in base alla ricerca
-  const filteredCorsi = allCourses.filter(corso =>
+  const filteredCorsi = courses.filter(corso =>
     corso.codice?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     corso.titolo?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -173,6 +141,7 @@ const Corsi = () => {
       <CourseFormDialog 
         isOpen={isAddingCourse}
         onClose={() => setIsAddingCourse(false)}
+        onCourseAdded={loadCourses}
       />
 
       {editingCourse && (
@@ -181,6 +150,7 @@ const Corsi = () => {
           onClose={() => setEditingCourse(null)}
           initialData={editingCourse}
           isEditing
+          onCourseAdded={loadCourses}
         />
       )}
     </div>
