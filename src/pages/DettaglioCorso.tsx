@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { supabase } from '@/integrations/supabase/client';
 import { useDetailedCourse } from '@/hooks/useDetailedCourse';
 import { useParticipantActions } from '@/hooks/useParticipantActions';
 import { getParticipantTemplate } from '@/utils/excelTemplates';
