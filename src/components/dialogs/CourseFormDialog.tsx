@@ -65,24 +65,15 @@ const CourseFormDialog = ({
   const { user } = useAuth();
 
   // Default form values
-  const defaultValues = isEditing && initialData ? {
-    codice: initialData.codice || "",
-    titolo: initialData.titolo || "",
-    edizioni: initialData.edizioni || 1,
-    partecipanti: initialData.partecipanti || 0,
-    docenti: initialData.docenti || 0,
-    tutor: initialData.tutor || 0,
-    aziende: initialData.aziende || 0,
-    stato: initialData.stato || "Pianificato",
-  } : {
-    codice: "",
-    titolo: "",
-    edizioni: 1,
-    partecipanti: 0,
-    docenti: 0,
-    tutor: 0,
-    aziende: 0,
-    stato: "Pianificato",
+  const defaultValues = {
+    codice: isEditing && initialData ? initialData.codice || "" : "",
+    titolo: isEditing && initialData ? initialData.titolo || "" : "",
+    edizioni: isEditing && initialData ? initialData.edizioni || 1 : 1,
+    partecipanti: isEditing && initialData ? initialData.partecipanti || 0 : 0,
+    docenti: isEditing && initialData ? initialData.docenti || 0 : 0,
+    tutor: isEditing && initialData ? initialData.tutor || 0 : 0,
+    aziende: isEditing && initialData ? initialData.aziende || 0 : 0,
+    stato: isEditing && initialData ? initialData.stato || "Pianificato" : "Pianificato",
   };
 
   // Form setup
@@ -97,7 +88,7 @@ const CourseFormDialog = ({
     if (isOpen) {
       form.reset(defaultValues);
     }
-  }, [isOpen, form, defaultValues]);
+  }, [isOpen]);
 
   // Handle form submission
   const onSubmit = async (values: FormValues) => {

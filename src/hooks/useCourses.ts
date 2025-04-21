@@ -14,7 +14,7 @@ export interface Course {
   tutor: number;
   aziende: number;
   stato: string;
-  datacreazione?: string; // Changed from dataCreazione to datacreazione
+  datacreazione?: string;
   user_id?: string;
 }
 
@@ -32,10 +32,11 @@ export const useCourses = () => {
       const { data, error } = await supabase
         .from('courses')
         .select('*')
-        .order('datacreazione', { ascending: false }); // Changed from dataCreazione to datacreazione
+        .order('datacreazione', { ascending: false });
 
       if (error) throw error;
       
+      console.log("Corsi caricati:", data);
       setCourses(data || []);
     } catch (error) {
       console.error('Errore nel caricamento dei corsi:', error);

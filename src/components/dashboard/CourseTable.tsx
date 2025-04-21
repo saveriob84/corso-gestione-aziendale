@@ -74,8 +74,8 @@ const CourseTable = ({ searchQuery, onSearchChange, filteredCorsi, onEditCourse,
                 <TableCell className="font-medium">{corso.codice}</TableCell>
                 <TableCell>{corso.titolo}</TableCell>
                 <TableCell>
-                  {corso.dataCreazione ? (
-                    format(new Date(corso.dataCreazione), 'dd/MM/yyyy', { locale: it })
+                  {corso.datacreazione ? (
+                    format(new Date(corso.datacreazione), 'dd/MM/yyyy', { locale: it })
                   ) : (
                     '-'
                   )}
@@ -123,4 +123,3 @@ const CourseTable = ({ searchQuery, onSearchChange, filteredCorsi, onEditCourse,
 };
 
 export default CourseTable;
-
