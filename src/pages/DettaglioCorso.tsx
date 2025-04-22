@@ -11,7 +11,7 @@ import CourseDetailTabs from '@/components/course-detail/CourseDetailTabs';
 import CourseDetailDialogs from '@/components/course-detail/CourseDetailDialogs';
 
 const DettaglioCorso = () => {
-  const { corso, setCorso } = useDetailedCourse();
+  const { corso, setCorso, addLesson, updateLesson, deleteLesson } = useDetailedCourse();
   
   const [isEditingCourse, setIsEditingCourse] = useState(false);
   const [isAddingLesson, setIsAddingLesson] = useState(false);
@@ -45,6 +45,32 @@ const DettaglioCorso = () => {
   const handleEditLesson = (lesson: any) => {
     setSelectedLesson(lesson);
     setIsEditingLesson(true);
+  };
+
+  const handleAddLesson = () => {
+    setSelectedLesson(null);
+    setIsAddingLesson(true);
+  };
+
+  const handleLessonDialogClose = () => {
+    setIsAddingLesson(false);
+    setIsEditingLesson(false);
+    setSelectedLesson(null);
+  };
+
+  const handleSubmitLesson = async (values: any) => {
+    if (isEditingLesson && selectedLesson) {
+      const success = await updateLesson(selectedLesson.id, values);
+      if (success) handleLessonDialogClose();
+    } else {
+      const success = await addLesson(values);
+      if (success) handleLessonDialogClose();
+    }
+  };
+
+  const handleDeleteLesson = async (lessonId: string) => {
+    const success = await deleteLesson(lessonId);
+    if (success) handleLessonDialogClose();
   };
 
   const handleEditParticipant = (participantId: string) => {
@@ -98,10 +124,7 @@ const DettaglioCorso = () => {
 
       <CourseDetailTabs
         corso={corso}
-        onAddLesson={() => {
-          setSelectedLesson(null);
-          setIsAddingLesson(true);
-        }}
+        onAddLesson={handleAddLesson}
         onEditLesson={handleEditLesson}
         onEditParticipant={handleEditParticipant}
         onDeleteParticipant={handleDeleteParticipant}
@@ -128,8 +151,10 @@ const DettaglioCorso = () => {
         selectedParticipant={selectedParticipant}
         isDeleteParticipantDialogOpen={isDeleteParticipantDialogOpen}
         onCloseEditCourse={() => setIsEditingCourse(false)}
-        onCloseAddLesson={() => setIsAddingLesson(false)}
-        onCloseEditLesson={() => setIsEditingLesson(false)}
+        onCloseAddLesson={handleLessonDialogClose}
+        onCloseEditLesson={handleLessonDialogClose}
+        onSubmitLesson={handleSubmitLesson}
+        onDeleteLesson={handleDeleteLesson}
         onCloseAddParticipant={() => setIsAddingParticipant(false)}
         onCloseEditParticipant={() => setIsEditingParticipant(false)}
         onCloseAddTeacher={() => setIsAddingTeacher(false)}

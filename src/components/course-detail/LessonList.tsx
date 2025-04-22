@@ -12,6 +12,8 @@ interface LessonListProps {
 
 const LessonList = ({ giornateDiLezione, onAddLesson, onEditLesson }: LessonListProps) => {
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Data non disponibile';
+    
     try {
       return format(new Date(dateString), 'dd/MM/yyyy');
     } catch (error) {
@@ -43,26 +45,27 @@ const LessonList = ({ giornateDiLezione, onAddLesson, onEditLesson }: LessonList
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-950 divide-y divide-slate-200 dark:divide-slate-800">
-              {giornateDiLezione && giornateDiLezione.map((giornata, index) => (
-                <tr key={giornata.id || index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{formatDate(giornata.data)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.orario}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.sede}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => onEditLesson(giornata)}
-                      >
-                        <PenIcon className="h-4 w-4 mr-1" />
-                        Modifica
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {(!giornateDiLezione || giornateDiLezione.length === 0) && (
+              {giornateDiLezione && giornateDiLezione.length > 0 ? (
+                giornateDiLezione.map((giornata, index) => (
+                  <tr key={giornata.id || index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{formatDate(giornata.data)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.orario}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{giornata.sede}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => onEditLesson(giornata)}
+                        >
+                          <PenIcon className="h-4 w-4 mr-1" />
+                          Modifica
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center text-sm text-slate-500">
                     Nessuna giornata di lezione programmata
