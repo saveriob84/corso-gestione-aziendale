@@ -81,12 +81,14 @@ const ParticipantSearchDialog = ({
             id: p.id,
             nome: p.nome,
             cognome: p.cognome,
-            // Assign database fields to match our interface
-            codiceFiscale: p.codicefiscale || undefined, // Lowercased as it appears in the DB
-            dataNascita: p.annoassunzione || undefined,
-            azienda: p.azienda || undefined,
-            titoloStudio: p.ruolo || undefined,
-            qualifica: p.qualifica || undefined
+            // Correctly map database fields to our interface
+            // Supabase returns data with lowercase field names, so we need to access them correctly
+            // Handle missing fields with fallbacks
+            codiceFiscale: p.codicefiscale ?? undefined, 
+            dataNascita: p.annoassunzione ?? undefined,
+            azienda: p.azienda ?? undefined,
+            titoloStudio: p.ruolo ?? undefined,
+            qualifica: p.qualifica ?? undefined
           }));
           setParticipants(mappedParticipants);
         } else {
