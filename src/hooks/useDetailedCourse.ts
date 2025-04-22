@@ -150,7 +150,7 @@ export const useDetailedCourse = () => {
     }
   };
 
-  // Function to delete a lesson - CORRETTO
+  // Function to delete a lesson - CORRETTO E MIGLIORATO
   const deleteLesson = async (lessonId: string) => {
     if (!id || !corso) {
       toast.error("ID corso non valido");
@@ -158,24 +158,41 @@ export const useDetailedCourse = () => {
     }
 
     try {
+      console.log("Deleting lesson with ID:", lessonId);
+      
+      // Verifica che l'ID della lezione sia valido
+      if (!lessonId || typeof lessonId !== 'string') {
+        throw new Error("ID lezione non valido");
+      }
+      
       const { error } = await supabase
         .from('lessons')
         .delete()
         .eq('id', lessonId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase deletion error:", error);
+        throw error;
+      }
 
-      // Update local state - Assicuriamoci che giornateDiLezione esista prima di filtrarla
+      console.log("Lesson deleted from database, updating local state");
+      
+      // Update local state with safer approach
       setCorso((prevCorso: any) => {
-        if (!prevCorso || !prevCorso.giornateDiLezione) {
+        if (!prevCorso) {
+          console.warn("Corso not found in state during lesson deletion");
           return prevCorso;
         }
         
+        const updatedGiornate = Array.isArray(prevCorso.giornateDiLezione) 
+          ? prevCorso.giornateDiLezione.filter((lesson: any) => lesson.id !== lessonId)
+          : [];
+        
+        console.log("Updated giornateDiLezione length:", updatedGiornate.length);
+        
         return {
           ...prevCorso,
-          giornateDiLezione: prevCorso.giornateDiLezione.filter(
-            (lesson: any) => lesson.id !== lessonId
-          )
+          giornateDiLezione: updatedGiornate
         };
       });
 

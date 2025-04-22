@@ -1,16 +1,17 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, PenIcon } from "lucide-react";
+import { PlusCircle, PenIcon, Trash2Icon } from "lucide-react";
 import { format } from "date-fns";
 
 interface LessonListProps {
   giornateDiLezione: any[];
   onAddLesson: () => void;
   onEditLesson: (lesson: any) => void;
+  onDeleteLesson?: (lessonId: string) => void;
 }
 
-const LessonList = ({ giornateDiLezione, onAddLesson, onEditLesson }: LessonListProps) => {
+const LessonList = ({ giornateDiLezione, onAddLesson, onEditLesson, onDeleteLesson }: LessonListProps) => {
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Data non disponibile';
     

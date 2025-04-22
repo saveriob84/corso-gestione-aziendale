@@ -68,9 +68,14 @@ const DettaglioCorso = () => {
     }
   };
 
-  const handleDeleteLesson = async (lessonId: string) => {
-    const success = await deleteLesson(lessonId);
-    if (success) handleLessonDialogClose();
+  const handleDeleteLesson = async () => {
+    if (selectedLesson && selectedLesson.id) {
+      console.log("Attempting to delete lesson:", selectedLesson.id);
+      const success = await deleteLesson(selectedLesson.id);
+      if (success) handleLessonDialogClose();
+    } else {
+      toast.error("Impossibile eliminare: ID lezione non valido");
+    }
   };
 
   const handleEditParticipant = (participantId: string) => {
