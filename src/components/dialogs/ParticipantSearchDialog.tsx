@@ -12,7 +12,7 @@ interface Participant {
   id: string;
   nome: string;
   cognome: string;
-  codiceFiscale: string;
+  codiceFiscale?: string;
   dataNascita?: string;
   azienda?: string;
   titoloStudio?: string;
@@ -75,7 +75,18 @@ const ParticipantSearchDialog = ({
           const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
           setParticipants(allLocalParticipants);
         } else if (allParticipants) {
-          setParticipants(allParticipants);
+          // Map the Supabase data to match our Participant interface
+          const mappedParticipants = allParticipants.map(p => ({
+            id: p.id,
+            nome: p.nome,
+            cognome: p.cognome,
+            codiceFiscale: p.codicefiscale || '', // Note: assuming this is the field name in Supabase
+            dataNascita: p.datanascita,
+            azienda: p.azienda,
+            titoloStudio: p.titolostudio,
+            qualifica: p.qualifica
+          }));
+          setParticipants(mappedParticipants);
         } else {
           // Final fallback to localStorage if no data
           const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
