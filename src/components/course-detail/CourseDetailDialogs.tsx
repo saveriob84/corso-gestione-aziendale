@@ -38,6 +38,7 @@ interface CourseDetailDialogsProps {
   handleAddExistingParticipant: (participant: any) => void;
   onSubmitLesson?: (values: any) => Promise<void>;
   onDeleteLesson?: () => Promise<void>;
+  courseId?: string;
 }
 
 const CourseDetailDialogs = ({
@@ -70,7 +71,8 @@ const CourseDetailDialogs = ({
   onConfirmDeleteLesson = () => {},
   handleAddExistingParticipant,
   onSubmitLesson,
-  onDeleteLesson
+  onDeleteLesson,
+  courseId
 }: CourseDetailDialogsProps) => {
   return (
     <>
@@ -98,6 +100,7 @@ const CourseDetailDialogs = ({
       <ParticipantFormDialog
         isOpen={isAddingParticipant}
         onClose={onCloseAddParticipant}
+        courseId={courseId}
       />
       
       <ParticipantFormDialog
@@ -105,6 +108,7 @@ const CourseDetailDialogs = ({
         onClose={onCloseEditParticipant}
         initialData={selectedParticipant}
         isEditing={true}
+        courseId={courseId}
       />
       
       <TeacherTutorFormDialog
@@ -178,6 +182,7 @@ const CourseDetailDialogs = ({
         isOpen={isParticipantSearchOpen}
         onClose={onCloseParticipantSearch}
         onSelectParticipant={handleAddExistingParticipant}
+        courseId={courseId}
       />
     </>
   );

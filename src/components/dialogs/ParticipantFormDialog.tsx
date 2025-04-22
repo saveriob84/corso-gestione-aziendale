@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -16,14 +15,19 @@ import { PersonalInfoFields } from '../participant-form/PersonalInfoFields';
 import { CredentialFields } from '../participant-form/CredentialFields';
 import { EmploymentFields } from '../participant-form/EmploymentFields';
 import { ParticipantFormValues, ParticipantFormDialogProps } from '@/types/participant';
+import { supabase } from '@/integrations/supabase/client';
 
-const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
+interface ExtendedParticipantFormDialogProps extends ParticipantFormDialogProps {
+  courseId?: string;
+}
+
+const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   isOpen,
   onClose,
   initialData = {},
-  isEditing = false
+  isEditing = false,
+  courseId
 }) => {
-  const { id: courseId } = useParams();
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
   const [corso, setCorso] = useState<any>(null);
@@ -36,13 +40,43 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
 
   useEffect(() => {
     if (courseId) {
-      const courses = JSON.parse(localStorage.getItem('courses') || '[]');
-      const currentCourse = courses.find((c: any) => c.id === courseId);
-      if (currentCourse) {
-        setCorso(currentCourse);
-      }
+      const fetchCourseData = async () => {
+        try {
+          // First try to get from Supabase
+          const { data: courseData, error } = await supabase
+            .from('courses')
+            .select('*')
+            .eq('id', courseId)
+            .single();
+
+          if (error) {
+            console.error('Error fetching course from Supabase:', error);
+            // Fallback to localStorage
+            const courses = JSON.parse(localStorage.getItem('courses') || '[]');
+            const currentCourse = courses.find((c: any) => c.id === courseId);
+            if (currentCourse) {
+              console.log('Course found in localStorage:', currentCourse);
+              setCorso(currentCourse);
+            } else {
+              console.error('Course not found in localStorage either');
+              toast.error("Corso non trovato");
+            }
+            return;
+          }
+
+          console.log('Course found in Supabase:', courseData);
+          setCorso(courseData);
+        } catch (err) {
+          console.error('Error in fetchCourseData:', err);
+          toast.error("Errore nel recupero dei dati del corso");
+        }
+      };
+
+      fetchCourseData();
+    } else {
+      console.error('No courseId provided to ParticipantFormDialog');
     }
-  }, [courseId]);
+  }, [courseId, isOpen]);
   
   const formattedInitialData = {
     ...initialData,
@@ -109,7 +143,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
       ? JSON.parse(localStorage.getItem('courses')!) 
       : [];
     
-    const courseIndex = existingCourses.findIndex(course => course.id === courseId);
+    const courseIndex = existingCourses.findIndex((course: any) => course.id === courseId);
     
     if (courseIndex === -1) {
       toast.error("Corso non trovato");
@@ -134,7 +168,7 @@ const ParticipantFormDialog: React.FC<ParticipantFormDialogProps> = ({
     
     if (isEditing && initialData.id) {
       const participantIndex = existingCourses[courseIndex].partecipantiList.findIndex(
-        participant => participant.id === initialData.id
+        (participant: any) => participant.id === initialData.id
       );
       if (participantIndex !== -1) {
         existingCourses[courseIndex].partecipantiList[participantIndex] = {

@@ -159,6 +159,7 @@ const DettaglioCorso = () => {
         onAddTeacher={() => setIsAddingTeacher(true)}
         onAddTutor={() => setIsAddingTutor(true)}
         getCompanyName={getCompanyName}
+        courseId={corso.id}
       />
 
       <CourseDetailDialogs
@@ -192,6 +193,7 @@ const DettaglioCorso = () => {
         handleAddExistingParticipant={handleAddExistingParticipant}
         onSubmitLesson={handleSubmitLesson}
         onDeleteLesson={handleDeleteLesson}
+        courseId={corso.id}
       />
     </div>
   );

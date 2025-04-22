@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Download, FileText, PenIcon, Trash2, Upload, UserPlus } from "lucide-react";
@@ -13,6 +14,7 @@ interface ParticipantListProps {
   onImportExcel: () => void;
   onLoadExistingParticipant: () => void;
   getCompanyName: (companyId: string) => string;
+  courseId?: string;
 }
 
 // Helper function to format date of birth
@@ -86,7 +88,8 @@ const ParticipantList = ({
   onDownloadTemplate,
   onImportExcel,
   onLoadExistingParticipant,
-  getCompanyName
+  getCompanyName,
+  courseId
 }: ParticipantListProps) => {
   return (
     <Card>
@@ -122,7 +125,12 @@ const ParticipantList = ({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={onLoadExistingParticipant}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onLoadExistingParticipant}
+                data-course-id={courseId}
+              >
                 <UserPlus className="mr-2 h-4 w-4" />
                 Carica Partecipante
               </Button>

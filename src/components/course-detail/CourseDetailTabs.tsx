@@ -18,6 +18,7 @@ interface CourseDetailTabsProps {
   onAddTeacher: () => void;
   onAddTutor: () => void;
   getCompanyName: (companyId: string) => string;
+  courseId: string;
 }
 
 const CourseDetailTabs = ({
@@ -32,7 +33,8 @@ const CourseDetailTabs = ({
   onLoadExistingParticipant,
   onAddTeacher,
   onAddTutor,
-  getCompanyName
+  getCompanyName,
+  courseId
 }: CourseDetailTabsProps) => {
   return (
     <Tabs defaultValue="anagrafica" className="w-full">
@@ -65,6 +67,7 @@ const CourseDetailTabs = ({
           onImportExcel={onImportExcel}
           onLoadExistingParticipant={onLoadExistingParticipant}
           getCompanyName={getCompanyName}
+          courseId={courseId}
         />
       </TabsContent>
 
