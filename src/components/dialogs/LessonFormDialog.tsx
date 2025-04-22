@@ -1,7 +1,8 @@
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Dialog, 
   DialogContent, 
@@ -47,7 +48,7 @@ interface LessonFormValues {
   oraInizio: string;
   oraFine: string;
   sede: string;
-  orario?: string; // Add orario property to fix TypeScript error
+  orario?: string;
 }
 
 interface LessonFormDialogProps {
@@ -69,15 +70,54 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
 }) => {
   const { id: courseId } = useParams();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [courseRange, setCourseRange] = React.useState<{startDate: Date | null, endDate: Date | null}>({
+    startDate: null, 
+    endDate: null
+  });
   
-  // Convert string data to Date object if needed, with null-checking
+  React.useEffect(() => {
+    const loadCourseInfo = async () => {
+      if (!courseId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('courses')
+          .select('datainizio, datafine')
+          .eq('id', courseId)
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          let startDate = null;
+          let endDate = null;
+          
+          if (data.datainizio) {
+            startDate = new Date(data.datainizio);
+            startDate.setHours(0, 0, 0, 0);
+          }
+          
+          if (data.datafine) {
+            endDate = new Date(data.datafine);
+            endDate.setHours(23, 59, 59, 999);
+          }
+          
+          setCourseRange({ startDate, endDate });
+        }
+      } catch (error) {
+        console.error('Error loading course date range:', error);
+      }
+    };
+    
+    loadCourseInfo();
+  }, [courseId]);
+  
   const initialDate = initialData && initialData.data 
     ? typeof initialData.data === 'string'
       ? new Date(initialData.data)
       : initialData.data
     : undefined;
 
-  // Extract hours from orario string if it exists, with null-checking
   const parseOrario = (orario?: string) => {
     if (!orario) return { oraInizio: '', oraFine: '' };
     
@@ -91,7 +131,6 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     return { oraInizio: '', oraFine: '' };
   };
   
-  // Safely access the orario property with null checking
   const { oraInizio, oraFine } = parseOrario(initialData && initialData.orario);
   
   const form = useForm<LessonFormValues>({
@@ -109,15 +148,12 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
       return;
     }
     
-    // Format the date to string for storage
     const formattedDate = values.data instanceof Date 
       ? format(values.data, 'yyyy-MM-dd') 
       : values.data;
 
-    // Combine ora inizio and ora fine
     const orario = `${values.oraInizio} - ${values.oraFine}`;
     
-    // Create lesson data
     const lessonData = {
       id: initialData?.id || undefined,
       data: formattedDate,
@@ -125,22 +161,17 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
       sede: values.sede
     };
     
-    // If we have an external submit handler, use it
     if (onSubmit) {
       try {
         await onSubmit(lessonData);
-        // The external handler should handle success messages
       } catch (error) {
         console.error("Error submitting lesson:", error);
       }
     } else {
-      // Legacy implementation using localStorage - keep for backward compatibility
-      // Get existing courses
       const existingCourses = localStorage.getItem('courses') 
         ? JSON.parse(localStorage.getItem('courses')!) 
         : [];
       
-      // Find the course to update
       const courseIndex = existingCourses.findIndex(course => course.id === courseId);
       
       if (courseIndex === -1) {
@@ -148,7 +179,6 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
         return;
       }
   
-      // Create lesson data
       const localStorageLessonData = {
         id: initialData?.id || uuidv4(),
         data: formattedDate,
@@ -156,13 +186,11 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
         sede: values.sede
       };
       
-      // Add lesson to course
       if (!existingCourses[courseIndex].giornateDiLezione) {
         existingCourses[courseIndex].giornateDiLezione = [];
       }
       
       if (isEditing && initialData?.id) {
-        // Update existing lesson
         const lessonIndex = existingCourses[courseIndex].giornateDiLezione.findIndex(
           lesson => lesson.id === initialData.id
         );
@@ -170,92 +198,64 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
           existingCourses[courseIndex].giornateDiLezione[lessonIndex] = localStorageLessonData;
         }
       } else {
-        // Add new lesson
         existingCourses[courseIndex].giornateDiLezione.push(localStorageLessonData);
       }
       
-      // Save updated courses
       localStorage.setItem('courses', JSON.stringify(existingCourses));
       
-      // Show success message
       toast.success(isEditing 
         ? "Giornata aggiornata con successo" 
         : "Giornata aggiunta con successo"
       );
       
-      // Force refresh to show the updated data
       window.location.reload();
     }
     
-    // Close the dialog
     onClose();
   };
 
   const handleDelete = () => {
     if (onDelete) {
-      onDelete();
-      setIsDeleteDialogOpen(false);
-      onClose();
-    } else if (!courseId || !initialData?.id) {
-      return;
+      try {
+        onDelete();
+        setIsDeleteDialogOpen(false);
+        onClose();
+      } catch (error) {
+        console.error("Error deleting lesson:", error);
+        toast.error("Si è verificato un errore durante l'eliminazione della giornata");
+      }
     } else {
-      // Legacy implementation using localStorage - keep for backward compatibility
-      // Get existing courses
       const existingCourses = localStorage.getItem('courses') 
         ? JSON.parse(localStorage.getItem('courses')!) 
         : [];
       
-      // Find the course
       const courseIndex = existingCourses.findIndex(course => course.id === courseId);
       
       if (courseIndex === -1) return;
   
-      // Remove the lesson
       existingCourses[courseIndex].giornateDiLezione = existingCourses[courseIndex].giornateDiLezione.filter(
         (lesson) => lesson.id !== initialData.id
       );
-  
-      // Save updated courses
+      
       localStorage.setItem('courses', JSON.stringify(existingCourses));
       
       toast.success("Giornata eliminata con successo");
       setIsDeleteDialogOpen(false);
       onClose();
       
-      // Refresh to update UI
       window.location.reload();
     }
   };
 
-  // Function to get date constraints - FIXED to properly include start and end dates
-  const getDateConstraints = () => {
-    if (!courseId) return (date: Date) => false;
-
-    const existingCourses = localStorage.getItem('courses')
-      ? JSON.parse(localStorage.getItem('courses')!) 
-      : [];
-    
-    const course = existingCourses.find((course: any) => course.id === courseId);
-    
-    if (!course || !course.dataInizio || !course.dataFine) {
-      return (date: Date) => false; // No constraints
+  const getDateConstraints = (date: Date) => {
+    if (!courseRange.startDate || !courseRange.endDate) {
+      return false;
     }
-
-    // Create Date objects and set time to midnight for proper comparison
-    const startDate = new Date(course.dataInizio);
-    startDate.setHours(0, 0, 0, 0);
     
-    const endDate = new Date(course.dataFine);
-    endDate.setHours(23, 59, 59, 999); // End of the day
-
-    // Return a function that returns true for dates OUTSIDE the allowed range
-    return (date: Date) => {
-      const currentDate = new Date(date);
-      currentDate.setHours(0, 0, 0, 0);
-      
-      // Disabilita solo le date FUORI dall'intervallo (prima della data di inizio o dopo la data di fine)
-      return currentDate < startDate || currentDate > endDate;
-    };
+    const currentDate = new Date(date);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    return currentDate < courseRange.startDate || currentDate > courseRange.endDate;
   };
 
   return (
@@ -303,7 +303,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
                           mode="single"
                           selected={field.value instanceof Date ? field.value : field.value ? new Date(field.value) : undefined}
                           onSelect={field.onChange}
-                          disabled={getDateConstraints()}
+                          disabled={getDateConstraints}
                           initialFocus
                           className={cn("p-3 pointer-events-auto")}
                         />

@@ -150,7 +150,7 @@ export const useDetailedCourse = () => {
     }
   };
 
-  // Function to delete a lesson
+  // Function to delete a lesson - CORRETTO
   const deleteLesson = async (lessonId: string) => {
     if (!id || !corso) {
       toast.error("ID corso non valido");
@@ -165,13 +165,19 @@ export const useDetailedCourse = () => {
 
       if (error) throw error;
 
-      // Update local state
-      setCorso((prevCorso: any) => ({
-        ...prevCorso,
-        giornateDiLezione: prevCorso.giornateDiLezione.filter(
-          (lesson: any) => lesson.id !== lessonId
-        )
-      }));
+      // Update local state - Assicuriamoci che giornateDiLezione esista prima di filtrarla
+      setCorso((prevCorso: any) => {
+        if (!prevCorso || !prevCorso.giornateDiLezione) {
+          return prevCorso;
+        }
+        
+        return {
+          ...prevCorso,
+          giornateDiLezione: prevCorso.giornateDiLezione.filter(
+            (lesson: any) => lesson.id !== lessonId
+          )
+        };
+      });
 
       toast.success("Giornata eliminata con successo");
       return true;
