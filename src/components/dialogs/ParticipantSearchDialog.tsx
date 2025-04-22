@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -82,18 +81,28 @@ const ParticipantSearchDialog = ({
             console.log('Sample participant structure:', JSON.stringify(allParticipants[0]));
           }
           
-          // Map the Supabase data to match our Participant interface
-          const mappedParticipants: Participant[] = allParticipants.map(p => ({
-            id: p.id,
-            nome: p.nome || '',
-            cognome: p.cognome || '',
-            // We map fields from the database schema to our interface
-            codiceFiscale: undefined, // Field doesn't exist in database
-            dataNascita: p.annoassunzione || undefined,
-            azienda: p.azienda || undefined,
-            titoloStudio: p.ruolo || undefined,
-            qualifica: p.qualifica || undefined
-          }));
+          // Map the database fields to our interface carefully based on the actual DB schema
+          const mappedParticipants: Participant[] = allParticipants.map(p => {
+            // Create a participant object that matches our interface
+            const participant: Participant = {
+              id: p.id,
+              nome: p.nome || '',
+              cognome: p.cognome || ''
+            };
+            
+            // Only add optional fields if they exist in the DB record
+            // No codiceFiscale field in DB, but needed for interface
+            participant.codiceFiscale = undefined;
+            
+            // Map other fields that do exist in the database
+            if (p.annoassunzione) participant.dataNascita = p.annoassunzione;
+            if (p.azienda) participant.azienda = p.azienda;
+            if (p.ruolo) participant.titoloStudio = p.ruolo;
+            if (p.qualifica) participant.qualifica = p.qualifica;
+            
+            return participant;
+          });
+          
           setParticipants(mappedParticipants);
         } else {
           // Final fallback to localStorage if no data
@@ -115,23 +124,34 @@ const ParticipantSearchDialog = ({
 
   useEffect(() => {
     // Filter participants based on search term and exclude those already in the course
+    if (!searchTerm) {
+      // If no search term, show nothing to avoid overwhelming the user
+      setFilteredParticipants([]);
+      return;
+    }
+    
+    const searchTermLower = searchTerm.toLowerCase();
+    
     const filtered = participants.filter(p => {
-      // Make search case insensitive for better user experience
-      const searchTermLower = searchTerm.toLowerCase();
+      // Check if this participant is already in the course
+      const isAlreadyInCourse = existingParticipantIds.includes(p.id);
+      if (isAlreadyInCourse) {
+        return false;
+      }
       
-      // Check if nome or cognome matches the search term
-      const nameMatches = p.nome?.toLowerCase().includes(searchTermLower) || false;
-      const surnameMatches = p.cognome?.toLowerCase().includes(searchTermLower) || false;
+      // Check if nome matches (safely)
+      const nameMatches = p.nome ? p.nome.toLowerCase().includes(searchTermLower) : false;
       
-      // Only check codiceFiscale if it exists
-      const fiscalCodeMatches = p.codiceFiscale ? 
-        p.codiceFiscale.toLowerCase().includes(searchTermLower) : false;
+      // Check if cognome matches (safely)
+      const surnameMatches = p.cognome ? p.cognome.toLowerCase().includes(searchTermLower) : false;
       
-      // Return true if any field matches and participant is not already in the course
-      return (nameMatches || surnameMatches || fiscalCodeMatches) && 
-        !existingParticipantIds.includes(p.id);
+      // No codiceFiscale in DB, so this will always be false, but keeping for interface consistency
+      const fiscalCodeMatches = false;
+      
+      return nameMatches || surnameMatches || fiscalCodeMatches;
     });
     
+    console.log('Search term:', searchTerm);
     console.log('Filtered participants:', filtered.length, 'out of', participants.length);
     console.log('Excluded IDs:', existingParticipantIds);
     
@@ -148,7 +168,7 @@ const ParticipantSearchDialog = ({
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Cerca per nome, cognome o codice fiscale..."
+            placeholder="Cerca per nome o cognome..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -169,7 +189,7 @@ const ParticipantSearchDialog = ({
                 >
                   <div>
                     <p className="font-medium">{`${participant.nome || ''} ${participant.cognome || ''}`}</p>
-                    <p className="text-sm text-muted-foreground">{participant.codiceFiscale || ''}</p>
+                    <p className="text-sm text-muted-foreground">{participant.qualifica || participant.azienda || ''}</p>
                   </div>
                   <Button variant="ghost" size="sm">
                     <UserPlus className="h-4 w-4 mr-2" />
