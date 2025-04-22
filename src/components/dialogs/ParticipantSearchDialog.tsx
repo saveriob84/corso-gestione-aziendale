@@ -81,7 +81,7 @@ const ParticipantSearchDialog = ({
             id: p.id,
             nome: p.nome,
             cognome: p.cognome,
-            codiceFiscale: p.codiceFiscale || undefined, // Match our interface field names
+            codiceFiscale: p.codiceFiscale || undefined, // This field doesn't exist in the database
             dataNascita: p.annoassunzione || undefined, // Using annoassunzione as dataNascita
             azienda: p.azienda || undefined,
             titoloStudio: p.ruolo || undefined, // Using ruolo as titoloStudio
