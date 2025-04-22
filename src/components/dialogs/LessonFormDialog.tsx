@@ -56,6 +56,7 @@ interface LessonFormDialogProps {
   initialData?: Partial<LessonFormValues>;
   isEditing?: boolean;
   onDelete?: () => void;
+  onSubmit?: (values: any) => Promise<void>;
 }
 
 const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
@@ -63,7 +64,8 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
   onClose,
   initialData = {},
   isEditing = false,
-  onDelete
+  onDelete,
+  onSubmit
 }) => {
   const { id: courseId } = useParams();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
@@ -101,25 +103,12 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     }
   });
 
-  const onSubmit = (values: LessonFormValues) => {
+  const handleFormSubmit = async (values: LessonFormValues) => {
     if (!courseId) {
       toast.error("ID corso non valido");
       return;
     }
     
-    // Get existing courses
-    const existingCourses = localStorage.getItem('courses') 
-      ? JSON.parse(localStorage.getItem('courses')!) 
-      : [];
-    
-    // Find the course to update
-    const courseIndex = existingCourses.findIndex(course => course.id === courseId);
-    
-    if (courseIndex === -1) {
-      toast.error("Corso non trovato");
-      return;
-    }
-
     // Format the date to string for storage
     const formattedDate = values.data instanceof Date 
       ? format(values.data, 'yyyy-MM-dd') 
@@ -130,73 +119,112 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     
     // Create lesson data
     const lessonData = {
-      id: initialData?.id || uuidv4(),
+      id: initialData?.id || undefined,
       data: formattedDate,
       orario,
       sede: values.sede
     };
     
-    // Add lesson to course
-    if (!existingCourses[courseIndex].giornateDiLezione) {
-      existingCourses[courseIndex].giornateDiLezione = [];
-    }
-    
-    if (isEditing && initialData?.id) {
-      // Update existing lesson
-      const lessonIndex = existingCourses[courseIndex].giornateDiLezione.findIndex(
-        lesson => lesson.id === initialData.id
-      );
-      if (lessonIndex !== -1) {
-        existingCourses[courseIndex].giornateDiLezione[lessonIndex] = lessonData;
+    // If we have an external submit handler, use it
+    if (onSubmit) {
+      try {
+        await onSubmit(lessonData);
+        // The external handler should handle success messages
+      } catch (error) {
+        console.error("Error submitting lesson:", error);
       }
     } else {
-      // Add new lesson
-      existingCourses[courseIndex].giornateDiLezione.push(lessonData);
+      // Legacy implementation using localStorage - keep for backward compatibility
+      // Get existing courses
+      const existingCourses = localStorage.getItem('courses') 
+        ? JSON.parse(localStorage.getItem('courses')!) 
+        : [];
+      
+      // Find the course to update
+      const courseIndex = existingCourses.findIndex(course => course.id === courseId);
+      
+      if (courseIndex === -1) {
+        toast.error("Corso non trovato");
+        return;
+      }
+  
+      // Create lesson data
+      const localStorageLessonData = {
+        id: initialData?.id || uuidv4(),
+        data: formattedDate,
+        orario,
+        sede: values.sede
+      };
+      
+      // Add lesson to course
+      if (!existingCourses[courseIndex].giornateDiLezione) {
+        existingCourses[courseIndex].giornateDiLezione = [];
+      }
+      
+      if (isEditing && initialData?.id) {
+        // Update existing lesson
+        const lessonIndex = existingCourses[courseIndex].giornateDiLezione.findIndex(
+          lesson => lesson.id === initialData.id
+        );
+        if (lessonIndex !== -1) {
+          existingCourses[courseIndex].giornateDiLezione[lessonIndex] = localStorageLessonData;
+        }
+      } else {
+        // Add new lesson
+        existingCourses[courseIndex].giornateDiLezione.push(localStorageLessonData);
+      }
+      
+      // Save updated courses
+      localStorage.setItem('courses', JSON.stringify(existingCourses));
+      
+      // Show success message
+      toast.success(isEditing 
+        ? "Giornata aggiornata con successo" 
+        : "Giornata aggiunta con successo"
+      );
+      
+      // Force refresh to show the updated data
+      window.location.reload();
     }
-    
-    // Save updated courses
-    localStorage.setItem('courses', JSON.stringify(existingCourses));
-    
-    // Show success message
-    toast.success(isEditing 
-      ? "Giornata aggiornata con successo" 
-      : "Giornata aggiunta con successo"
-    );
     
     // Close the dialog
     onClose();
-    
-    // Force refresh to show the updated data
-    window.location.reload();
   };
 
   const handleDelete = () => {
-    if (!courseId || !initialData?.id) return;
-
-    // Get existing courses
-    const existingCourses = localStorage.getItem('courses') 
-      ? JSON.parse(localStorage.getItem('courses')!) 
-      : [];
-    
-    // Find the course
-    const courseIndex = existingCourses.findIndex(course => course.id === courseId);
-    
-    if (courseIndex === -1) return;
-
-    // Remove the lesson
-    existingCourses[courseIndex].giornateDiLezione = existingCourses[courseIndex].giornateDiLezione.filter(
-      (lesson) => lesson.id !== initialData.id
-    );
-
-    // Save updated courses
-    localStorage.setItem('courses', JSON.stringify(existingCourses));
-    
-    toast.success("Giornata eliminata con successo");
-    setIsDeleteDialogOpen(false);
-    onClose();
-    
-    // Refresh to update UI
-    window.location.reload();
+    if (onDelete) {
+      onDelete();
+      setIsDeleteDialogOpen(false);
+      onClose();
+    } else if (!courseId || !initialData?.id) {
+      return;
+    } else {
+      // Legacy implementation using localStorage - keep for backward compatibility
+      // Get existing courses
+      const existingCourses = localStorage.getItem('courses') 
+        ? JSON.parse(localStorage.getItem('courses')!) 
+        : [];
+      
+      // Find the course
+      const courseIndex = existingCourses.findIndex(course => course.id === courseId);
+      
+      if (courseIndex === -1) return;
+  
+      // Remove the lesson
+      existingCourses[courseIndex].giornateDiLezione = existingCourses[courseIndex].giornateDiLezione.filter(
+        (lesson) => lesson.id !== initialData.id
+      );
+  
+      // Save updated courses
+      localStorage.setItem('courses', JSON.stringify(existingCourses));
+      
+      toast.success("Giornata eliminata con successo");
+      setIsDeleteDialogOpen(false);
+      onClose();
+      
+      // Refresh to update UI
+      window.location.reload();
+    }
   };
 
   // Function to get date constraints - fixed to include both start and end dates
@@ -241,7 +269,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="data"

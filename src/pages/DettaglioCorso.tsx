@@ -153,8 +153,6 @@ const DettaglioCorso = () => {
         onCloseEditCourse={() => setIsEditingCourse(false)}
         onCloseAddLesson={handleLessonDialogClose}
         onCloseEditLesson={handleLessonDialogClose}
-        onSubmitLesson={handleSubmitLesson}
-        onDeleteLesson={handleDeleteLesson}
         onCloseAddParticipant={() => setIsAddingParticipant(false)}
         onCloseEditParticipant={() => setIsEditingParticipant(false)}
         onCloseAddTeacher={() => setIsAddingTeacher(false)}
@@ -164,6 +162,8 @@ const DettaglioCorso = () => {
         onCloseDeleteDialog={() => setIsDeleteParticipantDialogOpen(false)}
         onConfirmDelete={confirmDeleteParticipant}
         handleAddExistingParticipant={handleAddExistingParticipant}
+        onSubmitLesson={handleSubmitLesson}
+        onDeleteLesson={handleDeleteLesson}
       />
     </div>
   );

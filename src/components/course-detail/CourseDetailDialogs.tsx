@@ -33,6 +33,8 @@ interface CourseDetailDialogsProps {
   onCloseDeleteDialog: () => void;
   onConfirmDelete: () => void;
   handleAddExistingParticipant: (participant: any) => void;
+  onSubmitLesson?: (values: any) => Promise<void>;
+  onDeleteLesson?: (lessonId: string) => Promise<void>;
 }
 
 const CourseDetailDialogs = ({
@@ -60,7 +62,9 @@ const CourseDetailDialogs = ({
   onClosePdfViewer,
   onCloseDeleteDialog,
   onConfirmDelete,
-  handleAddExistingParticipant
+  handleAddExistingParticipant,
+  onSubmitLesson,
+  onDeleteLesson
 }: CourseDetailDialogsProps) => {
   return (
     <>
@@ -74,6 +78,7 @@ const CourseDetailDialogs = ({
       <LessonFormDialog
         isOpen={isAddingLesson}
         onClose={onCloseAddLesson}
+        onSubmit={onSubmitLesson}
       />
       
       <LessonFormDialog
@@ -81,6 +86,8 @@ const CourseDetailDialogs = ({
         onClose={onCloseEditLesson}
         initialData={selectedLesson}
         isEditing={true}
+        onSubmit={onSubmitLesson}
+        onDelete={onDeleteLesson && selectedLesson ? () => onDeleteLesson(selectedLesson.id) : undefined}
       />
       
       <ParticipantFormDialog
