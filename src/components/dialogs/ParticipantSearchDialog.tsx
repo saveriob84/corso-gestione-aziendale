@@ -76,15 +76,15 @@ const ParticipantSearchDialog = ({
           setParticipants(allLocalParticipants);
         } else if (allParticipants) {
           // Map the Supabase data to match our Participant interface
-          // We need to adapt to the actual fields in the database
           const mappedParticipants: Participant[] = allParticipants.map(p => ({
             id: p.id,
             nome: p.nome,
             cognome: p.cognome,
-            codiceFiscale: p.codiceFiscale || undefined, // This field doesn't exist in the database
-            dataNascita: p.annoassunzione || undefined, // Using annoassunzione as dataNascita
+            // These fields don't exist directly in the database, so map them correctly
+            codiceFiscale: undefined, // The database doesn't have this field
+            dataNascita: p.annoassunzione || undefined,
             azienda: p.azienda || undefined,
-            titoloStudio: p.ruolo || undefined, // Using ruolo as titoloStudio
+            titoloStudio: p.ruolo || undefined,
             qualifica: p.qualifica || undefined
           }));
           setParticipants(mappedParticipants);
