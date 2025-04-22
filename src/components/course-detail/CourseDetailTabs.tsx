@@ -9,6 +9,7 @@ interface CourseDetailTabsProps {
   corso: any;
   onAddLesson: () => void;
   onEditLesson: (lesson: any) => void;
+  onDeleteLesson: (lessonId: string) => void;
   onEditParticipant: (participantId: string) => void;
   onDeleteParticipant: (participantId: string) => void;
   onDownloadTemplate: () => void;
@@ -23,6 +24,7 @@ const CourseDetailTabs = ({
   corso,
   onAddLesson,
   onEditLesson,
+  onDeleteLesson,
   onEditParticipant,
   onDeleteParticipant,
   onDownloadTemplate,
@@ -50,6 +52,7 @@ const CourseDetailTabs = ({
           giornateDiLezione={corso.giornateDiLezione} 
           onAddLesson={onAddLesson}
           onEditLesson={onEditLesson}
+          onDeleteLesson={onDeleteLesson}
         />
       </TabsContent>
 

@@ -21,6 +21,7 @@ interface CourseDetailDialogsProps {
   selectedLesson: any;
   selectedParticipant: any;
   isDeleteParticipantDialogOpen: boolean;
+  isDeleteLessonDialogOpen?: boolean;
   onCloseEditCourse: () => void;
   onCloseAddLesson: () => void;
   onCloseEditLesson: () => void;
@@ -31,10 +32,12 @@ interface CourseDetailDialogsProps {
   onCloseParticipantSearch: () => void;
   onClosePdfViewer: () => void;
   onCloseDeleteDialog: () => void;
+  onCloseDeleteLessonDialog?: () => void;
   onConfirmDelete: () => void;
+  onConfirmDeleteLesson?: () => void;
   handleAddExistingParticipant: (participant: any) => void;
   onSubmitLesson?: (values: any) => Promise<void>;
-  onDeleteLesson?: (lessonId: string) => Promise<void>;
+  onDeleteLesson?: () => Promise<void>;
 }
 
 const CourseDetailDialogs = ({
@@ -51,6 +54,7 @@ const CourseDetailDialogs = ({
   selectedLesson,
   selectedParticipant,
   isDeleteParticipantDialogOpen,
+  isDeleteLessonDialogOpen = false,
   onCloseEditCourse,
   onCloseAddLesson,
   onCloseEditLesson,
@@ -61,7 +65,9 @@ const CourseDetailDialogs = ({
   onCloseParticipantSearch,
   onClosePdfViewer,
   onCloseDeleteDialog,
+  onCloseDeleteLessonDialog = () => {},
   onConfirmDelete,
+  onConfirmDeleteLesson = () => {},
   handleAddExistingParticipant,
   onSubmitLesson,
   onDeleteLesson
@@ -87,7 +93,6 @@ const CourseDetailDialogs = ({
         initialData={selectedLesson}
         isEditing={true}
         onSubmit={onSubmitLesson}
-        onDelete={onDeleteLesson && selectedLesson ? () => onDeleteLesson(selectedLesson.id) : undefined}
       />
       
       <ParticipantFormDialog
@@ -138,6 +143,29 @@ const CourseDetailDialogs = ({
             <AlertDialogCancel>Annulla</AlertDialogCancel>
             <AlertDialogAction 
               onClick={onConfirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog 
+        open={isDeleteLessonDialogOpen} 
+        onOpenChange={onCloseDeleteLessonDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler eliminare questa giornata di lezione? Questa azione non può essere annullata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={onConfirmDeleteLesson}
               className="bg-red-600 hover:bg-red-700"
             >
               Elimina

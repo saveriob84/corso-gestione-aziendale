@@ -62,6 +62,17 @@ const LessonList = ({ giornateDiLezione, onAddLesson, onEditLesson, onDeleteLess
                           <PenIcon className="h-4 w-4 mr-1" />
                           Modifica
                         </Button>
+                        {onDeleteLesson && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                            onClick={() => onDeleteLesson(giornata.id)}
+                          >
+                            <Trash2Icon className="h-4 w-4 mr-1" />
+                            Elimina
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>

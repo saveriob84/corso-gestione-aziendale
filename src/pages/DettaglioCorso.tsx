@@ -25,6 +25,7 @@ const DettaglioCorso = () => {
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
   const [isParticipantSearchOpen, setIsParticipantSearchOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const {
     isDeleteParticipantDialogOpen,
@@ -68,11 +69,29 @@ const DettaglioCorso = () => {
     }
   };
 
+  const handleDeleteConfirmation = (lessonId: string) => {
+    // Find the lesson to delete
+    const lessonToDelete = corso?.giornateDiLezione?.find(
+      (lesson: any) => lesson.id === lessonId
+    );
+    
+    if (lessonToDelete) {
+      setSelectedLesson(lessonToDelete);
+      setIsDeleteConfirmOpen(true);
+    } else {
+      toast.error("Lezione non trovata");
+    }
+  };
+
   const handleDeleteLesson = async () => {
     if (selectedLesson && selectedLesson.id) {
       console.log("Attempting to delete lesson:", selectedLesson.id);
+      setIsDeleteConfirmOpen(false);
       const success = await deleteLesson(selectedLesson.id);
-      if (success) handleLessonDialogClose();
+      if (success) {
+        setSelectedLesson(null);
+        toast.success("Lezione eliminata con successo");
+      }
     } else {
       toast.error("Impossibile eliminare: ID lezione non valido");
     }
@@ -131,6 +150,7 @@ const DettaglioCorso = () => {
         corso={corso}
         onAddLesson={handleAddLesson}
         onEditLesson={handleEditLesson}
+        onDeleteLesson={handleDeleteConfirmation}
         onEditParticipant={handleEditParticipant}
         onDeleteParticipant={handleDeleteParticipant}
         onDownloadTemplate={downloadTemplate}
@@ -155,6 +175,7 @@ const DettaglioCorso = () => {
         selectedLesson={selectedLesson}
         selectedParticipant={selectedParticipant}
         isDeleteParticipantDialogOpen={isDeleteParticipantDialogOpen}
+        isDeleteLessonDialogOpen={isDeleteConfirmOpen}
         onCloseEditCourse={() => setIsEditingCourse(false)}
         onCloseAddLesson={handleLessonDialogClose}
         onCloseEditLesson={handleLessonDialogClose}
@@ -165,7 +186,9 @@ const DettaglioCorso = () => {
         onCloseParticipantSearch={() => setIsParticipantSearchOpen(false)}
         onClosePdfViewer={() => setSelectedPdfType(null)}
         onCloseDeleteDialog={() => setIsDeleteParticipantDialogOpen(false)}
+        onCloseDeleteLessonDialog={() => setIsDeleteConfirmOpen(false)}
         onConfirmDelete={confirmDeleteParticipant}
+        onConfirmDeleteLesson={handleDeleteLesson}
         handleAddExistingParticipant={handleAddExistingParticipant}
         onSubmitLesson={handleSubmitLesson}
         onDeleteLesson={handleDeleteLesson}

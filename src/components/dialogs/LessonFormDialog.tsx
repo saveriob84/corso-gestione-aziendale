@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
@@ -94,14 +95,17 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
           
           if (data.datainizio) {
             startDate = new Date(data.datainizio);
+            // Set time to beginning of day
             startDate.setHours(0, 0, 0, 0);
           }
           
           if (data.datafine) {
             endDate = new Date(data.datafine);
+            // Set time to end of day
             endDate.setHours(23, 59, 59, 999);
           }
           
+          console.log('Course date range:', { startDate, endDate });
           setCourseRange({ startDate, endDate });
         }
       } catch (error) {
@@ -247,15 +251,24 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     }
   };
 
+  // Correctly implemented date constraint function
   const getDateConstraints = (date: Date) => {
     if (!courseRange.startDate || !courseRange.endDate) {
-      return false;
+      return false; // Don't disable any dates if we don't have course dates
     }
     
-    const currentDate = new Date(date);
+    // Clone the date to avoid mutating the original
+    const currentDate = new Date(date.getTime());
     currentDate.setHours(0, 0, 0, 0);
     
-    return currentDate < courseRange.startDate || currentDate > courseRange.endDate;
+    const startDate = new Date(courseRange.startDate.getTime());
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(courseRange.endDate.getTime());
+    endDate.setHours(0, 0, 0, 0);
+    
+    // Return true to disable dates OUTSIDE the course range
+    return currentDate < startDate || currentDate > endDate;
   };
 
   return (
