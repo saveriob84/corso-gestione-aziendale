@@ -21,12 +21,14 @@ interface ParticipantSearchDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectParticipant: (participant: Participant) => void;
+  courseId?: string; // Added courseId as an optional prop
 }
 
 const ParticipantSearchDialog = ({
   isOpen,
   onClose,
-  onSelectParticipant
+  onSelectParticipant,
+  courseId
 }: ParticipantSearchDialogProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [participants, setParticipants] = useState<Participant[]>([]);
