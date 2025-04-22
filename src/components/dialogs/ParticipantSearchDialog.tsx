@@ -83,19 +83,16 @@ const ParticipantSearchDialog = ({
           }
           
           // Map the Supabase data to match our Participant interface
-          // According to the error, the actual properties we have are:
-          // annoassunzione, azienda, aziendaid, cognome, course_id, id, nome, qualifica, ruolo, user_id
           const mappedParticipants: Participant[] = allParticipants.map(p => ({
             id: p.id,
-            nome: p.nome,
-            cognome: p.cognome,
-            // Map the properties correctly - no codicefiscale field exists
-            // We need to ensure we're not trying to access non-existent properties
-            codiceFiscale: undefined, // Since codicefiscale doesn't exist in the database
-            dataNascita: p.annoassunzione ?? undefined,
-            azienda: p.azienda ?? undefined,
-            titoloStudio: p.ruolo ?? undefined,
-            qualifica: p.qualifica ?? undefined
+            nome: p.nome || '',
+            cognome: p.cognome || '',
+            // We map fields from the database schema to our interface
+            codiceFiscale: undefined, // Field doesn't exist in database
+            dataNascita: p.annoassunzione || undefined,
+            azienda: p.azienda || undefined,
+            titoloStudio: p.ruolo || undefined,
+            qualifica: p.qualifica || undefined
           }));
           setParticipants(mappedParticipants);
         } else {
@@ -118,14 +115,22 @@ const ParticipantSearchDialog = ({
 
   useEffect(() => {
     // Filter participants based on search term and exclude those already in the course
-    const filtered = participants.filter(p => 
-      // Filter by search term - make search case insensitive
-      (p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       p.cognome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       (p.codiceFiscale && p.codiceFiscale.toLowerCase().includes(searchTerm.toLowerCase()))) &&
-      // Exclude participants already in the course
-      !existingParticipantIds.includes(p.id)
-    );
+    const filtered = participants.filter(p => {
+      // Make search case insensitive for better user experience
+      const searchTermLower = searchTerm.toLowerCase();
+      
+      // Check if nome or cognome matches the search term
+      const nameMatches = p.nome?.toLowerCase().includes(searchTermLower) || false;
+      const surnameMatches = p.cognome?.toLowerCase().includes(searchTermLower) || false;
+      
+      // Only check codiceFiscale if it exists
+      const fiscalCodeMatches = p.codiceFiscale ? 
+        p.codiceFiscale.toLowerCase().includes(searchTermLower) : false;
+      
+      // Return true if any field matches and participant is not already in the course
+      return (nameMatches || surnameMatches || fiscalCodeMatches) && 
+        !existingParticipantIds.includes(p.id);
+    });
     
     console.log('Filtered participants:', filtered.length, 'out of', participants.length);
     console.log('Excluded IDs:', existingParticipantIds);
