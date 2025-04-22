@@ -75,13 +75,14 @@ const ParticipantSearchDialog = ({
           const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
           setParticipants(allLocalParticipants);
         } else if (allParticipants) {
+          console.log('Fetched all participants:', allParticipants);
           // Map the Supabase data to match our Participant interface
           const mappedParticipants: Participant[] = allParticipants.map(p => ({
             id: p.id,
             nome: p.nome,
             cognome: p.cognome,
-            // These fields don't exist directly in the database, so map them correctly
-            codiceFiscale: undefined, // The database doesn't have this field
+            // Assign database fields to match our interface
+            codiceFiscale: p.codicefiscale || undefined, // Lowercased as it appears in the DB
             dataNascita: p.annoassunzione || undefined,
             azienda: p.azienda || undefined,
             titoloStudio: p.ruolo || undefined,
@@ -109,13 +110,17 @@ const ParticipantSearchDialog = ({
   useEffect(() => {
     // Filter participants based on search term and exclude those already in the course
     const filtered = participants.filter(p => 
-      // Filter by search term
+      // Filter by search term - make search case insensitive
       (p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
        p.cognome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       p.codiceFiscale?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+       (p.codiceFiscale && p.codiceFiscale.toLowerCase().includes(searchTerm.toLowerCase()))) &&
       // Exclude participants already in the course
       !existingParticipantIds.includes(p.id)
     );
+    
+    console.log('Filtered participants:', filtered.length, 'out of', participants.length);
+    console.log('Excluded IDs:', existingParticipantIds);
+    
     setFilteredParticipants(filtered);
   }, [searchTerm, participants, existingParticipantIds]);
 
