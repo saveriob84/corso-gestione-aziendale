@@ -227,7 +227,7 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     }
   };
 
-  // Function to get date constraints - fixed to include both start and end dates
+  // Function to get date constraints - FIXED to properly include start and end dates
   const getDateConstraints = () => {
     if (!courseId) return (date: Date) => false;
 
@@ -252,6 +252,8 @@ const LessonFormDialog: React.FC<LessonFormDialogProps> = ({
     return (date: Date) => {
       const currentDate = new Date(date);
       currentDate.setHours(0, 0, 0, 0);
+      
+      // Disabilita solo le date FUORI dall'intervallo (prima della data di inizio o dopo la data di fine)
       return currentDate < startDate || currentDate > endDate;
     };
   };
