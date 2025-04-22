@@ -17,10 +17,12 @@ interface CourseInfoProps {
 
 const CourseInfo = ({ corso }: CourseInfoProps) => {
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Data non disponibile';
+    
     try {
       return format(new Date(dateString), 'dd/MM/yyyy');
     } catch (error) {
-      return dateString || 'Data non disponibile';
+      return 'Data non disponibile';
     }
   };
 
@@ -51,11 +53,11 @@ const CourseInfo = ({ corso }: CourseInfoProps) => {
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sede</p>
-              <p>{corso.sede}</p>
+              <p>{corso.sede || 'Non specificata'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Modulo formativo</p>
-              <p>{corso.moduloFormativo}</p>
+              <p>{corso.moduloFormativo || 'Non specificato'}</p>
             </div>
           </div>
         </CardContent>

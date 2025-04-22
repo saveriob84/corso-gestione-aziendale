@@ -25,6 +25,12 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/hooks/useAuth';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { it } from "date-fns/locale";
 
 // Schema for form validation
 const formSchema = z.object({
@@ -34,14 +40,18 @@ const formSchema = z.object({
   titolo: z.string().min(3, {
     message: "Il titolo deve contenere almeno 3 caratteri",
   }),
+  stato: z.string().min(1, {
+    message: "Seleziona lo stato del corso",
+  }),
+  datainizio: z.date().optional(),
+  datafine: z.date().optional(),
+  sede: z.string().optional(),
+  moduloformativo: z.string().optional(),
   edizioni: z.coerce.number().int().positive(),
   partecipanti: z.coerce.number().int().nonnegative(),
   docenti: z.coerce.number().int().nonnegative(),
   tutor: z.coerce.number().int().nonnegative(),
   aziende: z.coerce.number().int().nonnegative(),
-  stato: z.string().min(1, {
-    message: "Seleziona lo stato del corso",
-  }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -64,16 +74,30 @@ const CourseFormDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
+  // Parse dates from initialData if available
+  const parseInitialDate = (dateString?: string) => {
+    if (!dateString) return undefined;
+    try {
+      return new Date(dateString);
+    } catch (e) {
+      return undefined;
+    }
+  };
+
   // Default form values
   const defaultValues = {
     codice: isEditing && initialData ? initialData.codice || "" : "",
     titolo: isEditing && initialData ? initialData.titolo || "" : "",
+    stato: isEditing && initialData ? initialData.stato || "Pianificato" : "Pianificato",
+    datainizio: isEditing && initialData ? parseInitialDate(initialData.datainizio) : undefined,
+    datafine: isEditing && initialData ? parseInitialDate(initialData.datafine) : undefined,
+    sede: isEditing && initialData ? initialData.sede || "" : "",
+    moduloformativo: isEditing && initialData ? initialData.moduloformativo || "" : "",
     edizioni: isEditing && initialData ? initialData.edizioni || 1 : 1,
     partecipanti: isEditing && initialData ? initialData.partecipanti || 0 : 0,
     docenti: isEditing && initialData ? initialData.docenti || 0 : 0,
     tutor: isEditing && initialData ? initialData.tutor || 0 : 0,
     aziende: isEditing && initialData ? initialData.aziende || 0 : 0,
-    stato: isEditing && initialData ? initialData.stato || "Pianificato" : "Pianificato",
   };
 
   // Form setup
@@ -100,6 +124,11 @@ const CourseFormDialog = ({
     setIsSubmitting(true);
     
     try {
+      // Format dates for database
+      const formatDateForDb = (date?: Date) => {
+        return date ? date.toISOString() : null;
+      };
+      
       if (isEditing && initialData) {
         // Update existing course
         const { error } = await supabase
@@ -107,12 +136,16 @@ const CourseFormDialog = ({
           .update({
             codice: values.codice,
             titolo: values.titolo,
+            stato: values.stato,
+            datainizio: formatDateForDb(values.datainizio),
+            datafine: formatDateForDb(values.datafine),
+            sede: values.sede,
+            moduloformativo: values.moduloformativo,
             edizioni: values.edizioni,
             partecipanti: values.partecipanti,
             docenti: values.docenti,
             tutor: values.tutor,
             aziende: values.aziende,
-            stato: values.stato,
           })
           .eq('id', initialData.id);
           
@@ -124,12 +157,16 @@ const CourseFormDialog = ({
           id: uuidv4(),
           codice: values.codice,
           titolo: values.titolo,
+          stato: values.stato,
+          datainizio: formatDateForDb(values.datainizio),
+          datafine: formatDateForDb(values.datafine),
+          sede: values.sede,
+          moduloformativo: values.moduloformativo,
           edizioni: values.edizioni,
           partecipanti: values.partecipanti,
           docenti: values.docenti,
           tutor: values.tutor,
           aziende: values.aziende,
-          stato: values.stato,
           datacreazione: new Date().toISOString(),
           user_id: user.id
         };
@@ -224,25 +261,45 @@ const CourseFormDialog = ({
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            
+            {/* Date di inizio e fine corso */}
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="edizioni"
+                name="datainizio"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Edizioni</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1"
-                        value={field.value}
-                        onChange={(e) => {
-                          const value = e.target.value === '' ? '' : Number(e.target.value);
-                          field.onChange(value === '' ? 1 : value);
-                        }}
-                      />
-                    </FormControl>
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Data inizio</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy", { locale: it })
+                            ) : (
+                              <span>Seleziona data</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                          locale={it}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -250,65 +307,40 @@ const CourseFormDialog = ({
               
               <FormField
                 control={form.control}
-                name="partecipanti"
+                name="datafine"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Partecipanti</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0"
-                        value={field.value}
-                        onChange={(e) => {
-                          const value = e.target.value === '' ? '' : Number(e.target.value);
-                          field.onChange(value === '' ? 0 : value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="docenti"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Docenti</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0"
-                        value={field.value}
-                        onChange={(e) => {
-                          const value = e.target.value === '' ? '' : Number(e.target.value);
-                          field.onChange(value === '' ? 0 : value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="tutor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tutor</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0"
-                        value={field.value}
-                        onChange={(e) => {
-                          const value = e.target.value === '' ? '' : Number(e.target.value);
-                          field.onChange(value === '' ? 0 : value);
-                        }}
-                      />
-                    </FormControl>
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Data fine</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy", { locale: it })
+                            ) : (
+                              <span>Seleziona data</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                          locale={it}
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -317,25 +349,128 @@ const CourseFormDialog = ({
 
             <FormField
               control={form.control}
-              name="aziende"
+              name="sede"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Aziende</FormLabel>
+                  <FormLabel>Sede</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0"
-                      value={field.value}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? '' : Number(e.target.value);
-                        field.onChange(value === '' ? 0 : value);
-                      }}
-                    />
+                    <Input placeholder="Via Roma 123, Milano" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="moduloformativo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Modulo formativo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Titolo del modulo formativo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Sezione dati statistici */}
+            <div className="border-t pt-4 mt-4">
+              <h4 className="text-sm font-medium mb-2">Dati statistici</h4>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <FormField
+                  control={form.control}
+                  name="edizioni"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Edizioni</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="partecipanti"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Partecipanti</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="docenti"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Docenti</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="tutor"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tutor</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="0"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="aziende"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Aziende</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="flex justify-end space-x-4 pt-4">
               <Button

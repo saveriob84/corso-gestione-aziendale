@@ -27,16 +27,25 @@ export const useDetailedCourse = () => {
 
         if (error) throw error;
         
+        console.log("Course detail loaded:", data);
+        
         if (data) {
           // Separate tutors from teachers
-          const tutorList = data.docentiList.filter((d: any) => d.tipo === 'tutor');
-          const docentiList = data.docentiList.filter((d: any) => d.tipo === 'docente');
+          const tutorList = data.docentiList?.filter((d: any) => d.tipo === 'tutor') || [];
+          const docentiList = data.docentiList?.filter((d: any) => d.tipo === 'docente') || [];
           
           setCorso({
             ...data,
             tutorList,
-            docentiList
+            docentiList,
+            // Make sure course info has all required fields for CourseInfo component
+            dataInizio: data.datainizio || '',
+            dataFine: data.datafine || '',
+            sede: data.sede || '',
+            moduloFormativo: data.moduloformativo || ''
           });
+        } else {
+          toast.error('Corso non trovato');
         }
       } catch (error) {
         console.error('Error loading course:', error);

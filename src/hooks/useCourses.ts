@@ -16,6 +16,10 @@ export interface Course {
   stato: string;
   datacreazione?: string;
   user_id?: string;
+  datainizio?: string;
+  datafine?: string;
+  sede?: string;
+  moduloformativo?: string;
 }
 
 export const useCourses = () => {
