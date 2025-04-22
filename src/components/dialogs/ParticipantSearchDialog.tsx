@@ -76,15 +76,22 @@ const ParticipantSearchDialog = ({
           setParticipants(allLocalParticipants);
         } else if (allParticipants) {
           console.log('Fetched all participants:', allParticipants);
+          
+          // Print a sample participant to see the actual structure
+          if (allParticipants.length > 0) {
+            console.log('Sample participant structure:', JSON.stringify(allParticipants[0]));
+          }
+          
           // Map the Supabase data to match our Participant interface
+          // According to the error, the actual properties we have are:
+          // annoassunzione, azienda, aziendaid, cognome, course_id, id, nome, qualifica, ruolo, user_id
           const mappedParticipants: Participant[] = allParticipants.map(p => ({
             id: p.id,
             nome: p.nome,
             cognome: p.cognome,
-            // Correctly map database fields to our interface
-            // Supabase returns data with lowercase field names, so we need to access them correctly
-            // Handle missing fields with fallbacks
-            codiceFiscale: p.codicefiscale ?? undefined, 
+            // Map the properties correctly - no codicefiscale field exists
+            // We need to ensure we're not trying to access non-existent properties
+            codiceFiscale: undefined, // Since codicefiscale doesn't exist in the database
             dataNascita: p.annoassunzione ?? undefined,
             azienda: p.azienda ?? undefined,
             titoloStudio: p.ruolo ?? undefined,
