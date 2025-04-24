@@ -67,7 +67,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
 
       <FormField
         control={form.control}
-        name="luogoNascita"
+        name="luogonascita"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Luogo di nascita</FormLabel>
@@ -81,7 +81,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
 
       <FormField
         control={form.control}
-        name="dataNascita"
+        name="datanascita"
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>Data di nascita</FormLabel>
@@ -122,7 +122,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
 
       <FormField
         control={form.control}
-        name="cellulare"
+        name="numerocellulare"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Numero di cellulare</FormLabel>

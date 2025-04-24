@@ -1,21 +1,20 @@
-
 export interface ParticipantFormValues {
   id?: string;
   nome: string;
   cognome: string;
   codicefiscale: string;
-  luogoNascita: string;
-  dataNascita: Date | undefined;
+  luogonascita: string;
+  datanascita: Date | undefined;
   username: string;
   password: string;
-  cellulare: string;
+  numerocellulare: string;
   aziendaId: string;
   exLege: boolean;
-  titoloStudio: string;
+  titolostudio: string;
   ccnl: string;
   contratto: string;
   qualifica: string;
-  annoAssunzione: string;
+  annoassunzione: string;
 }
 
 export interface Company {
@@ -67,16 +66,16 @@ export interface Participant {
   nome: string;
   cognome: string;
   codicefiscale: string;
-  luogoNascita?: string;
-  dataNascita?: string;
+  luogonascita?: string;
+  datanascita?: string;
   aziendaId?: string;
   azienda?: string;
-  titoloStudio?: string;
+  titolostudio?: string;
   qualifica?: string;
   username?: string;
   password?: string;
-  numeroCellulare?: string;
+  numerocellulare?: string;
   ccnl?: string;
   contratto?: string;
-  annoAssunzione?: string;
+  annoassunzione?: string;
 }

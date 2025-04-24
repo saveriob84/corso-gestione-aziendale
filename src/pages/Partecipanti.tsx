@@ -43,15 +43,15 @@ const Partecipanti = () => {
         nome: dbParticipant.nome,
         cognome: dbParticipant.cognome,
         codicefiscale: dbParticipant.codicefiscale || '-',
-        luogoNascita: dbParticipant.luogonascita,
-        dataNascita: dbParticipant.datanascita,
+        luogonascita: dbParticipant.luogonascita,
+        datanascita: dbParticipant.datanascita,
         aziendaId: dbParticipant.aziendaid,
         azienda: dbParticipant.azienda,
-        titoloStudio: dbParticipant.titolostudio,
+        titolostudio: dbParticipant.titolostudio,
         qualifica: dbParticipant.qualifica,
         username: dbParticipant.username,
-        numeroCellulare: dbParticipant.numerocellulare,
-        annoAssunzione: dbParticipant.annoassunzione
+        numerocellulare: dbParticipant.numerocellulare,
+        annoassunzione: dbParticipant.annoassunzione
       }));
       
       setParticipants(transformedData);
