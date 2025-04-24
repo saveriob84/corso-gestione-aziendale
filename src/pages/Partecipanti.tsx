@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -175,11 +176,16 @@ const Partecipanti = () => {
               nome: row['Nome*'] || row['Nome'],
               cognome: row['Cognome*'] || row['Cognome'],
               codicefiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
-              luogoNascita: row['Luogo di Nascita'] || '',
-              dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
+              luogonascita: row['Luogo di Nascita'] || '',
+              datanascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
+              username: row['Username'] || '',
+              password: row['Password'] || '',
+              numerocellulare: row['Numero di cellulare'] || '',
               aziendaid: aziendaId,
               azienda: aziendaNome,
-              titoloStudio: row['Titolo di Studio'] || '',
+              titolostudio: row['Titolo di Studio'] || '',
+              ccnl: row['CCNL'] || '',
+              contratto: row['Tipologia contrattuale'] || '',
               qualifica: row['Qualifica professionale'] || '',
               annoassunzione: row['Anno di assunzione'] || ''
             };
