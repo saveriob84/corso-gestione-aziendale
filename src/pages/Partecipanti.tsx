@@ -17,48 +17,203 @@ import { DatabaseParticipant, Participant } from '@/types/participant';
 const Partecipanti = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const loadParticipants = async () => {
+    loadParticipants();
+  }, []);
+
+  const loadParticipants = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('participants')
+        .select('*');
+      
+      if (error) {
+        console.error('Error loading participants:', error);
+        toast.error('Errore nel caricamento dei partecipanti');
+        return;
+      }
+
+      console.log('Loaded participants:', data);
+      
+      // Transform the data to match our Participant interface
+      const transformedData: Participant[] = (data || []).map((dbParticipant: DatabaseParticipant) => ({
+        id: dbParticipant.id,
+        nome: dbParticipant.nome,
+        cognome: dbParticipant.cognome,
+        codiceFiscale: dbParticipant.codiceFiscale || '-',
+        luogoNascita: dbParticipant.luogoNascita,
+        dataNascita: dbParticipant.dataNascita,
+        aziendaId: dbParticipant.aziendaid,
+        azienda: dbParticipant.azienda,
+        titoloStudio: dbParticipant.titoloStudio,
+        qualifica: dbParticipant.qualifica,
+        username: dbParticipant.username,
+        numeroCellulare: dbParticipant.numeroCellulare,
+        annoAssunzione: dbParticipant.annoassunzione
+      }));
+      
+      setParticipants(transformedData);
+    } catch (error) {
+      console.error('Error in loadParticipants:', error);
+      toast.error('Errore nel caricamento dei partecipanti');
+    }
+  };
+
+  const findOrCreateCompany = async (companyData: any) => {
+    if (!companyData.ragioneSociale) return undefined;
+
+    try {
+      // Check if company exists
+      const { data: existingCompanies, error: searchError } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('ragionesociale', companyData.ragioneSociale)
+        .maybeSingle();
+
+      if (searchError) {
+        console.error('Error searching for company:', searchError);
+        return undefined;
+      }
+
+      if (existingCompanies) {
+        return existingCompanies.id;
+      }
+
+      // Create new company if not found
+      const { data: newCompany, error: insertError } = await supabase
+        .from('companies')
+        .insert([{
+          ragionesociale: companyData.ragioneSociale,
+          partitaiva: companyData.partitaIva || '',
+          indirizzo: companyData.indirizzo || '',
+          comune: companyData.comune || '',
+          cap: companyData.cap || '',
+          provincia: companyData.provincia || '',
+          telefono: companyData.telefono || '',
+          email: companyData.email || '',
+          referente: companyData.referente || '',
+          codiceateco: companyData.codiceAteco || ''
+        }])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error creating company:', insertError);
+        return undefined;
+      }
+
+      return newCompany.id;
+    } catch (error) {
+      console.error('Error in findOrCreateCompany:', error);
+      return undefined;
+    }
+  };
+
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
       try {
-        const { data, error } = await supabase
-          .from('participants')
-          .select('*');
-        
-        if (error) {
-          console.error('Error loading participants:', error);
-          toast.error('Errore nel caricamento dei partecipanti');
-          return;
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows: any[] = XLSX.utils.sheet_to_json(firstSheet);
+
+        const importResults = {
+          success: 0,
+          errors: 0,
+          companiesCreated: 0,
+          companiesLinked: 0
+        };
+
+        for (const row of rows) {
+          try {
+            if (!row['Nome*'] || !row['Cognome*'] || !row['Codice Fiscale*']) {
+              console.error('Missing required fields:', row);
+              importResults.errors++;
+              continue;
+            }
+
+            const companyData = {
+              ragioneSociale: row['Ragione Sociale Azienda*'] || row['Ragione Sociale Azienda'] || '',
+              partitaIva: row['Partita IVA Azienda'] || '',
+              indirizzo: row['Indirizzo Azienda'] || '',
+              comune: row['Comune Azienda'] || '',
+              cap: row['CAP Azienda'] || '',
+              provincia: row['Provincia Azienda'] || '',
+              telefono: row['Telefono Azienda'] || '',
+              email: row['Email Azienda'] || '',
+              referente: row['Referente Azienda'] || '',
+              codiceAteco: row['Codice ATECO'] || ''
+            };
+
+            let aziendaId: string | undefined;
+            let aziendaNome: string | undefined;
+
+            if (companyData.ragioneSociale) {
+              aziendaId = await findOrCreateCompany(companyData);
+              aziendaNome = companyData.ragioneSociale;
+              if (aziendaId) {
+                importResults.companiesLinked++;
+              }
+            }
+
+            const { error: participantError } = await supabase
+              .from('participants')
+              .insert([{
+                nome: row['Nome*'] || row['Nome'],
+                cognome: row['Cognome*'] || row['Cognome'],
+                codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
+                luogoNascita: row['Luogo di Nascita'] || '',
+                dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
+                aziendaid: aziendaId,
+                azienda: aziendaNome,
+                titoloStudio: row['Titolo di Studio'] || '',
+                qualifica: row['Qualifica professionale'] || '',
+                annoassunzione: row['Anno di assunzione'] || ''
+              }]);
+
+            if (participantError) {
+              console.error('Error inserting participant:', participantError);
+              importResults.errors++;
+            } else {
+              importResults.success++;
+            }
+          } catch (error) {
+            console.error('Error processing row:', error);
+            importResults.errors++;
+          }
         }
 
-        console.log('Loaded participants:', data);
+        if (importResults.success > 0) {
+          toast.success(`Importati ${importResults.success} partecipanti con successo`);
+          if (importResults.companiesLinked > 0) {
+            toast.success(`Collegate ${importResults.companiesLinked} aziende ai partecipanti`);
+          }
+        }
         
-        // Transform the data to match our Participant interface
-        const transformedData: Participant[] = (data || []).map((dbParticipant: DatabaseParticipant) => ({
-          id: dbParticipant.id,
-          nome: dbParticipant.nome,
-          cognome: dbParticipant.cognome,
-          codiceFiscale: dbParticipant.codiceFiscale || '-', // Provide default values for required fields
-          luogoNascita: dbParticipant.luogoNascita,
-          dataNascita: dbParticipant.dataNascita,
-          aziendaId: dbParticipant.aziendaid,
-          azienda: dbParticipant.azienda,
-          titoloStudio: dbParticipant.titoloStudio,
-          qualifica: dbParticipant.qualifica,
-          username: dbParticipant.username,
-          numeroCellulare: dbParticipant.numeroCellulare,
-          annoAssunzione: dbParticipant.annoassunzione
-        }));
-        
-        setParticipants(transformedData);
+        if (importResults.errors > 0) {
+          toast.error(`Si sono verificati ${importResults.errors} errori durante l'importazione`);
+        }
+
+        // Reload participants list after import
+        await loadParticipants();
       } catch (error) {
-        console.error('Error in loadParticipants:', error);
-        toast.error('Errore nel caricamento dei partecipanti');
+        console.error('Error importing file:', error);
+        toast.error('Errore durante l\'importazione del file');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    loadParticipants();
-  }, []);
+    reader.readAsArrayBuffer(file);
+  };
 
   const formatDateOfBirth = (dateString?: string): string => {
     if (!dateString) return '-';
@@ -102,166 +257,6 @@ const Partecipanti = () => {
     }
   };
 
-  const findOrCreateCompany = (companyData: any): string | undefined => {
-    if (!companyData.ragioneSociale) return undefined;
-
-    const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
-    
-    const existingCompany = existingCompanies.find((company: any) => 
-      (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
-      (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
-    );
-
-    if (existingCompany) {
-      return existingCompany.id;
-    }
-
-    const newCompany: any = {
-      id: crypto.randomUUID(),
-      ragioneSociale: companyData.ragioneSociale,
-      partitaIva: companyData.partitaIva || '',
-      indirizzo: companyData.indirizzo || '',
-      comune: companyData.comune || '',
-      cap: companyData.cap || '',
-      provincia: companyData.provincia || '',
-      telefono: companyData.telefono || '',
-      email: companyData.email || '',
-      referente: companyData.referente || '',
-      codiceAteco: companyData.codiceAteco || '',
-      macrosettore: companyData.macrosettore || ''
-    };
-
-    const updatedCompanies = [...existingCompanies, newCompany];
-    localStorage.setItem('companies', JSON.stringify(updatedCompanies));
-    
-    return newCompany.id;
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows: any[] = XLSX.utils.sheet_to_json(firstSheet);
-
-        const newParticipants: Participant[] = [];
-        const newCompaniesCreated: string[] = [];
-        const existingCompaniesLinked: string[] = [];
-
-        rows.forEach(row => {
-          if (!row['Nome*'] || !row['Cognome*'] || !row['Codice Fiscale*']) {
-            throw new Error('Campi obbligatori mancanti: Nome, Cognome e Codice Fiscale sono richiesti');
-          }
-
-          const companyData = {
-            ragioneSociale: row['Ragione Sociale Azienda*'] || row['Ragione Sociale Azienda'] || '',
-            partitaIva: row['Partita IVA Azienda'] || '',
-            indirizzo: row['Indirizzo Azienda'] || '',
-            comune: row['Comune Azienda'] || '',
-            cap: row['CAP Azienda'] || '',
-            provincia: row['Provincia Azienda'] || '',
-            telefono: row['Telefono Azienda'] || '',
-            email: row['Email Azienda'] || '',
-            referente: row['Referente Azienda'] || '',
-            codiceAteco: row['Codice ATECO'] || '',
-            macrosettore: row['Macrosettore'] || ''
-          };
-
-          let aziendaId: string | undefined;
-          let aziendaNome: string | undefined;
-          
-          const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
-          if (companyData.ragioneSociale) {
-            const existingCompany = existingCompanies.find((company: any) => 
-              (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
-              (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
-            );
-
-            if (existingCompany) {
-              aziendaId = existingCompany.id;
-              aziendaNome = existingCompany.ragioneSociale;
-              
-              if (!existingCompaniesLinked.includes(existingCompany.ragioneSociale)) {
-                existingCompaniesLinked.push(existingCompany.ragioneSociale);
-              }
-            } else {
-              const newCompany: any = {
-                id: crypto.randomUUID(),
-                ragioneSociale: companyData.ragioneSociale,
-                partitaIva: companyData.partitaIva || '',
-                indirizzo: companyData.indirizzo || '',
-                comune: companyData.comune || '',
-                cap: companyData.cap || '',
-                provincia: companyData.provincia || '',
-                telefono: companyData.telefono || '',
-                email: companyData.email || '',
-                referente: companyData.referente || '',
-                codiceAteco: companyData.codiceAteco || '',
-                macrosettore: companyData.macrosettore || ''
-              };
-
-              existingCompanies.push(newCompany);
-              
-              aziendaId = newCompany.id;
-              aziendaNome = newCompany.ragioneSociale;
-              
-              if (!newCompaniesCreated.includes(newCompany.ragioneSociale)) {
-                newCompaniesCreated.push(newCompany.ragioneSociale);
-              }
-            }
-            
-            localStorage.setItem('companies', JSON.stringify(existingCompanies));
-          }
-
-          const participant: Participant = {
-            id: crypto.randomUUID(),
-            nome: row['Nome*'] || row['Nome'] || '',
-            cognome: row['Cognome*'] || row['Cognome'] || '',
-            codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
-            luogoNascita: row['Luogo di Nascita'] || '',
-            dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
-            aziendaId: aziendaId,
-            azienda: aziendaNome,
-            titoloStudio: row['Titolo di Studio'] || '',
-            username: row['Username'] || '',
-            password: row['Password'] || '',
-            numeroCellulare: row['Numero di cellulare'] || '',
-            ccnl: row['CCNL'] || '',
-            tipologiaContrattuale: row['Tipologia contrattuale'] || '',
-            qualifica: row['Qualifica professionale'] || '',
-            annoAssunzione: row['Anno di assunzione'] || ''
-          };
-
-          newParticipants.push(participant);
-        });
-
-        const updatedParticipants = [...participants, ...newParticipants];
-        localStorage.setItem('participants', JSON.stringify(updatedParticipants));
-        setParticipants(updatedParticipants);
-        
-        toast.success(`Importati ${newParticipants.length} partecipanti con successo`);
-        
-        if (newCompaniesCreated.length > 0) {
-          toast.success(`Create ${newCompaniesCreated.length} nuove aziende: ${newCompaniesCreated.join(', ')}`);
-        }
-        
-        if (existingCompaniesLinked.length > 0) {
-          toast.success(`Collegate ${existingCompaniesLinked.length} aziende esistenti ai partecipanti`);
-        }
-        
-      } catch (error) {
-        console.error('Error importing file:', error);
-        toast.error(error instanceof Error ? error.message : 'Errore durante l\'importazione del file');
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
   const handleExport = () => {
     try {
       const dataToExport = participants.map(p => ({
@@ -299,6 +294,7 @@ const Partecipanti = () => {
               <Button 
                 variant="default"
                 onClick={() => setIsAddingParticipant(true)}
+                disabled={isLoading}
               >
                 <UserPlus className="mr-2 h-4 w-4" />
                 Nuovo Partecipante
@@ -311,7 +307,7 @@ const Partecipanti = () => {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" onClick={downloadTemplate}>
+              <Button variant="outline" onClick={downloadTemplate} disabled={isLoading}>
                 <FileText className="mr-2 h-4 w-4" />
                 Scarica Template Excel
               </Button>
@@ -323,9 +319,13 @@ const Partecipanti = () => {
           
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" onClick={() => document.getElementById('import-file')?.click()}>
+              <Button 
+                variant="outline" 
+                onClick={() => document.getElementById('import-file')?.click()}
+                disabled={isLoading}
+              >
                 <Upload className="mr-2 h-4 w-4" />
-                Importa Excel/CSV
+                {isLoading ? 'Importazione in corso...' : 'Importa Excel/CSV'}
               </Button>
             </TooltipTrigger>
             <TooltipContent className="max-w-sm">
@@ -339,11 +339,12 @@ const Partecipanti = () => {
             className="hidden"
             accept=".xlsx,.xls,.csv"
             onChange={handleImport}
+            disabled={isLoading}
           />
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" onClick={handleExport}>
+              <Button variant="outline" onClick={handleExport} disabled={isLoading}>
                 <Download className="mr-2 h-4 w-4" />
                 Esporta Excel
               </Button>
@@ -390,7 +391,7 @@ const Partecipanti = () => {
               {participants.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-4">
-                    Nessun partecipante trovato
+                    {isLoading ? 'Caricamento...' : 'Nessun partecipante trovato'}
                   </TableCell>
                 </TableRow>
               )}
