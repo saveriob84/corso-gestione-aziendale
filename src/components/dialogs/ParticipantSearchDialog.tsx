@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -59,10 +60,13 @@ const ParticipantSearchDialog = ({
           if (currentCourse?.partecipantiList) {
             setExistingParticipantIds(currentCourse.partecipantiList.map((p: any) => p.id));
           }
-        } else {
+        } else if (courseParticipants) {
           setExistingParticipantIds(courseParticipants.map(p => p.id));
+        } else {
+          setExistingParticipantIds([]);
         }
 
+        console.log('Fetching all participants from Supabase...');
         // Load all participants from Supabase
         const { data: allParticipants, error: allParticipantsError } = await supabase
           .from('participants')
@@ -73,8 +77,9 @@ const ParticipantSearchDialog = ({
           // Fallback to localStorage
           const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
           setParticipants(allLocalParticipants);
+          console.log('Loaded participants from localStorage:', allLocalParticipants);
         } else if (allParticipants) {
-          console.log('Fetched all participants:', allParticipants);
+          console.log('Fetched all participants from Supabase:', allParticipants);
           
           // Print a sample participant to see the actual structure
           if (allParticipants.length > 0) {
@@ -85,39 +90,40 @@ const ParticipantSearchDialog = ({
           const mappedParticipants: Participant[] = allParticipants.map(p => {
             // Create a participant object that matches our interface
             const participant: Participant = {
-              id: p.id,
+              id: p.id || '',
               nome: p.nome || '',
-              cognome: p.cognome || ''
+              cognome: p.cognome || '',
+              codiceFiscale: undefined, // Field doesn't exist in Supabase
+              azienda: p.azienda || '',
+              qualifica: p.qualifica || ''
             };
-            
-            // Only add optional fields if they exist in the DB record
-            // No codiceFiscale field in DB, but needed for interface
-            participant.codiceFiscale = undefined;
             
             // Map other fields that do exist in the database
             if (p.annoassunzione) participant.dataNascita = p.annoassunzione;
-            if (p.azienda) participant.azienda = p.azienda;
             if (p.ruolo) participant.titoloStudio = p.ruolo;
-            if (p.qualifica) participant.qualifica = p.qualifica;
             
             return participant;
           });
           
+          console.log('Mapped participants:', mappedParticipants);
           setParticipants(mappedParticipants);
         } else {
           // Final fallback to localStorage if no data
           const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
           setParticipants(allLocalParticipants);
+          console.log('No data from Supabase, using localStorage:', allLocalParticipants);
         }
       } catch (error) {
         console.error('Error in loadData:', error);
         // Fallback to localStorage as last resort
         const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
         setParticipants(allLocalParticipants);
+        console.log('Error caught, using localStorage:', allLocalParticipants);
       }
     };
 
     if (isOpen) {
+      setSearchTerm(''); // Reset search term when dialog opens
       loadData();
     }
   }, [courseId, isOpen]);
@@ -130,7 +136,7 @@ const ParticipantSearchDialog = ({
       return;
     }
     
-    const searchTermLower = searchTerm.toLowerCase();
+    const searchTermLower = searchTerm.toLowerCase().trim();
     
     const filtered = participants.filter(p => {
       // Check if this participant is already in the course
@@ -145,10 +151,9 @@ const ParticipantSearchDialog = ({
       // Check if cognome matches (safely)
       const surnameMatches = p.cognome ? p.cognome.toLowerCase().includes(searchTermLower) : false;
       
-      // No codiceFiscale in DB, so this will always be false, but keeping for interface consistency
-      const fiscalCodeMatches = false;
+      // We no longer check codiceFiscale since it doesn't exist in the database
       
-      return nameMatches || surnameMatches || fiscalCodeMatches;
+      return nameMatches || surnameMatches;
     });
     
     console.log('Search term:', searchTerm);
