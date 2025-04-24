@@ -1,4 +1,3 @@
-
 export interface ParticipantFormValues {
   id?: string;
   nome: string;
@@ -37,4 +36,42 @@ export interface ParticipantFormDialogProps {
   onClose: () => void;
   initialData?: Partial<ParticipantFormValues>;
   isEditing?: boolean;
+}
+
+export interface DatabaseParticipant {
+  id: string;
+  nome: string;
+  cognome: string;
+  annoassunzione?: string;
+  azienda?: string;
+  aziendaid?: string;
+  course_id?: string;
+  qualifica?: string;
+  ruolo?: string;
+  user_id?: string;
+  dataNascita?: string;
+  luogoNascita?: string;
+  codiceFiscale?: string;
+  titoloStudio?: string;
+  numeroCellulare?: string;
+  username?: string;
+}
+
+export interface Participant {
+  id: string;
+  nome: string;
+  cognome: string;
+  codiceFiscale: string;
+  luogoNascita?: string;
+  dataNascita?: string;
+  aziendaId?: string;
+  azienda?: string;
+  titoloStudio?: string;
+  qualifica?: string;
+  username?: string;
+  password?: string;
+  numeroCellulare?: string;
+  ccnl?: string;
+  tipologiaContrattuale?: string;
+  annoAssunzione?: string;
 }

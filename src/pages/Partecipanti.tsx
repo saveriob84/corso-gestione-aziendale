@@ -12,40 +12,7 @@ import { format, isValid, parse } from "date-fns";
 import { it } from "date-fns/locale";
 import { supabase } from '@/integrations/supabase/client';
 import ParticipantFormDialog from "@/components/dialogs/ParticipantFormDialog";
-
-interface Participant {
-  id: string;
-  nome: string;
-  cognome: string;
-  codiceFiscale: string;
-  luogoNascita?: string;
-  dataNascita?: string;
-  aziendaId?: string;
-  azienda?: string;
-  titoloStudio?: string;
-  qualifica?: string;
-  username?: string;
-  password?: string;
-  numeroCellulare?: string;
-  ccnl?: string;
-  tipologiaContrattuale?: string;
-  annoAssunzione?: string;
-}
-
-interface Company {
-  id: string;
-  ragioneSociale: string;
-  partitaIva?: string;
-  indirizzo?: string;
-  comune?: string;
-  cap?: string;
-  provincia?: string;
-  telefono?: string;
-  email?: string;
-  referente?: string;
-  codiceAteco?: string;
-  macrosettore?: string;
-}
+import { DatabaseParticipant, Participant } from '@/types/participant';
 
 const Partecipanti = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -65,7 +32,25 @@ const Partecipanti = () => {
         }
 
         console.log('Loaded participants:', data);
-        setParticipants(data || []);
+        
+        // Transform the data to match our Participant interface
+        const transformedData: Participant[] = (data || []).map((dbParticipant: DatabaseParticipant) => ({
+          id: dbParticipant.id,
+          nome: dbParticipant.nome,
+          cognome: dbParticipant.cognome,
+          codiceFiscale: dbParticipant.codiceFiscale || '-', // Provide default values for required fields
+          luogoNascita: dbParticipant.luogoNascita,
+          dataNascita: dbParticipant.dataNascita,
+          aziendaId: dbParticipant.aziendaid,
+          azienda: dbParticipant.azienda,
+          titoloStudio: dbParticipant.titoloStudio,
+          qualifica: dbParticipant.qualifica,
+          username: dbParticipant.username,
+          numeroCellulare: dbParticipant.numeroCellulare,
+          annoAssunzione: dbParticipant.annoassunzione
+        }));
+        
+        setParticipants(transformedData);
       } catch (error) {
         console.error('Error in loadParticipants:', error);
         toast.error('Errore nel caricamento dei partecipanti');
@@ -122,7 +107,7 @@ const Partecipanti = () => {
 
     const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
     
-    const existingCompany = existingCompanies.find((company: Company) => 
+    const existingCompany = existingCompanies.find((company: any) => 
       (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
       (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
     );
@@ -131,7 +116,7 @@ const Partecipanti = () => {
       return existingCompany.id;
     }
 
-    const newCompany: Company = {
+    const newCompany: any = {
       id: crypto.randomUUID(),
       ragioneSociale: companyData.ragioneSociale,
       partitaIva: companyData.partitaIva || '',
@@ -192,7 +177,7 @@ const Partecipanti = () => {
           
           const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
           if (companyData.ragioneSociale) {
-            const existingCompany = existingCompanies.find((company: Company) => 
+            const existingCompany = existingCompanies.find((company: any) => 
               (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
               (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
             );
@@ -205,7 +190,7 @@ const Partecipanti = () => {
                 existingCompaniesLinked.push(existingCompany.ragioneSociale);
               }
             } else {
-              const newCompany: Company = {
+              const newCompany: any = {
                 id: crypto.randomUUID(),
                 ragioneSociale: companyData.ragioneSociale,
                 partitaIva: companyData.partitaIva || '',
