@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Download, FileText, PenIcon, Trash2, Upload, UserPlus } from "lucide-react";
@@ -17,13 +16,10 @@ interface ParticipantListProps {
   courseId?: string;
 }
 
-// Helper function to format date of birth
 const formatDateOfBirth = (dateString?: string): string => {
   if (!dateString) return "-";
 
-  // Check if it's a numeric value that needs formatting
   if (/^\d+$/.test(dateString)) {
-    // Try to parse it as a day of the year (Excel sometimes stores dates this way)
     const date = new Date(1899, 11, 30);
     date.setDate(date.getDate() + parseInt(dateString));
     if (!isNaN(date.getTime()) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
@@ -31,13 +27,11 @@ const formatDateOfBirth = (dateString?: string): string => {
     }
   }
 
-  // Try to parse as Date object directly
   const parsedDate = new Date(dateString);
   if (!isNaN(parsedDate.getTime())) {
     return format(parsedDate, 'dd/MM/yyyy', { locale: it });
   }
 
-  // Try to parse as DD/MM/YYYY format
   try {
     const parts = dateString.split('/');
     if (parts.length === 3) {
@@ -47,14 +41,11 @@ const formatDateOfBirth = (dateString?: string): string => {
       }
     }
   } catch (e) {
-    // Continue to other format attempts
   }
 
-  // Return original string if we can't parse it
   return dateString;
 };
 
-// Helper function to map contract types
 const getContractTypeName = (contractCode: string): string => {
   const contractTypes: Record<string, string> = {
     'determinato': 'Tempo determinato',
@@ -68,7 +59,6 @@ const getContractTypeName = (contractCode: string): string => {
   return contractTypes[contractCode] || contractCode || '-';
 };
 
-// Helper function to map education titles
 const getEducationTitle = (educationCode: string): string => {
   const educationTypes: Record<string, string> = {
     'licenzaMedia': 'Licenza media',
@@ -166,7 +156,7 @@ const ParticipantList = ({
                 <tr key={partecipante.id || index}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.cognome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.codiceFiscale || "-"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.codicefiscale || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
                     {formatDateOfBirth(partecipante.dataNascita)}
                   </td>

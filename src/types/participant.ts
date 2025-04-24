@@ -2,7 +2,7 @@ export interface ParticipantFormValues {
   id?: string;
   nome: string;
   cognome: string;
-  codiceFiscale: string;
+  codicefiscale: string;
   luogoNascita: string;
   dataNascita: Date | undefined;
   username: string;
@@ -51,7 +51,7 @@ export interface DatabaseParticipant {
   user_id?: string;
   dataNascita?: string;
   luogoNascita?: string;
-  codiceFiscale?: string;
+  codicefiscale?: string;
   titoloStudio?: string;
   numeroCellulare?: string;
   username?: string;
@@ -61,7 +61,7 @@ export interface Participant {
   id: string;
   nome: string;
   cognome: string;
-  codiceFiscale: string;
+  codicefiscale: string;
   luogoNascita?: string;
   dataNascita?: string;
   aziendaId?: string;

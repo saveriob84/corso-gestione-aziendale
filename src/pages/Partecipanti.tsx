@@ -41,7 +41,7 @@ const Partecipanti = () => {
         id: dbParticipant.id,
         nome: dbParticipant.nome,
         cognome: dbParticipant.cognome,
-        codiceFiscale: dbParticipant.codiceFiscale || '-',
+        codicefiscale: dbParticipant.codicefiscale || '-',
         luogoNascita: dbParticipant.luogoNascita,
         dataNascita: dbParticipant.dataNascita,
         aziendaId: dbParticipant.aziendaid,
@@ -174,7 +174,7 @@ const Partecipanti = () => {
             const participantData = {
               nome: row['Nome*'] || row['Nome'],
               cognome: row['Cognome*'] || row['Cognome'],
-              codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
+              codicefiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
               luogoNascita: row['Luogo di Nascita'] || '',
               dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
               aziendaid: aziendaId,
@@ -277,7 +277,7 @@ const Partecipanti = () => {
       const dataToExport = participants.map(p => ({
         'Nome': p.nome,
         'Cognome': p.cognome,
-        'Codice Fiscale': p.codiceFiscale,
+        'Codice Fiscale': p.codicefiscale,
         'Data di Nascita': p.dataNascita || '',
         'Azienda': p.azienda || '',
         'Titolo di Studio': p.titoloStudio || '',
@@ -396,7 +396,7 @@ const Partecipanti = () => {
                 <TableRow key={participant.id}>
                   <TableCell>{participant.nome}</TableCell>
                   <TableCell>{participant.cognome}</TableCell>
-                  <TableCell>{participant.codiceFiscale}</TableCell>
+                  <TableCell>{participant.codicefiscale}</TableCell>
                   <TableCell>{formatDateOfBirth(participant.dataNascita)}</TableCell>
                   <TableCell>{participant.azienda || '-'}</TableCell>
                   <TableCell>{participant.titoloStudio || '-'}</TableCell>

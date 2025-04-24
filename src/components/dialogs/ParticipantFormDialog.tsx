@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -42,7 +41,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     if (courseId) {
       const fetchCourseData = async () => {
         try {
-          // First try to get from Supabase
           const { data: courseData, error } = await supabase
             .from('courses')
             .select('*')
@@ -51,7 +49,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
 
           if (error) {
             console.error('Error fetching course from Supabase:', error);
-            // Fallback to localStorage
             const courses = JSON.parse(localStorage.getItem('courses') || '[]');
             const currentCourse = courses.find((c: any) => c.id === courseId);
             if (currentCourse) {
@@ -95,7 +92,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     defaultValues: {
       nome: formattedInitialData?.nome || "",
       cognome: formattedInitialData?.cognome || "",
-      codiceFiscale: formattedInitialData?.codiceFiscale || "",
+      codicefiscale: formattedInitialData?.codicefiscale || "",
       luogoNascita: formattedInitialData?.luogoNascita || "",
       dataNascita: parseInitialDate(initialData?.dataNascita),
       username: formattedInitialData?.username || "",
@@ -116,7 +113,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
       form.reset({
         nome: initialData?.nome || "",
         cognome: initialData?.cognome || "",
-        codiceFiscale: initialData?.codiceFiscale || "",
+        codicefiscale: initialData?.codicefiscale || "",
         luogoNascita: initialData?.luogoNascita || "",
         dataNascita: parseInitialDate(initialData?.dataNascita),
         username: initialData?.username || "",
