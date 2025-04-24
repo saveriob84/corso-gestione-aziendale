@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,14 +43,14 @@ const Partecipanti = () => {
         nome: dbParticipant.nome,
         cognome: dbParticipant.cognome,
         codicefiscale: dbParticipant.codicefiscale || '-',
-        luogoNascita: dbParticipant.luogoNascita,
-        dataNascita: dbParticipant.dataNascita,
+        luogoNascita: dbParticipant.luogonascita,
+        dataNascita: dbParticipant.datanascita,
         aziendaId: dbParticipant.aziendaid,
         azienda: dbParticipant.azienda,
-        titoloStudio: dbParticipant.titoloStudio,
+        titoloStudio: dbParticipant.titolostudio,
         qualifica: dbParticipant.qualifica,
         username: dbParticipant.username,
-        numeroCellulare: dbParticipant.numeroCellulare,
+        numeroCellulare: dbParticipant.numerocellulare,
         annoAssunzione: dbParticipant.annoassunzione
       }));
       

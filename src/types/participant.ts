@@ -1,3 +1,4 @@
+
 export interface ParticipantFormValues {
   id?: string;
   nome: string;
@@ -29,6 +30,7 @@ export interface Company {
   email: string;
   referente: string;
   codiceAteco: string;
+  macrosettore?: string;
 }
 
 export interface ParticipantFormDialogProps {
