@@ -36,6 +36,7 @@ const ParticipantSearchDialog = ({
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [filteredParticipants, setFilteredParticipants] = useState<Participant[]>([]);
   const [existingParticipantIds, setExistingParticipantIds] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,6 +44,8 @@ const ParticipantSearchDialog = ({
         console.error('No courseId provided to ParticipantSearchDialog');
         return;
       }
+
+      setIsLoading(true);
 
       try {
         // First fetch existing participant IDs for this course to filter them out
@@ -59,6 +62,8 @@ const ParticipantSearchDialog = ({
           
           if (currentCourse?.partecipantiList) {
             setExistingParticipantIds(currentCourse.partecipantiList.map((p: any) => p.id));
+          } else {
+            setExistingParticipantIds([]);
           }
         } else if (courseParticipants) {
           setExistingParticipantIds(courseParticipants.map(p => p.id));
@@ -66,59 +71,70 @@ const ParticipantSearchDialog = ({
           setExistingParticipantIds([]);
         }
 
-        console.log('Fetching all participants from Supabase...');
-        // Load all participants from Supabase
-        const { data: allParticipants, error: allParticipantsError } = await supabase
+        console.log('Existing participant IDs:', existingParticipantIds);
+
+        // Load ALL participants regardless of course (these are the ones we can add)
+        console.log('Fetching all participants from database...');
+        const { data: allParticipantsData, error: allParticipantsError } = await supabase
           .from('participants')
-          .select('*');
+          .select('*')
+          .is('course_id', null); // Get participants not assigned to any course
 
         if (allParticipantsError) {
           console.error('Error fetching all participants:', allParticipantsError);
-          // Fallback to localStorage
-          const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
-          setParticipants(allLocalParticipants);
-          console.log('Loaded participants from localStorage:', allLocalParticipants);
-        } else if (allParticipants) {
-          console.log('Fetched all participants from Supabase:', allParticipants);
+          toast.error('Errore nel caricamento dei partecipanti');
+        } else if (allParticipantsData && allParticipantsData.length > 0) {
+          console.log('Fetched participants:', allParticipantsData.length, 'participants');
           
-          // Print a sample participant to see the actual structure
-          if (allParticipants.length > 0) {
-            console.log('Sample participant structure:', JSON.stringify(allParticipants[0]));
-          }
-          
-          // Map the database fields to our interface carefully based on the actual DB schema
-          const mappedParticipants: Participant[] = allParticipants.map(p => {
-            // Create a participant object that matches our interface
-            const participant: Participant = {
-              id: p.id || '',
-              nome: p.nome || '',
-              cognome: p.cognome || '',
-              codiceFiscale: undefined, // Field doesn't exist in Supabase
-              azienda: p.azienda || '',
-              qualifica: p.qualifica || ''
-            };
-            
-            // Map other fields that do exist in the database
-            if (p.annoassunzione) participant.dataNascita = p.annoassunzione;
-            if (p.ruolo) participant.titoloStudio = p.ruolo;
-            
-            return participant;
-          });
+          // Map the database fields to our interface
+          const mappedParticipants: Participant[] = allParticipantsData.map(p => ({
+            id: p.id || '',
+            nome: p.nome || '',
+            cognome: p.cognome || '',
+            codiceFiscale: undefined, // Field doesn't exist in Supabase
+            dataNascita: p.annoassunzione || '',
+            azienda: p.azienda || '',
+            titoloStudio: p.ruolo || '',
+            qualifica: p.qualifica || ''
+          }));
           
           console.log('Mapped participants:', mappedParticipants);
           setParticipants(mappedParticipants);
         } else {
-          // Final fallback to localStorage if no data
-          const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
-          setParticipants(allLocalParticipants);
-          console.log('No data from Supabase, using localStorage:', allLocalParticipants);
+          console.log('No unassigned participants found in database');
+          // Try fetching all participants without the course_id filter
+          const { data: allParticipants, error: fetchError } = await supabase
+            .from('participants')
+            .select('*');
+            
+          if (fetchError) {
+            console.error('Error fetching any participants:', fetchError);
+            toast.error('Errore nel caricamento dei partecipanti');
+          } else if (allParticipants && allParticipants.length > 0) {
+            console.log('Fetched all participants:', allParticipants.length);
+            
+            const mappedParticipants: Participant[] = allParticipants.map(p => ({
+              id: p.id || '',
+              nome: p.nome || '',
+              cognome: p.cognome || '',
+              codiceFiscale: undefined,
+              dataNascita: p.annoassunzione || '',
+              azienda: p.azienda || '',
+              titoloStudio: p.ruolo || '',
+              qualifica: p.qualifica || ''
+            }));
+            
+            setParticipants(mappedParticipants);
+          } else {
+            console.log('No participants found at all');
+            setParticipants([]);
+          }
         }
       } catch (error) {
         console.error('Error in loadData:', error);
-        // Fallback to localStorage as last resort
-        const allLocalParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
-        setParticipants(allLocalParticipants);
-        console.log('Error caught, using localStorage:', allLocalParticipants);
+        toast.error('Errore nel caricamento dei partecipanti');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -151,12 +167,10 @@ const ParticipantSearchDialog = ({
       // Check if cognome matches (safely)
       const surnameMatches = p.cognome ? p.cognome.toLowerCase().includes(searchTermLower) : false;
       
-      // We no longer check codiceFiscale since it doesn't exist in the database
-      
       return nameMatches || surnameMatches;
     });
     
-    console.log('Search term:', searchTerm);
+    console.log('Search term:', searchTermLower);
     console.log('Filtered participants:', filtered.length, 'out of', participants.length);
     console.log('Excluded IDs:', existingParticipantIds);
     
@@ -181,7 +195,9 @@ const ParticipantSearchDialog = ({
         </div>
 
         <ScrollArea className="h-[400px] rounded-md border p-4">
-          {filteredParticipants.length > 0 ? (
+          {isLoading ? (
+            <p className="text-center text-muted-foreground py-4">Caricamento partecipanti...</p>
+          ) : filteredParticipants.length > 0 ? (
             <div className="space-y-2">
               {filteredParticipants.map((participant) => (
                 <div
@@ -205,7 +221,11 @@ const ParticipantSearchDialog = ({
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-4">
-              {searchTerm ? "Nessun partecipante trovato" : "Inizia a digitare per cercare i partecipanti"}
+              {searchTerm 
+                ? participants.length > 0 
+                  ? "Nessun partecipante trovato" 
+                  : "Nessun partecipante disponibile nel database" 
+                : "Inizia a digitare per cercare i partecipanti"}
             </p>
           )}
         </ScrollArea>
