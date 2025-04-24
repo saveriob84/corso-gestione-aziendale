@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -49,12 +48,16 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
 
       <FormField
         control={form.control}
-        name="codiceFiscale"
+        name="codicefiscale"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Codice Fiscale</FormLabel>
             <FormControl>
-              <Input placeholder="es. RSSMRA80A01H501U" {...field} />
+              <Input 
+                placeholder="es. RSSMRA80A01H501U" 
+                {...field}
+                value={field.value as string}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
