@@ -17,6 +17,7 @@ export type Database = {
           email: string | null
           id: string
           indirizzo: string | null
+          macrosettore: string | null
           partitaiva: string
           provincia: string | null
           ragionesociale: string
@@ -31,6 +32,7 @@ export type Database = {
           email?: string | null
           id?: string
           indirizzo?: string | null
+          macrosettore?: string | null
           partitaiva: string
           provincia?: string | null
           ragionesociale: string
@@ -45,6 +47,7 @@ export type Database = {
           email?: string | null
           id?: string
           indirizzo?: string | null
+          macrosettore?: string | null
           partitaiva?: string
           provincia?: string | null
           ragionesociale?: string
@@ -148,40 +151,64 @@ export type Database = {
           annoassunzione: string | null
           azienda: string | null
           aziendaid: string | null
+          ccnl: string | null
           codicefiscale: string | null
           cognome: string
+          contratto: string | null
           course_id: string | null
+          datanascita: string | null
           id: string
+          luogonascita: string | null
           nome: string
+          numerocellulare: string | null
+          password: string | null
           qualifica: string | null
           ruolo: string | null
+          titolostudio: string | null
           user_id: string | null
+          username: string | null
         }
         Insert: {
           annoassunzione?: string | null
           azienda?: string | null
           aziendaid?: string | null
+          ccnl?: string | null
           codicefiscale?: string | null
           cognome: string
+          contratto?: string | null
           course_id?: string | null
+          datanascita?: string | null
           id?: string
+          luogonascita?: string | null
           nome: string
+          numerocellulare?: string | null
+          password?: string | null
           qualifica?: string | null
           ruolo?: string | null
+          titolostudio?: string | null
           user_id?: string | null
+          username?: string | null
         }
         Update: {
           annoassunzione?: string | null
           azienda?: string | null
           aziendaid?: string | null
+          ccnl?: string | null
           codicefiscale?: string | null
           cognome?: string
+          contratto?: string | null
           course_id?: string | null
+          datanascita?: string | null
           id?: string
+          luogonascita?: string | null
           nome?: string
+          numerocellulare?: string | null
+          password?: string | null
           qualifica?: string | null
           ruolo?: string | null
+          titolostudio?: string | null
           user_id?: string | null
+          username?: string | null
         }
         Relationships: [
           {

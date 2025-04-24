@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -114,6 +115,20 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                 />
               </PopoverContent>
             </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="cellulare"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Numero di cellulare</FormLabel>
+            <FormControl>
+              <Input placeholder="es. +39 123 456 7890" {...field} />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

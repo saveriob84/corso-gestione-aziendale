@@ -49,12 +49,15 @@ export interface DatabaseParticipant {
   qualifica?: string;
   ruolo?: string;
   user_id?: string;
-  dataNascita?: string;
-  luogoNascita?: string;
+  datanascita?: string;
+  luogonascita?: string;
   codicefiscale?: string;
-  titoloStudio?: string;
-  numeroCellulare?: string;
+  titolostudio?: string;
+  numerocellulare?: string;
   username?: string;
+  password?: string;
+  ccnl?: string;
+  contratto?: string;
 }
 
 export interface Participant {
@@ -72,6 +75,6 @@ export interface Participant {
   password?: string;
   numeroCellulare?: string;
   ccnl?: string;
-  tipologiaContrattuale?: string;
+  contratto?: string;
   annoAssunzione?: string;
 }
