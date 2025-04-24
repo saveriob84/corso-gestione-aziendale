@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from "@/components/ui/table";
-import { Download, Upload, FileText } from "lucide-react";
+import { Download, Upload, FileText, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getParticipantTemplate } from '@/utils/excelTemplates';
 import { ImportInstructions } from "@/components/alerts/ImportInstructions";
 import { format, isValid, parse } from "date-fns";
 import { it } from "date-fns/locale";
+import { supabase } from '@/integrations/supabase/client';
+import ParticipantFormDialog from "@/components/dialogs/ParticipantFormDialog";
 
 interface Participant {
   id: string;
@@ -48,11 +49,27 @@ interface Company {
 
 const Partecipanti = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isAddingParticipant, setIsAddingParticipant] = useState(false);
 
   useEffect(() => {
-    const loadParticipants = () => {
-      const savedParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
-      setParticipants(savedParticipants);
+    const loadParticipants = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('participants')
+          .select('*');
+        
+        if (error) {
+          console.error('Error loading participants:', error);
+          toast.error('Errore nel caricamento dei partecipanti');
+          return;
+        }
+
+        console.log('Loaded participants:', data);
+        setParticipants(data || []);
+      } catch (error) {
+        console.error('Error in loadParticipants:', error);
+        toast.error('Errore nel caricamento dei partecipanti');
+      }
     };
 
     loadParticipants();
@@ -61,9 +78,7 @@ const Partecipanti = () => {
   const formatDateOfBirth = (dateString?: string): string => {
     if (!dateString) return '-';
 
-    // Check if it's a numeric value that needs formatting
     if (/^\d+$/.test(dateString)) {
-      // Try to parse it as a day of the year (Excel sometimes stores dates this way)
       const date = new Date(1899, 11, 30);
       date.setDate(date.getDate() + parseInt(dateString));
       if (isValid(date) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
@@ -71,13 +86,11 @@ const Partecipanti = () => {
       }
     }
 
-    // Try to parse as DD/MM/YYYY format
     const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
     if (isValid(parsedDate)) {
       return format(parsedDate, 'dd/MM/yyyy', { locale: it });
     }
 
-    // Try different formats if the standard one fails
     const formats = ['yyyy-MM-dd', 'MM/dd/yyyy', 'yyyy/MM/dd'];
     for (const formatString of formats) {
       const parsedDate = parse(dateString, formatString, new Date());
@@ -86,7 +99,6 @@ const Partecipanti = () => {
       }
     }
 
-    // Return original string if we can't parse it
     return dateString;
   };
 
@@ -106,13 +118,10 @@ const Partecipanti = () => {
   };
 
   const findOrCreateCompany = (companyData: any): string | undefined => {
-    // Se non c'è la ragione sociale, non creiamo l'azienda
     if (!companyData.ragioneSociale) return undefined;
 
-    // Recuperare le aziende esistenti
     const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
     
-    // Cercare se l'azienda esiste già per ragione sociale o partita IVA
     const existingCompany = existingCompanies.find((company: Company) => 
       (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
       (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
@@ -122,7 +131,6 @@ const Partecipanti = () => {
       return existingCompany.id;
     }
 
-    // Se non esiste, creare una nuova azienda
     const newCompany: Company = {
       id: crypto.randomUUID(),
       ragioneSociale: companyData.ragioneSociale,
@@ -138,7 +146,6 @@ const Partecipanti = () => {
       macrosettore: companyData.macrosettore || ''
     };
 
-    // Salvare la nuova azienda
     const updatedCompanies = [...existingCompanies, newCompany];
     localStorage.setItem('companies', JSON.stringify(updatedCompanies));
     
@@ -166,7 +173,6 @@ const Partecipanti = () => {
             throw new Error('Campi obbligatori mancanti: Nome, Cognome e Codice Fiscale sono richiesti');
           }
 
-          // Estrazione dati azienda dal file Excel
           const companyData = {
             ragioneSociale: row['Ragione Sociale Azienda*'] || row['Ragione Sociale Azienda'] || '',
             partitaIva: row['Partita IVA Azienda'] || '',
@@ -181,13 +187,11 @@ const Partecipanti = () => {
             macrosettore: row['Macrosettore'] || ''
           };
 
-          // Trova o crea azienda se ci sono dati validi
           let aziendaId: string | undefined;
           let aziendaNome: string | undefined;
           
           const existingCompanies = JSON.parse(localStorage.getItem('companies') || '[]');
           if (companyData.ragioneSociale) {
-            // Cercare se l'azienda esiste già per ragione sociale o partita IVA
             const existingCompany = existingCompanies.find((company: Company) => 
               (company.ragioneSociale.toLowerCase() === companyData.ragioneSociale.toLowerCase()) || 
               (companyData.partitaIva && company.partitaIva && company.partitaIva === companyData.partitaIva)
@@ -197,12 +201,10 @@ const Partecipanti = () => {
               aziendaId = existingCompany.id;
               aziendaNome = existingCompany.ragioneSociale;
               
-              // Aggiunta alla lista delle aziende collegate
               if (!existingCompaniesLinked.includes(existingCompany.ragioneSociale)) {
                 existingCompaniesLinked.push(existingCompany.ragioneSociale);
               }
             } else {
-              // Crea nuova azienda
               const newCompany: Company = {
                 id: crypto.randomUUID(),
                 ragioneSociale: companyData.ragioneSociale,
@@ -218,19 +220,16 @@ const Partecipanti = () => {
                 macrosettore: companyData.macrosettore || ''
               };
 
-              // Salvare la nuova azienda
               existingCompanies.push(newCompany);
               
               aziendaId = newCompany.id;
               aziendaNome = newCompany.ragioneSociale;
               
-              // Aggiunta alla lista delle nuove aziende create
               if (!newCompaniesCreated.includes(newCompany.ragioneSociale)) {
                 newCompaniesCreated.push(newCompany.ragioneSociale);
               }
             }
             
-            // Salva le aziende aggiornate
             localStorage.setItem('companies', JSON.stringify(existingCompanies));
           }
 
@@ -260,7 +259,6 @@ const Partecipanti = () => {
         localStorage.setItem('participants', JSON.stringify(updatedParticipants));
         setParticipants(updatedParticipants);
         
-        // Notifiche di successo
         toast.success(`Importati ${newParticipants.length} partecipanti con successo`);
         
         if (newCompaniesCreated.length > 0) {
@@ -311,6 +309,21 @@ const Partecipanti = () => {
           <p className="text-muted-foreground">Gestione partecipanti ai corsi</p>
         </div>
         <div className="flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="default"
+                onClick={() => setIsAddingParticipant(true)}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                Nuovo Partecipante
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              Aggiungi un nuovo partecipante
+            </TooltipContent>
+          </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" onClick={downloadTemplate}>
@@ -400,6 +413,11 @@ const Partecipanti = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <ParticipantFormDialog
+        isOpen={isAddingParticipant}
+        onClose={() => setIsAddingParticipant(false)}
+      />
     </div>
   );
 };
