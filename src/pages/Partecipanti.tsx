@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { ImportInstructions } from "@/components/alerts/ImportInstructions";
 import { format, isValid, parse } from "date-fns";
 import { it } from "date-fns/locale";
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import ParticipantFormDialog from "@/components/dialogs/ParticipantFormDialog";
 import { DatabaseParticipant, Participant } from '@/types/participant';
 
@@ -19,6 +19,7 @@ const Partecipanti = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     loadParticipants();
@@ -110,6 +111,11 @@ const Partecipanti = () => {
   };
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user) {
+      toast.error('Devi effettuare l\'accesso per importare i partecipanti');
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -187,7 +193,8 @@ const Partecipanti = () => {
               ccnl: row['CCNL'] || '',
               contratto: row['Tipologia contrattuale'] || '',
               qualifica: row['Qualifica professionale'] || '',
-              annoassunzione: row['Anno di assunzione'] || ''
+              annoassunzione: row['Anno di assunzione'] || '',
+              user_id: user.id
             };
 
             const { error: participantError } = await supabase

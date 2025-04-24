@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
+import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -31,7 +31,8 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
   const [corso, setCorso] = useState<any>(null);
-  
+  const { user } = useAuth();
+
   const { updateParticipantGlobally } = useParticipantActions(
     courseId || '', 
     corso, 
@@ -136,6 +137,11 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
       toast.error("ID corso non valido");
       return;
     }
+
+    if (!user) {
+      toast.error("Devi effettuare l'accesso per aggiungere un partecipante");
+      return;
+    }
     
     const existingCourses = localStorage.getItem('courses') 
       ? JSON.parse(localStorage.getItem('courses')!) 
@@ -157,7 +163,8 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     const newParticipant = {
       id: isEditing && initialData.id ? initialData.id : uuidv4(),
       ...data,
-      ...aziendaDetails
+      ...aziendaDetails,
+      user_id: user.id
     };
     
     if (!existingCourses[courseIndex].partecipantiList) {
