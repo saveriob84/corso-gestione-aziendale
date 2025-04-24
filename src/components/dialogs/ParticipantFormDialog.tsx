@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -77,7 +78,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   
   const formattedInitialData = {
     ...initialData,
-    dataNascita: parseDateIfNeeded(initialData?.dataNascita),
+    datanascita: parseDateIfNeeded(initialData?.datanascita),
     exLege: Boolean(initialData?.exLege)
   };
   
@@ -93,18 +94,18 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
       nome: formattedInitialData?.nome || "",
       cognome: formattedInitialData?.cognome || "",
       codicefiscale: formattedInitialData?.codicefiscale || "",
-      luogoNascita: formattedInitialData?.luogoNascita || "",
-      dataNascita: parseInitialDate(initialData?.dataNascita),
+      luogonascita: formattedInitialData?.luogonascita || "",
+      datanascita: parseInitialDate(initialData?.datanascita),
       username: formattedInitialData?.username || "",
       password: formattedInitialData?.password || "",
-      cellulare: formattedInitialData?.cellulare || "",
+      numerocellulare: formattedInitialData?.numerocellulare || "",
       aziendaId: formattedInitialData?.aziendaId || "",
       exLege: formattedInitialData?.exLege || false,
-      titoloStudio: formattedInitialData?.titoloStudio || "",
+      titolostudio: formattedInitialData?.titolostudio || "",
       ccnl: formattedInitialData?.ccnl || "",
       contratto: formattedInitialData?.contratto || "",
       qualifica: formattedInitialData?.qualifica || "",
-      annoAssunzione: formattedInitialData?.annoAssunzione || new Date().getFullYear().toString(),
+      annoassunzione: formattedInitialData?.annoassunzione || new Date().getFullYear().toString(),
     }
   });
 
@@ -114,18 +115,18 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         nome: initialData?.nome || "",
         cognome: initialData?.cognome || "",
         codicefiscale: initialData?.codicefiscale || "",
-        luogoNascita: initialData?.luogoNascita || "",
-        dataNascita: parseInitialDate(initialData?.dataNascita),
+        luogonascita: initialData?.luogonascita || "",
+        datanascita: parseInitialDate(initialData?.datanascita),
         username: initialData?.username || "",
         password: initialData?.password || "",
-        cellulare: initialData?.cellulare || "",
+        numerocellulare: initialData?.numerocellulare || "",
         aziendaId: initialData?.aziendaId || "",
         exLege: Boolean(initialData?.exLege) || false,
-        titoloStudio: initialData?.titoloStudio || "",
+        titolostudio: initialData?.titolostudio || "",
         ccnl: initialData?.ccnl || "",
         contratto: initialData?.contratto || "",
         qualifica: initialData?.qualifica || "",
-        annoAssunzione: initialData?.annoAssunzione || new Date().getFullYear().toString(),
+        annoassunzione: initialData?.annoassunzione || new Date().getFullYear().toString(),
       });
     }
   }, [initialData, isOpen, form]);

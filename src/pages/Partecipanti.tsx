@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -279,9 +278,9 @@ const Partecipanti = () => {
         'Nome': p.nome,
         'Cognome': p.cognome,
         'Codice Fiscale': p.codicefiscale,
-        'Data di Nascita': p.dataNascita || '',
+        'Data di Nascita': p.datanascita || '',
         'Azienda': p.azienda || '',
-        'Titolo di Studio': p.titoloStudio || '',
+        'Titolo di Studio': p.titolostudio || '',
         'Qualifica': p.qualifica || ''
       }));
 
@@ -398,9 +397,9 @@ const Partecipanti = () => {
                   <TableCell>{participant.nome}</TableCell>
                   <TableCell>{participant.cognome}</TableCell>
                   <TableCell>{participant.codicefiscale}</TableCell>
-                  <TableCell>{formatDateOfBirth(participant.dataNascita)}</TableCell>
+                  <TableCell>{formatDateOfBirth(participant.datanascita)}</TableCell>
                   <TableCell>{participant.azienda || '-'}</TableCell>
-                  <TableCell>{participant.titoloStudio || '-'}</TableCell>
+                  <TableCell>{participant.titolostudio || '-'}</TableCell>
                   <TableCell>{participant.qualifica || '-'}</TableCell>
                 </TableRow>
               ))}

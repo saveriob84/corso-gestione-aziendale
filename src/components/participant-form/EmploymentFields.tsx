@@ -16,7 +16,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
     <>
       <FormField
         control={form.control}
-        name="titoloStudio"
+        name="titolostudio"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Titolo di studio</FormLabel>
@@ -101,7 +101,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
 
       <FormField
         control={form.control}
-        name="annoAssunzione"
+        name="annoassunzione"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Anno di assunzione</FormLabel>

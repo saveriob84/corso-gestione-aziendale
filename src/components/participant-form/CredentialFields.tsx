@@ -42,7 +42,7 @@ export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
 
       <FormField
         control={form.control}
-        name="cellulare"
+        name="numerocellulare"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Numero di cellulare</FormLabel>
