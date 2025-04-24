@@ -37,7 +37,6 @@ const Partecipanti = () => {
 
       console.log('Loaded participants:', data);
       
-      // Transform the data to match our Participant interface
       const transformedData: Participant[] = (data || []).map((dbParticipant: DatabaseParticipant) => ({
         id: dbParticipant.id,
         nome: dbParticipant.nome,
@@ -65,7 +64,6 @@ const Partecipanti = () => {
     if (!companyData.ragioneSociale) return undefined;
 
     try {
-      // Check if company exists
       const { data: existingCompanies, error: searchError } = await supabase
         .from('companies')
         .select('*')
@@ -81,7 +79,6 @@ const Partecipanti = () => {
         return existingCompanies.id;
       }
 
-      // Create new company if not found
       const { data: newCompany, error: insertError } = await supabase
         .from('companies')
         .insert([{
@@ -129,13 +126,14 @@ const Partecipanti = () => {
           success: 0,
           errors: 0,
           companiesCreated: 0,
-          companiesLinked: 0
+          companiesLinked: 0,
+          errorDetails: [] as string[]
         };
 
         for (const row of rows) {
           try {
-            if (!row['Nome*'] || !row['Cognome*'] || !row['Codice Fiscale*']) {
-              console.error('Missing required fields:', row);
+            if (!row['Nome*'] || !row['Cognome*']) {
+              importResults.errorDetails.push(`Riga mancante di Nome o Cognome obbligatori`);
               importResults.errors++;
               continue;
             }
@@ -157,36 +155,51 @@ const Partecipanti = () => {
             let aziendaNome: string | undefined;
 
             if (companyData.ragioneSociale) {
-              aziendaId = await findOrCreateCompany(companyData);
-              aziendaNome = companyData.ragioneSociale;
-              if (aziendaId) {
-                importResults.companiesLinked++;
+              try {
+                aziendaId = await findOrCreateCompany(companyData);
+                if (aziendaId) {
+                  aziendaNome = companyData.ragioneSociale;
+                  importResults.companiesLinked++;
+                }
+              } catch (error: any) {
+                console.error('Error with company:', error);
+                importResults.errorDetails.push(
+                  `Errore con l'azienda "${companyData.ragioneSociale}": ${error.message}`
+                );
+                importResults.errors++;
+                continue;
               }
             }
 
+            const participantData = {
+              nome: row['Nome*'] || row['Nome'],
+              cognome: row['Cognome*'] || row['Cognome'],
+              codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
+              luogoNascita: row['Luogo di Nascita'] || '',
+              dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
+              aziendaid: aziendaId,
+              azienda: aziendaNome,
+              titoloStudio: row['Titolo di Studio'] || '',
+              qualifica: row['Qualifica professionale'] || '',
+              annoassunzione: row['Anno di assunzione'] || ''
+            };
+
             const { error: participantError } = await supabase
               .from('participants')
-              .insert([{
-                nome: row['Nome*'] || row['Nome'],
-                cognome: row['Cognome*'] || row['Cognome'],
-                codiceFiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
-                luogoNascita: row['Luogo di Nascita'] || '',
-                dataNascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
-                aziendaid: aziendaId,
-                azienda: aziendaNome,
-                titoloStudio: row['Titolo di Studio'] || '',
-                qualifica: row['Qualifica professionale'] || '',
-                annoassunzione: row['Anno di assunzione'] || ''
-              }]);
+              .insert([participantData]);
 
             if (participantError) {
               console.error('Error inserting participant:', participantError);
+              importResults.errorDetails.push(
+                `Errore inserendo ${participantData.nome} ${participantData.cognome}: ${participantError.message}`
+              );
               importResults.errors++;
             } else {
               importResults.success++;
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error('Error processing row:', error);
+            importResults.errorDetails.push(`Errore generico: ${error.message}`);
             importResults.errors++;
           }
         }
@@ -200,13 +213,15 @@ const Partecipanti = () => {
         
         if (importResults.errors > 0) {
           toast.error(`Si sono verificati ${importResults.errors} errori durante l'importazione`);
+          importResults.errorDetails.forEach(error => {
+            toast.error(error);
+          });
         }
 
-        // Reload participants list after import
         await loadParticipants();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error importing file:', error);
-        toast.error('Errore durante l\'importazione del file');
+        toast.error(`Errore durante l'importazione del file: ${error.message}`);
       } finally {
         setIsLoading(false);
       }

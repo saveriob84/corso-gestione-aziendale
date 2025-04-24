@@ -148,6 +148,7 @@ export type Database = {
           annoassunzione: string | null
           azienda: string | null
           aziendaid: string | null
+          codicefiscale: string | null
           cognome: string
           course_id: string | null
           id: string
@@ -160,6 +161,7 @@ export type Database = {
           annoassunzione?: string | null
           azienda?: string | null
           aziendaid?: string | null
+          codicefiscale?: string | null
           cognome: string
           course_id?: string | null
           id?: string
@@ -172,6 +174,7 @@ export type Database = {
           annoassunzione?: string | null
           azienda?: string | null
           aziendaid?: string | null
+          codicefiscale?: string | null
           cognome?: string
           course_id?: string | null
           id?: string
