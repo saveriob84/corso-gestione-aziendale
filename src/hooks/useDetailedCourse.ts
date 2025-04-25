@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -31,13 +30,28 @@ export const useDetailedCourse = () => {
 
         if (lessonsError) throw lessonsError;
 
-        // Then fetch participants for this course
-        const { data: participantsData, error: participantsError } = await supabase
-          .from('participants')
-          .select('*')
+        // Then fetch participants for this course using the junction table
+        const { data: courseParticipantsData, error: courseParticipantsError } = await supabase
+          .from('course_participants')
+          .select('participant_id')
           .eq('course_id', id);
 
-        if (participantsError) throw participantsError;
+        if (courseParticipantsError) throw courseParticipantsError;
+
+        // Get participant IDs
+        const participantIds = courseParticipantsData.map(cp => cp.participant_id);
+
+        // Then fetch the actual participants data
+        let participantsData = [];
+        if (participantIds.length > 0) {
+          const { data, error: participantsError } = await supabase
+            .from('participants')
+            .select('*')
+            .in('id', participantIds);
+
+          if (participantsError) throw participantsError;
+          participantsData = data || [];
+        }
 
         // Then fetch teachers and tutors for this course
         const { data: teachersTutorsData, error: teachersTutorsError } = await supabase
@@ -150,7 +164,7 @@ export const useDetailedCourse = () => {
     }
   };
 
-  // Function to delete a lesson - CORRETTO E MIGLIORATO
+  // Function to delete a lesson 
   const deleteLesson = async (lessonId: string) => {
     if (!id || !corso) {
       toast.error("ID corso non valido");

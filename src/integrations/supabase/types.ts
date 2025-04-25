@@ -57,6 +57,45 @@ export type Database = {
         }
         Relationships: []
       }
+      course_participants: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          participant_id: string
+          user_id: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          participant_id: string
+          user_id?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          participant_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_participants_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_participants_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           aziende: number

@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { useAuth } from '@/hooks/useAuth';
 import { Participant, DatabaseParticipant } from '@/types/participant';
-import { findOrCreateCompany } from '@/utils/companyUtils';
 
 export const useParticipants = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -13,6 +12,7 @@ export const useParticipants = () => {
 
   const loadParticipants = async () => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('participants')
         .select('*');
@@ -36,13 +36,16 @@ export const useParticipants = () => {
         qualifica: dbParticipant.qualifica,
         username: dbParticipant.username,
         numerocellulare: dbParticipant.numerocellulare,
-        annoassunzione: dbParticipant.annoassunzione
+        annoassunzione: dbParticipant.annoassunzione,
+        contratto: dbParticipant.contratto
       }));
       
       setParticipants(transformedData);
     } catch (error) {
       console.error('Error in loadParticipants:', error);
       toast.error('Errore nel caricamento dei partecipanti');
+    } finally {
+      setIsLoading(false);
     }
   };
 

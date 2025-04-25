@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useAuth } from '@/hooks/useAuth';
@@ -51,15 +52,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
 
           if (error) {
             console.error('Error fetching course from Supabase:', error);
-            const courses = JSON.parse(localStorage.getItem('courses') || '[]');
-            const currentCourse = courses.find((c: any) => c.id === courseId);
-            if (currentCourse) {
-              console.log('Course found in localStorage:', currentCourse);
-              setCorso(currentCourse);
-            } else {
-              console.error('Course not found in localStorage either');
-              toast.error("Corso non trovato");
-            }
+            toast.error("Corso non trovato");
             return;
           }
 
@@ -84,10 +77,18 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   };
   
   useEffect(() => {
-    const storedCompanies = localStorage.getItem('companies');
-    if (storedCompanies) {
-      setCompanies(JSON.parse(storedCompanies));
-    }
+    const fetchCompanies = async () => {
+      try {
+        const { data, error } = await supabase.from('companies').select('*');
+        if (error) throw error;
+        setCompanies(data || []);
+      } catch (error) {
+        console.error('Error loading companies:', error);
+        toast.error("Errore nel caricamento delle aziende");
+      }
+    };
+    
+    fetchCompanies();
   }, [isCompanyFormOpen]);
   
   const form = useForm<ParticipantFormValues>({
@@ -132,78 +133,113 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     }
   }, [initialData, isOpen, form]);
 
-  const onSubmit = (data: ParticipantFormValues) => {
-    if (!courseId) {
-      toast.error("ID corso non valido");
-      return;
-    }
-
+  const onSubmit = async (data: ParticipantFormValues) => {
     if (!user) {
       toast.error("Devi effettuare l'accesso per aggiungere un partecipante");
       return;
     }
     
-    const existingCourses = localStorage.getItem('courses') 
-      ? JSON.parse(localStorage.getItem('courses')!) 
-      : [];
-    
-    const courseIndex = existingCourses.findIndex((course: any) => course.id === courseId);
-    
-    if (courseIndex === -1) {
-      toast.error("Corso non trovato");
-      return;
-    }
-    
-    const selectedCompany = companies.find(company => company.id === data.aziendaId);
-    const aziendaDetails = selectedCompany ? {
-      aziendaId: selectedCompany.id,
-      azienda: selectedCompany.ragioneSociale
-    } : { azienda: "Non specificata" };
-    
-    const newParticipant = {
-      id: isEditing && initialData.id ? initialData.id : uuidv4(),
-      ...data,
-      ...aziendaDetails,
-      user_id: user.id
-    };
-    
-    if (!existingCourses[courseIndex].partecipantiList) {
-      existingCourses[courseIndex].partecipantiList = [];
-    }
-    
-    if (isEditing && initialData.id) {
-      const participantIndex = existingCourses[courseIndex].partecipantiList.findIndex(
-        (participant: any) => participant.id === initialData.id
-      );
-      if (participantIndex !== -1) {
-        existingCourses[courseIndex].partecipantiList[participantIndex] = {
-          ...existingCourses[courseIndex].partecipantiList[participantIndex],
-          ...newParticipant
-        };
-        
-        updateParticipantGlobally(newParticipant);
-      }
-    } else {
-      existingCourses[courseIndex].partecipantiList.push(newParticipant);
+    try {
+      const selectedCompany = companies.find(company => company.id === data.aziendaId);
+      const aziendaDetails = selectedCompany ? {
+        aziendaId: selectedCompany.id,
+        azienda: selectedCompany.ragioneSociale
+      } : { azienda: "Non specificata" };
       
-      existingCourses[courseIndex].partecipanti = 
-        (existingCourses[courseIndex].partecipanti || 0) + 1;
+      let participantId: string;
+      
+      if (isEditing && initialData.id) {
+        // Update existing participant
+        const { error } = await supabase
+          .from('participants')
+          .update({
+            nome: data.nome,
+            cognome: data.cognome,
+            codicefiscale: data.codicefiscale,
+            luogonascita: data.luogonascita,
+            datanascita: data.datanascita?.toISOString(),
+            username: data.username,
+            password: data.password,
+            numerocellulare: data.numerocellulare,
+            aziendaid: data.aziendaId,
+            azienda: aziendaDetails.azienda,
+            titolostudio: data.titolostudio,
+            ccnl: data.ccnl,
+            contratto: data.contratto,
+            qualifica: data.qualifica,
+            annoassunzione: data.annoassunzione,
+          })
+          .eq('id', initialData.id);
         
-      const existingParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
-      existingParticipants.push(newParticipant);
-      localStorage.setItem('participants', JSON.stringify(existingParticipants));
+        if (error) throw error;
+        participantId = initialData.id;
+        
+        updateParticipantGlobally({
+          id: participantId,
+          ...data,
+          ...aziendaDetails
+        });
+        
+      } else {
+        // Create new participant
+        const newParticipantId = uuidv4();
+        
+        const { error } = await supabase
+          .from('participants')
+          .insert({
+            id: newParticipantId,
+            nome: data.nome,
+            cognome: data.cognome,
+            codicefiscale: data.codicefiscale,
+            luogonascita: data.luogonascita,
+            datanascita: data.datanascita?.toISOString(),
+            username: data.username,
+            password: data.password,
+            numerocellulare: data.numerocellulare,
+            aziendaid: data.aziendaId,
+            azienda: aziendaDetails.azienda,
+            titolostudio: data.titolostudio,
+            ccnl: data.ccnl,
+            contratto: data.contratto,
+            qualifica: data.qualifica,
+            annoassunzione: data.annoassunzione,
+            user_id: user.id
+          });
+        
+        if (error) throw error;
+        participantId = newParticipantId;
+        
+        // If we're adding a participant from the course detail page, add to junction table
+        if (courseId) {
+          const { error: junctionError } = await supabase
+            .from('course_participants')
+            .insert({
+              course_id: courseId,
+              participant_id: participantId,
+              user_id: user.id
+            });
+          
+          if (junctionError) throw junctionError;
+        }
+      }
+      
+      toast.success(isEditing 
+        ? "Partecipante aggiornato con successo" 
+        : "Partecipante aggiunto con successo"
+      );
+      
+      // If we're in a course detail page, refresh the page to update the participant list
+      if (courseId) {
+        onClose();
+        window.location.reload();
+      } else {
+        onClose();
+      }
+      
+    } catch (error: any) {
+      console.error('Error in participant submit:', error);
+      toast.error(`Errore: ${error.message || 'Si è verificato un errore'}`);
     }
-    
-    localStorage.setItem('courses', JSON.stringify(existingCourses));
-    
-    toast.success(isEditing 
-      ? "Partecipante aggiornato con successo" 
-      : "Partecipante aggiunto con successo"
-    );
-    
-    onClose();
-    
-    window.location.reload();
   };
 
   const handleOpenCompanyForm = () => {

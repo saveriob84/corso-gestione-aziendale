@@ -16,38 +16,20 @@ export const useParticipantActions = (courseId: string, corso: any, setCorso: (c
     if (!participantToDelete) return;
     
     try {
-      // Try to delete from Supabase first
+      // Delete from the junction table rather than updating the participant record
       const { error } = await supabase
-        .from('participants')
+        .from('course_participants')
         .delete()
-        .eq('id', participantToDelete)
+        .eq('participant_id', participantToDelete)
         .eq('course_id', courseId);
       
       if (error) {
-        console.error('Error deleting participant from Supabase:', error);
-        // Fall back to local storage if Supabase fails
-        const existingCourses = localStorage.getItem('courses') 
-          ? JSON.parse(localStorage.getItem('courses')!) 
-          : [];
-        
-        const courseIndex = existingCourses.findIndex((course: any) => course.id === courseId);
-        
-        if (courseIndex === -1) {
-          toast.error("Corso non trovato");
-          return;
-        }
-        
-        const updatedParticipantsList = existingCourses[courseIndex].partecipantiList.filter(
-          (participant: any) => participant.id !== participantToDelete
-        );
-        
-        existingCourses[courseIndex].partecipantiList = updatedParticipantsList;
-        existingCourses[courseIndex].partecipanti = updatedParticipantsList.length;
-        
-        localStorage.setItem('courses', JSON.stringify(existingCourses));
+        console.error('Error removing participant from course:', error);
+        toast.error("Errore nella rimozione del partecipante dal corso");
+        return;
       }
       
-      // Update local state regardless of whether Supabase or localStorage was used
+      // Update local state
       if (corso && corso.partecipantiList) {
         const updatedParticipantsList = corso.partecipantiList.filter(
           (p: any) => p.id !== participantToDelete
@@ -60,11 +42,11 @@ export const useParticipantActions = (courseId: string, corso: any, setCorso: (c
         });
       }
       
-      toast.success("Partecipante eliminato con successo");
+      toast.success("Partecipante rimosso dal corso con successo");
       setIsDeleteParticipantDialogOpen(false);
     } catch (error) {
       console.error('Error in confirmDeleteParticipant:', error);
-      toast.error("Errore nell'eliminazione del partecipante");
+      toast.error("Errore nella rimozione del partecipante dal corso");
     }
   };
 
@@ -75,20 +57,36 @@ export const useParticipantActions = (courseId: string, corso: any, setCorso: (c
     }
 
     try {
-      // Check if participant is already in the course
-      if (corso?.partecipantiList?.some((p: any) => p.id === participant.id)) {
+      // Check if participant is already in the course via the junction table
+      const { data: existingRelation, error: checkError } = await supabase
+        .from('course_participants')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('participant_id', participant.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking course participant relation:', checkError);
+        toast.error("Errore nel controllo della relazione corso-partecipante");
+        return;
+      }
+
+      if (existingRelation) {
         toast.error("Il partecipante è già presente in questo corso");
         return;
       }
 
-      // Add the participant to the course in Supabase
+      // Add the participant to the course via the junction table
       const { error } = await supabase
-        .from('participants')
-        .update({ course_id: courseId })
-        .eq('id', participant.id);
+        .from('course_participants')
+        .insert({
+          course_id: courseId,
+          participant_id: participant.id,
+          user_id: participant.user_id
+        });
 
       if (error) {
-        console.error('Error adding participant to course in Supabase:', error);
+        console.error('Error adding participant to course:', error);
         toast.error("Errore nell'aggiunta del partecipante al corso");
         return;
       }
@@ -112,7 +110,7 @@ export const useParticipantActions = (courseId: string, corso: any, setCorso: (c
     }
   };
 
-  // Function to update the global participant list when a participant is updated in a course
+  // Function to update the global participant list when a participant is updated
   const updateParticipantGlobally = (updatedParticipant: any) => {
     // Update the participant in the global participants list
     const existingParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
