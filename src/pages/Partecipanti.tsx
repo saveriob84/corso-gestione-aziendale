@@ -1,114 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from "@/components/ui/table";
-import { Download, Upload, FileText, UserPlus } from "lucide-react";
+
+import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getParticipantTemplate } from '@/utils/excelTemplates';
 import { ImportInstructions } from "@/components/alerts/ImportInstructions";
-import { format, isValid, parse } from "date-fns";
-import { it } from "date-fns/locale";
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import ParticipantFormDialog from "@/components/dialogs/ParticipantFormDialog";
-import { DatabaseParticipant, Participant } from '@/types/participant';
+import ParticipantHeader from "@/components/participants/ParticipantHeader";
+import ParticipantTable from "@/components/participants/ParticipantTable";
+import { useParticipants } from "@/hooks/useParticipants";
+import { getParticipantTemplate } from '@/utils/excelTemplates';
+import { findOrCreateCompany } from '@/utils/companyUtils';
 
 const Partecipanti = () => {
-  const [participants, setParticipants] = useState<Participant[]>([]);
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { participants, isLoading, setIsLoading, loadParticipants } = useParticipants();
   const { user } = useAuth();
-
-  useEffect(() => {
-    loadParticipants();
-  }, []);
-
-  const loadParticipants = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('participants')
-        .select('*');
-      
-      if (error) {
-        console.error('Error loading participants:', error);
-        toast.error('Errore nel caricamento dei partecipanti');
-        return;
-      }
-
-      console.log('Loaded participants:', data);
-      
-      const transformedData: Participant[] = (data || []).map((dbParticipant: DatabaseParticipant) => ({
-        id: dbParticipant.id,
-        nome: dbParticipant.nome,
-        cognome: dbParticipant.cognome,
-        codicefiscale: dbParticipant.codicefiscale || '-',
-        luogonascita: dbParticipant.luogonascita,
-        datanascita: dbParticipant.datanascita,
-        aziendaId: dbParticipant.aziendaid,
-        azienda: dbParticipant.azienda,
-        titolostudio: dbParticipant.titolostudio,
-        qualifica: dbParticipant.qualifica,
-        username: dbParticipant.username,
-        numerocellulare: dbParticipant.numerocellulare,
-        annoassunzione: dbParticipant.annoassunzione
-      }));
-      
-      setParticipants(transformedData);
-    } catch (error) {
-      console.error('Error in loadParticipants:', error);
-      toast.error('Errore nel caricamento dei partecipanti');
-    }
-  };
-
-  const findOrCreateCompany = async (companyData: any) => {
-    if (!companyData.ragioneSociale) return undefined;
-
-    try {
-      const { data: existingCompanies, error: searchError } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('ragionesociale', companyData.ragioneSociale)
-        .maybeSingle();
-
-      if (searchError) {
-        console.error('Error searching for company:', searchError);
-        return undefined;
-      }
-
-      if (existingCompanies) {
-        return existingCompanies.id;
-      }
-
-      const { data: newCompany, error: insertError } = await supabase
-        .from('companies')
-        .insert([{
-          ragionesociale: companyData.ragioneSociale,
-          partitaiva: companyData.partitaIva || '',
-          indirizzo: companyData.indirizzo || '',
-          comune: companyData.comune || '',
-          cap: companyData.cap || '',
-          provincia: companyData.provincia || '',
-          telefono: companyData.telefono || '',
-          email: companyData.email || '',
-          referente: companyData.referente || '',
-          codiceateco: companyData.codiceAteco || ''
-        }])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('Error creating company:', insertError);
-        return undefined;
-      }
-
-      return newCompany.id;
-    } catch (error) {
-      console.error('Error in findOrCreateCompany:', error);
-      return undefined;
-    }
-  };
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!user) {
@@ -162,19 +70,10 @@ const Partecipanti = () => {
             let aziendaNome: string | undefined;
 
             if (companyData.ragioneSociale) {
-              try {
-                aziendaId = await findOrCreateCompany(companyData);
-                if (aziendaId) {
-                  aziendaNome = companyData.ragioneSociale;
-                  importResults.companiesLinked++;
-                }
-              } catch (error: any) {
-                console.error('Error with company:', error);
-                importResults.errorDetails.push(
-                  `Errore con l'azienda "${companyData.ragioneSociale}": ${error.message}`
-                );
-                importResults.errors++;
-                continue;
+              aziendaId = await findOrCreateCompany(companyData);
+              if (aziendaId) {
+                aziendaNome = companyData.ragioneSociale;
+                importResults.companiesLinked++;
               }
             }
 
@@ -243,33 +142,6 @@ const Partecipanti = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const formatDateOfBirth = (dateString?: string): string => {
-    if (!dateString) return '-';
-
-    if (/^\d+$/.test(dateString)) {
-      const date = new Date(1899, 11, 30);
-      date.setDate(date.getDate() + parseInt(dateString));
-      if (isValid(date) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
-        return format(date, 'dd/MM/yyyy', { locale: it });
-      }
-    }
-
-    const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
-    if (isValid(parsedDate)) {
-      return format(parsedDate, 'dd/MM/yyyy', { locale: it });
-    }
-
-    const formats = ['yyyy-MM-dd', 'MM/dd/yyyy', 'yyyy/MM/dd'];
-    for (const formatString of formats) {
-      const parsedDate = parse(dateString, formatString, new Date());
-      if (isValid(parsedDate)) {
-        return format(parsedDate, 'dd/MM/yyyy', { locale: it });
-      }
-    }
-
-    return dateString;
-  };
-
   const downloadTemplate = () => {
     try {
       const template = getParticipantTemplate();
@@ -309,122 +181,37 @@ const Partecipanti = () => {
     }
   };
 
+  const triggerImportInput = () => {
+    document.getElementById('import-file')?.click();
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Elenco Partecipanti</h1>
-          <p className="text-muted-foreground">Gestione partecipanti ai corsi</p>
-        </div>
-        <div className="flex gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="default"
-                onClick={() => setIsAddingParticipant(true)}
-                disabled={isLoading}
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                Nuovo Partecipante
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-sm">
-              Aggiungi un nuovo partecipante
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" onClick={downloadTemplate} disabled={isLoading}>
-                <FileText className="mr-2 h-4 w-4" />
-                Scarica Template Excel
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-sm">
-              Scarica un template Excel con tutti i campi necessari per importare i partecipanti
-            </TooltipContent>
-          </Tooltip>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                onClick={() => document.getElementById('import-file')?.click()}
-                disabled={isLoading}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {isLoading ? 'Importazione in corso...' : 'Importa Excel/CSV'}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-sm">
-              Importa un file Excel o CSV contenente l'elenco dei partecipanti
-            </TooltipContent>
-          </Tooltip>
-          
-          <input
-            type="file"
-            id="import-file"
-            className="hidden"
-            accept=".xlsx,.xls,.csv"
-            onChange={handleImport}
-            disabled={isLoading}
-          />
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" onClick={handleExport} disabled={isLoading}>
-                <Download className="mr-2 h-4 w-4" />
-                Esporta Excel
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-sm">
-              Esporta l'elenco completo dei partecipanti in formato Excel
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      </div>
+      <ParticipantHeader
+        isLoading={isLoading}
+        onDownloadTemplate={downloadTemplate}
+        onImportClick={triggerImportInput}
+        onAddParticipant={() => setIsAddingParticipant(true)}
+        onExport={handleExport}
+      />
 
       <ImportInstructions />
 
+      <input
+        type="file"
+        id="import-file"
+        className="hidden"
+        accept=".xlsx,.xls,.csv"
+        onChange={handleImport}
+        disabled={isLoading}
+      />
+
       <Card>
-        <CardHeader>
-          <CardTitle>Partecipanti</CardTitle>
-          <CardDescription>Lista completa dei partecipanti a tutti i corsi</CardDescription>
-        </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Cognome</TableHead>
-                <TableHead>Codice Fiscale</TableHead>
-                <TableHead>Data di Nascita</TableHead>
-                <TableHead>Azienda</TableHead>
-                <TableHead>Titolo di Studio</TableHead>
-                <TableHead>Qualifica</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {participants.map((participant) => (
-                <TableRow key={participant.id}>
-                  <TableCell>{participant.nome}</TableCell>
-                  <TableCell>{participant.cognome}</TableCell>
-                  <TableCell>{participant.codicefiscale}</TableCell>
-                  <TableCell>{formatDateOfBirth(participant.datanascita)}</TableCell>
-                  <TableCell>{participant.azienda || '-'}</TableCell>
-                  <TableCell>{participant.titolostudio || '-'}</TableCell>
-                  <TableCell>{participant.qualifica || '-'}</TableCell>
-                </TableRow>
-              ))}
-              {participants.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">
-                    {isLoading ? 'Caricamento...' : 'Nessun partecipante trovato'}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <ParticipantTable 
+            participants={participants}
+            isLoading={isLoading}
+          />
         </CardContent>
       </Card>
 
