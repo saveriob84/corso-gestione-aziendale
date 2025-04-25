@@ -8,6 +8,7 @@ import { Participant, DatabaseParticipant } from '@/types/participant';
 export const useParticipants = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
 
   const loadParticipants = async () => {
@@ -15,7 +16,8 @@ export const useParticipants = () => {
       setIsLoading(true);
       const { data, error } = await supabase
         .from('participants')
-        .select('*');
+        .select('*')
+        .order('cognome', { ascending: true });
       
       if (error) {
         console.error('Error loading participants:', error);
@@ -37,7 +39,8 @@ export const useParticipants = () => {
         username: dbParticipant.username,
         numerocellulare: dbParticipant.numerocellulare,
         annoassunzione: dbParticipant.annoassunzione,
-        contratto: dbParticipant.contratto
+        contratto: dbParticipant.contratto,
+        user_id: dbParticipant.user_id
       }));
       
       setParticipants(transformedData);
@@ -49,14 +52,50 @@ export const useParticipants = () => {
     }
   };
 
+  const deleteParticipant = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('participants')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user?.id);
+
+      if (error) {
+        console.error('Error deleting participant:', error);
+        toast.error('Errore nella eliminazione del partecipante');
+        return false;
+      }
+
+      toast.success('Partecipante eliminato con successo');
+      await loadParticipants();
+      return true;
+    } catch (error) {
+      console.error('Error in deleteParticipant:', error);
+      toast.error('Errore nella eliminazione del partecipante');
+      return false;
+    }
+  };
+
+  const filteredParticipants = participants.filter(participant => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      participant.nome?.toLowerCase().includes(searchLower) ||
+      participant.cognome?.toLowerCase().includes(searchLower) ||
+      participant.codicefiscale?.toLowerCase().includes(searchLower)
+    );
+  });
+
   useEffect(() => {
     loadParticipants();
   }, []);
 
   return {
-    participants,
+    participants: filteredParticipants,
     isLoading,
     setIsLoading,
-    loadParticipants
+    loadParticipants,
+    deleteParticipant,
+    searchQuery,
+    setSearchQuery
   };
 };

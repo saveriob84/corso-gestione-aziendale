@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -12,11 +11,30 @@ import ParticipantTable from "@/components/participants/ParticipantTable";
 import { useParticipants } from "@/hooks/useParticipants";
 import { getParticipantTemplate } from '@/utils/excelTemplates';
 import { findOrCreateCompany } from '@/utils/companyUtils';
+import { Participant } from '@/types/participant';
 
 const Partecipanti = () => {
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
-  const { participants, isLoading, setIsLoading, loadParticipants } = useParticipants();
+  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
+  const { 
+    participants, 
+    isLoading, 
+    setIsLoading, 
+    loadParticipants,
+    deleteParticipant,
+    searchQuery,
+    setSearchQuery
+  } = useParticipants();
   const { user } = useAuth();
+
+  const handleEdit = (participant: Participant) => {
+    setEditingParticipant(participant);
+    setIsAddingParticipant(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteParticipant(id);
+  };
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!user) {
@@ -191,7 +209,10 @@ const Partecipanti = () => {
         isLoading={isLoading}
         onDownloadTemplate={downloadTemplate}
         onImportClick={triggerImportInput}
-        onAddParticipant={() => setIsAddingParticipant(true)}
+        onAddParticipant={() => {
+          setEditingParticipant(null);
+          setIsAddingParticipant(true);
+        }}
         onExport={handleExport}
       />
 
@@ -211,13 +232,22 @@ const Partecipanti = () => {
           <ParticipantTable 
             participants={participants}
             isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
         </CardContent>
       </Card>
 
       <ParticipantFormDialog
         isOpen={isAddingParticipant}
-        onClose={() => setIsAddingParticipant(false)}
+        onClose={() => {
+          setIsAddingParticipant(false);
+          setEditingParticipant(null);
+        }}
+        initialData={editingParticipant || undefined}
+        isEditing={!!editingParticipant}
       />
     </div>
   );
