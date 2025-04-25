@@ -1,6 +1,6 @@
 
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from "@/components/ui/table";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 import { Participant } from "@/types/participant";
 
