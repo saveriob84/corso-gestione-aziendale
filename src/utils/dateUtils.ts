@@ -7,6 +7,7 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
   if (dateValue instanceof Date) return dateValue;
   
   if (typeof dateValue === 'string') {
+    // Try parsing common date formats
     const formats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
     
     for (const dateFormat of formats) {
@@ -16,9 +17,19 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
       }
     }
     
+    // Try parsing ISO string
     const timestamp = Date.parse(dateValue);
     if (!isNaN(timestamp)) {
       return new Date(timestamp);
+    }
+    
+    // Handle Excel date format (days since 1899-12-30)
+    if (/^\d+$/.test(dateValue)) {
+      const date = new Date(1899, 11, 30);
+      date.setDate(date.getDate() + parseInt(dateValue));
+      if (!isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < new Date().getFullYear()) {
+        return date;
+      }
     }
   }
   

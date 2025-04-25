@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -11,11 +12,12 @@ import ParticipantTable from "@/components/participants/ParticipantTable";
 import { useParticipants } from "@/hooks/useParticipants";
 import { getParticipantTemplate } from '@/utils/excelTemplates';
 import { findOrCreateCompany } from '@/utils/companyUtils';
-import { Participant } from '@/types/participant';
+import { Participant, ParticipantFormValues } from '@/types/participant';
+import { parseDateIfNeeded } from '@/utils/dateUtils';
 
 const Partecipanti = () => {
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
-  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
+  const [editingParticipant, setEditingParticipant] = useState<Partial<ParticipantFormValues> | null>(null);
   const { 
     participants, 
     isLoading, 
@@ -28,7 +30,14 @@ const Partecipanti = () => {
   const { user } = useAuth();
 
   const handleEdit = (participant: Participant) => {
-    setEditingParticipant(participant);
+    // Convert the participant object to match ParticipantFormValues
+    // The key step here is to convert the datanascita string to a Date object
+    const formattedParticipant: Partial<ParticipantFormValues> = {
+      ...participant,
+      datanascita: parseDateIfNeeded(participant.datanascita)
+    };
+    
+    setEditingParticipant(formattedParticipant);
     setIsAddingParticipant(true);
   };
 

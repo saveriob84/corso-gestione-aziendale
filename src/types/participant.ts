@@ -78,4 +78,5 @@ export interface Participant {
   ccnl?: string;
   contratto?: string;
   annoassunzione?: string;
+  user_id?: string;
 }
