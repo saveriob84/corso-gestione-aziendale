@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useAuth } from '@/hooks/useAuth';
@@ -27,7 +26,8 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   onClose,
   initialData = {},
   isEditing = false,
-  courseId
+  courseId,
+  onSuccess
 }) => {
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
@@ -179,6 +179,9 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
           ...data,
           ...aziendaDetails
         });
+        
+        toast.success("Partecipante aggiornato con successo");
+        onSuccess?.();
         
       } else {
         // Create new participant

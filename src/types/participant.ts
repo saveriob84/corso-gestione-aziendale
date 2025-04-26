@@ -1,4 +1,3 @@
-
 export interface ParticipantFormValues {
   id?: string;
   nome: string;
@@ -38,6 +37,8 @@ export interface ParticipantFormDialogProps {
   onClose: () => void;
   initialData?: Partial<ParticipantFormValues>;
   isEditing?: boolean;
+  onSuccess?: () => void;
+  courseId?: string;
 }
 
 export interface DatabaseParticipant {

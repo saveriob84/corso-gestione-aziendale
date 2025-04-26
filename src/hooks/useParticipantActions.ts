@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,31 +109,12 @@ export const useParticipantActions = (courseId: string, corso: any, setCorso: (c
     }
   };
 
-  // Function to update the global participant list when a participant is updated
-  const updateParticipantGlobally = (updatedParticipant: any) => {
-    // Update the participant in the global participants list
-    const existingParticipants = JSON.parse(localStorage.getItem('participants') || '[]');
-    
-    const participantIndex = existingParticipants.findIndex((p: any) => p.id === updatedParticipant.id);
-    
-    if (participantIndex !== -1) {
-      // Update existing participant
-      existingParticipants[participantIndex] = {
-        ...existingParticipants[participantIndex],
-        ...updatedParticipant
-      };
-      
-      localStorage.setItem('participants', JSON.stringify(existingParticipants));
-    }
-  };
-
   return {
     participantToDelete,
     isDeleteParticipantDialogOpen,
     setIsDeleteParticipantDialogOpen,
     handleDeleteParticipant,
     confirmDeleteParticipant,
-    handleAddExistingParticipant,
-    updateParticipantGlobally
+    handleAddExistingParticipant
   };
 };

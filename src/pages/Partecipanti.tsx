@@ -257,6 +257,7 @@ const Partecipanti = () => {
         }}
         initialData={editingParticipant || undefined}
         isEditing={!!editingParticipant}
+        onSuccess={loadParticipants}  // Add this line to refresh the list after updates
       />
     </div>
   );
