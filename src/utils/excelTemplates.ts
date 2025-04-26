@@ -1,13 +1,11 @@
-
 export const getParticipantTemplate = () => {
   return [
     {
-      // Participant fields
       'Nome*': '',
       'Cognome*': '',
       'Codice Fiscale*': '',
       'Luogo di Nascita': '',
-      'Data di Nascita (GG/MM/AAAA)': '',
+      'Data di Nascita (GG/MM/AAAA)*': '',
       'Username': '',
       'Password': '',
       'Numero di cellulare': '',
@@ -16,7 +14,6 @@ export const getParticipantTemplate = () => {
       'Tipologia contrattuale': '',
       'Qualifica professionale': '',
       'Anno di assunzione': '',
-      // Company fields
       'Ragione Sociale Azienda*': '',
       'Partita IVA Azienda': '',
       'Indirizzo Azienda': '',

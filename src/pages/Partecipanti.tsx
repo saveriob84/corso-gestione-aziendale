@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -67,6 +66,7 @@ const Partecipanti = () => {
         const importResults = {
           success: 0,
           errors: 0,
+          dateErrors: 0,
           companiesCreated: 0,
           companiesLinked: 0,
           errorDetails: [] as string[]
@@ -78,6 +78,24 @@ const Partecipanti = () => {
               importResults.errorDetails.push(`Riga mancante di Nome o Cognome obbligatori`);
               importResults.errors++;
               continue;
+            }
+
+            // Parse and validate birth date
+            let birthDate = null;
+            const rawDate = row['Data di Nascita (GG/MM/AAAA)*'] || row['Data di Nascita'];
+            if (rawDate) {
+              console.log(`Attempting to parse date: ${rawDate}`);
+              const parsedDate = parseDateIfNeeded(rawDate);
+              if (parsedDate) {
+                birthDate = formatDateForStorage(parsedDate);
+                console.log(`Parsed and formatted date: ${birthDate}`);
+              } else {
+                importResults.dateErrors++;
+                importResults.errorDetails.push(
+                  `Errore nel formato della data di nascita per ${row['Nome*']} ${row['Cognome*']}: ${rawDate}`
+                );
+                continue;
+              }
             }
 
             const companyData = {
@@ -102,14 +120,6 @@ const Partecipanti = () => {
                 aziendaNome = companyData.ragioneSociale;
                 importResults.companiesLinked++;
               }
-            }
-
-            // Parse and format the birth date correctly for storage
-            let birthDate = null;
-            if (row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita']) {
-              const rawDate = row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'];
-              const parsedDate = parseDateIfNeeded(rawDate);
-              birthDate = parsedDate ? formatDateForStorage(parsedDate) : null;
             }
 
             const participantData = {
@@ -151,11 +161,13 @@ const Partecipanti = () => {
           }
         }
 
+        // Show import results
         if (importResults.success > 0) {
           toast.success(`Importati ${importResults.success} partecipanti con successo`);
-          if (importResults.companiesLinked > 0) {
-            toast.success(`Collegate ${importResults.companiesLinked} aziende ai partecipanti`);
-          }
+        }
+        
+        if (importResults.dateErrors > 0) {
+          toast.error(`${importResults.dateErrors} partecipanti hanno date di nascita non valide`);
         }
         
         if (importResults.errors > 0) {

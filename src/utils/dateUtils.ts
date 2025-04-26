@@ -1,4 +1,3 @@
-
 import { format, parse, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -11,12 +10,13 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
   if (dateValue instanceof Date) return dateValue;
   
   if (typeof dateValue === 'string') {
-    // Try parsing common date formats
-    const formats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
+    // Try parsing common Italian date formats first
+    const formats = ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'dd-MM-yyyy'];
     
     for (const dateFormat of formats) {
       const parsedDate = parse(dateValue, dateFormat, new Date());
       if (isValid(parsedDate)) {
+        console.log(`Successfully parsed date ${dateValue} using format ${dateFormat}`);
         return parsedDate;
       }
     }
@@ -24,17 +24,26 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
     // Try parsing ISO string
     const timestamp = Date.parse(dateValue);
     if (!isNaN(timestamp)) {
+      console.log(`Successfully parsed ISO date ${dateValue}`);
       return new Date(timestamp);
     }
     
     // Handle Excel date format (days since 1899-12-30)
-    if (/^\d+$/.test(dateValue)) {
+    if (/^\d+(\.\d+)?$/.test(dateValue)) {
+      const numericValue = parseFloat(dateValue);
       const date = new Date(1899, 11, 30);
-      date.setDate(date.getDate() + parseInt(dateValue));
-      if (!isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < new Date().getFullYear()) {
+      date.setDate(date.getDate() + Math.floor(numericValue));
+      
+      // Only accept dates between 1900 and current year
+      if (!isNaN(date.getTime()) && 
+          date.getFullYear() > 1900 && 
+          date.getFullYear() <= new Date().getFullYear()) {
+        console.log(`Successfully parsed Excel numeric date ${dateValue}`);
         return date;
       }
     }
+
+    console.log(`Failed to parse date: ${dateValue}`);
   }
   
   return undefined;
@@ -77,8 +86,14 @@ export const parseInitialDate = (dateString?: string | Date): Date | undefined =
  * This ensures consistent date storage without timezone issues
  */
 export const formatDateForStorage = (date: Date | undefined): string | null => {
-  if (!date || !isValid(date)) return null;
-  return format(date, 'yyyy-MM-dd');
+  if (!date || !isValid(date)) {
+    console.log('Invalid date provided to formatDateForStorage');
+    return null;
+  }
+  
+  const formattedDate = format(date, 'yyyy-MM-dd');
+  console.log(`Formatting date for storage: ${date} -> ${formattedDate}`);
+  return formattedDate;
 };
 
 /**
