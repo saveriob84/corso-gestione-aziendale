@@ -1,4 +1,3 @@
-
 import { format, parse, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -104,6 +103,18 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
 };
 
 /**
+ * Helper function to parse initial date values for form initialization
+ * Handles undefined, null, string, and Date inputs
+ */
+export const parseInitialDate = (dateValue: string | Date | undefined | null): Date | undefined => {
+  if (!dateValue) return undefined;
+  
+  const parsedDate = parseDateIfNeeded(dateValue);
+  
+  return parsedDate instanceof Date && isValid(parsedDate) ? parsedDate : undefined;
+};
+
+/**
  * Formats a Date object to a YYYY-MM-DD string (without time or timezone)
  * This ensures consistent date storage without timezone issues
  */
@@ -152,4 +163,3 @@ export const getDateParsingFeedback = (dateValue: any): string => {
   
   return 'Formato data non supportato';
 };
-
