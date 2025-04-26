@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +10,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import CompanyFormDialog from './CompanyFormDialog';
 import { useParticipantActions } from '@/hooks/useParticipantActions';
-import { parseDateIfNeeded, parseInitialDate } from '@/utils/dateUtils';
+import { parseDateIfNeeded, parseInitialDate, formatDateForStorage } from '@/utils/dateUtils';
 import { PersonalInfoFields } from '../participant-form/PersonalInfoFields';
 import { CredentialFields } from '../participant-form/CredentialFields';
 import { EmploymentFields } from '../participant-form/EmploymentFields';
@@ -66,8 +65,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
       };
 
       fetchCourseData();
-    } else {
-      console.error('No courseId provided to ParticipantFormDialog');
     }
   }, [courseId, isOpen]);
   
@@ -147,10 +144,11 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         azienda: selectedCompany.ragioneSociale
       } : { azienda: "Non specificata" };
       
+      const formattedBirthDate = formatDateForStorage(data.datanascita);
+      
       let participantId: string;
       
       if (isEditing && initialData.id) {
-        // Update existing participant
         const { error } = await supabase
           .from('participants')
           .update({
@@ -158,7 +156,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
             cognome: data.cognome,
             codicefiscale: data.codicefiscale,
             luogonascita: data.luogonascita,
-            datanascita: data.datanascita?.toISOString(),
+            datanascita: formattedBirthDate,
             username: data.username,
             password: data.password,
             numerocellulare: data.numerocellulare,
@@ -179,7 +177,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         onSuccess?.();
         
       } else {
-        // Create new participant
         const newParticipantId = uuidv4();
         
         const { error } = await supabase
@@ -190,7 +187,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
             cognome: data.cognome,
             codicefiscale: data.codicefiscale,
             luogonascita: data.luogonascita,
-            datanascita: data.datanascita?.toISOString(),
+            datanascita: formattedBirthDate,
             username: data.username,
             password: data.password,
             numerocellulare: data.numerocellulare,
@@ -207,7 +204,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         if (error) throw error;
         participantId = newParticipantId;
         
-        // If we're adding a participant from the course detail page, add to junction table
         if (courseId) {
           const { error: junctionError } = await supabase
             .from('course_participants')
@@ -226,7 +222,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         : "Partecipante aggiunto con successo"
       );
       
-      // If we're in a course detail page, refresh the page to update the participant list
       if (courseId) {
         onClose();
         window.location.reload();

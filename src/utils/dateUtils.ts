@@ -1,6 +1,10 @@
 
 import { format, parse, isValid } from "date-fns";
+import { it } from "date-fns/locale";
 
+/**
+ * Parses a date from various formats if it's not already a Date object
+ */
 export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
   if (!dateValue) return undefined;
   
@@ -36,6 +40,9 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
   return undefined;
 };
 
+/**
+ * Parses an initial date value that could be in various formats
+ */
 export const parseInitialDate = (dateString?: string | Date): Date | undefined => {
   if (!dateString) return undefined;
   
@@ -63,4 +70,28 @@ export const parseInitialDate = (dateString?: string | Date): Date | undefined =
   }
   
   return undefined;
+};
+
+/**
+ * Formats a Date object to a YYYY-MM-DD string (without time or timezone)
+ * This ensures consistent date storage without timezone issues
+ */
+export const formatDateForStorage = (date: Date | undefined): string | null => {
+  if (!date || !isValid(date)) return null;
+  return format(date, 'yyyy-MM-dd');
+};
+
+/**
+ * Formats a date for display in the Italian format (DD/MM/YYYY)
+ */
+export const formatDateForDisplay = (dateValue: string | Date | undefined): string => {
+  if (!dateValue) return '-';
+  
+  const date = dateValue instanceof Date ? dateValue : parseDateIfNeeded(dateValue);
+  
+  if (date && isValid(date)) {
+    return format(date, 'dd/MM/yyyy', { locale: it });
+  }
+  
+  return typeof dateValue === 'string' ? dateValue : '-';
 };

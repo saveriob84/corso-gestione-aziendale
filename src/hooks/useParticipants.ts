@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { useAuth } from '@/hooks/useAuth';
 import { Participant, DatabaseParticipant } from '@/types/participant';
+import { parseDateIfNeeded } from '@/utils/dateUtils';
 
 export const useParticipants = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);

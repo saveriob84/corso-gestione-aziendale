@@ -1,10 +1,11 @@
+
 import { Table, TableHeader, TableHead, TableRow, TableBody, TableCell } from "@/components/ui/table";
-import { format, parse, isValid } from "date-fns";
-import { it } from "date-fns/locale";
 import { Participant } from "@/types/participant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { formatDateForDisplay } from '@/utils/dateUtils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
 
 interface ParticipantTableProps {
   participants: Participant[];
@@ -25,33 +25,6 @@ interface ParticipantTableProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
-
-const formatDateOfBirth = (dateString?: string): string => {
-  if (!dateString) return '-';
-
-  if (/^\d+$/.test(dateString)) {
-    const date = new Date(1899, 11, 30);
-    date.setDate(date.getDate() + parseInt(dateString));
-    if (date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
-      return format(date, 'dd/MM/yyyy', { locale: it });
-    }
-  }
-
-  const parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
-  if (isValid(parsedDate)) {
-    return format(parsedDate, 'dd/MM/yyyy', { locale: it });
-  }
-
-  const formats = ['yyyy-MM-dd', 'MM/dd/yyyy', 'yyyy/MM/dd'];
-  for (const formatString of formats) {
-    const parsedDate = parse(dateString, formatString, new Date());
-    if (isValid(parsedDate)) {
-      return format(parsedDate, 'dd/MM/yyyy', { locale: it });
-    }
-  }
-
-  return dateString;
-};
 
 const ParticipantTable = ({ 
   participants, 
@@ -105,7 +78,7 @@ const ParticipantTable = ({
               <TableCell>{participant.nome}</TableCell>
               <TableCell>{participant.cognome}</TableCell>
               <TableCell>{participant.codicefiscale}</TableCell>
-              <TableCell>{formatDateOfBirth(participant.datanascita)}</TableCell>
+              <TableCell>{formatDateForDisplay(participant.datanascita)}</TableCell>
               <TableCell>{participant.azienda || '-'}</TableCell>
               <TableCell>{participant.titolostudio || '-'}</TableCell>
               <TableCell>{participant.qualifica || '-'}</TableCell>

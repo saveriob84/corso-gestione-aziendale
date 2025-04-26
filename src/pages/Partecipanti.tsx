@@ -13,7 +13,7 @@ import { useParticipants } from "@/hooks/useParticipants";
 import { getParticipantTemplate } from '@/utils/excelTemplates';
 import { findOrCreateCompany } from '@/utils/companyUtils';
 import { Participant, ParticipantFormValues } from '@/types/participant';
-import { parseDateIfNeeded } from '@/utils/dateUtils';
+import { parseDateIfNeeded, formatDateForStorage } from '@/utils/dateUtils';
 
 const Partecipanti = () => {
   const [isAddingParticipant, setIsAddingParticipant] = useState(false);
@@ -104,12 +104,20 @@ const Partecipanti = () => {
               }
             }
 
+            // Parse and format the birth date correctly for storage
+            let birthDate = null;
+            if (row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita']) {
+              const rawDate = row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'];
+              const parsedDate = parseDateIfNeeded(rawDate);
+              birthDate = parsedDate ? formatDateForStorage(parsedDate) : null;
+            }
+
             const participantData = {
               nome: row['Nome*'] || row['Nome'],
               cognome: row['Cognome*'] || row['Cognome'],
               codicefiscale: (row['Codice Fiscale*'] || row['Codice Fiscale'] || '').toUpperCase(),
               luogonascita: row['Luogo di Nascita'] || '',
-              datanascita: row['Data di Nascita (GG/MM/AAAA)'] || row['Data di Nascita'] || '',
+              datanascita: birthDate,
               username: row['Username'] || '',
               password: row['Password'] || '',
               numerocellulare: row['Numero di cellulare'] || '',
@@ -257,7 +265,7 @@ const Partecipanti = () => {
         }}
         initialData={editingParticipant || undefined}
         isEditing={!!editingParticipant}
-        onSuccess={loadParticipants}  // Add this line to refresh the list after updates
+        onSuccess={loadParticipants}
       />
     </div>
   );

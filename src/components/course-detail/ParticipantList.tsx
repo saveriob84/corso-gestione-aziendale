@@ -1,9 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, Download, FileText, PenIcon, Trash2, Upload, UserPlus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { formatDateForDisplay } from "@/utils/dateUtils";
 
 interface ParticipantListProps {
   partecipantiList: any[];
@@ -15,36 +15,6 @@ interface ParticipantListProps {
   getCompanyName: (companyId: string) => string;
   courseId?: string;
 }
-
-const formatDateOfBirth = (dateString?: string): string => {
-  if (!dateString) return "-";
-
-  if (/^\d+$/.test(dateString)) {
-    const date = new Date(1899, 11, 30);
-    date.setDate(date.getDate() + parseInt(dateString));
-    if (!isNaN(date.getTime()) && date.getFullYear() > 1920 && date.getFullYear() < new Date().getFullYear()) {
-      return format(date, 'dd/MM/yyyy', { locale: it });
-    }
-  }
-
-  const parsedDate = new Date(dateString);
-  if (!isNaN(parsedDate.getTime())) {
-    return format(parsedDate, 'dd/MM/yyyy', { locale: it });
-  }
-
-  try {
-    const parts = dateString.split('/');
-    if (parts.length === 3) {
-      const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-      if (!isNaN(date.getTime())) {
-        return format(date, 'dd/MM/yyyy', { locale: it });
-      }
-    }
-  } catch (e) {
-  }
-
-  return dateString;
-};
 
 const getContractTypeName = (contractCode: string): string => {
   const contractTypes: Record<string, string> = {
@@ -158,13 +128,13 @@ const ParticipantList = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.cognome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">{partecipante.codicefiscale || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
-                    {formatDateOfBirth(partecipante.dataNascita)}
+                    {formatDateForDisplay(partecipante.dataNascita || partecipante.datanascita)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
-                    {getEducationTitle(partecipante.titoloStudio)}
+                    {getEducationTitle(partecipante.titoloStudio || partecipante.titolostudio || '')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
-                    {getContractTypeName(partecipante.contratto)}
+                    {getContractTypeName(partecipante.contratto || '')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-50">
                     <div className="flex items-center space-x-2">
