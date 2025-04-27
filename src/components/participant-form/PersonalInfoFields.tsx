@@ -91,7 +91,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full pl-3 text-left font-normal",
+                      "w-full pl-3 text-left font-normal pointer-events-auto",
                       !field.value && "text-muted-foreground"
                     )}
                   >
@@ -104,7 +104,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                 <Calendar
                   mode="single"
                   selected={field.value}
@@ -112,6 +112,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                   defaultMonth={field.value || new Date()}
                   disabled={(date) => date > new Date()}
                   initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
