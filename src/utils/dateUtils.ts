@@ -1,4 +1,3 @@
-
 import { format, parse, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -34,14 +33,14 @@ const isReasonableDate = (date: Date): boolean => {
 
 /**
  * Attempts to parse an Excel numeric date format
+ * Handles both whole days and fractional parts (hours)
  */
 const parseExcelDate = (value: string | number): Date | null => {
   const numericValue = typeof value === 'string' ? parseFloat(value) : value;
   
   if (isNaN(numericValue)) return null;
   
-  const date = new Date(EXCEL_EPOCH);
-  date.setDate(date.getDate() + Math.floor(numericValue));
+  const date = new Date(EXCEL_EPOCH.getTime() + numericValue * 24 * 60 * 60 * 1000);
   
   if (!isReasonableDate(date)) return null;
   
