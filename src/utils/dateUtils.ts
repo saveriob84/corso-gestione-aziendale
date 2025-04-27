@@ -1,3 +1,4 @@
+
 import { format, parse, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -20,7 +21,7 @@ const EXCEL_EPOCH = new Date(1899, 11, 30); // Excel's date system starts from D
  */
 const isReasonableDate = (date: Date): boolean => {
   const minYear = 1900;
-  const maxYear = new Date().getFullYear();
+  const maxYear = new Date().getFullYear() + 1; // Allow next year for future dates
   const year = date.getFullYear();
   
   if (year < minYear || year > maxYear) {
@@ -40,9 +41,18 @@ const parseExcelDate = (value: string | number): Date | null => {
   
   if (isNaN(numericValue)) return null;
   
-  const date = new Date(EXCEL_EPOCH.getTime() + numericValue * 24 * 60 * 60 * 1000);
+  // Calculate milliseconds using the Excel day value (includes fractional parts for hours)
+  const milliseconds = numericValue * 24 * 60 * 60 * 1000;
+  const date = new Date(EXCEL_EPOCH.getTime() + milliseconds);
   
-  if (!isReasonableDate(date)) return null;
+  // For debugging
+  console.log(`Parsing Excel date value: ${numericValue} (type: ${typeof numericValue})`);
+  console.log(`Excel date calculation: EPOCH(${EXCEL_EPOCH.toISOString()}) + ${milliseconds}ms = ${date.toISOString()}`);
+  
+  if (!isReasonableDate(date)) {
+    console.log(`Excel date ${numericValue} produced unreasonable result: ${date.toISOString()}`);
+    return null;
+  }
   
   console.log(`Successfully parsed Excel numeric date ${value} to ${date.toISOString()}`);
   return date;
@@ -66,9 +76,16 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
     return dateValue;
   }
   
+  // First try to handle Excel numeric format (higher priority than string formats)
+  if (typeof dateValue === 'number' || (typeof dateValue === 'string' && /^\d+(\.\d+)?$/.test(dateValue))) {
+    console.log(`Attempting to parse potential Excel date number: ${dateValue}`);
+    const excelDate = parseExcelDate(dateValue);
+    if (excelDate) return excelDate;
+  }
+  
   // Handle string dates
   if (typeof dateValue === 'string') {
-    // Try common Italian date formats
+    // Try common date formats
     for (const { format: dateFormat, description } of SUPPORTED_FORMATS) {
       const parsedDate = parse(dateValue, dateFormat, new Date());
       if (isValid(parsedDate) && isReasonableDate(parsedDate)) {
@@ -87,12 +104,6 @@ export const parseDateIfNeeded = (dateValue: any): Date | undefined => {
           return date;
         }
       }
-    }
-    
-    // Handle Excel date format (days since 1899-12-30)
-    if (/^\d+(\.\d+)?$/.test(dateValue)) {
-      const excelDate = parseExcelDate(dateValue);
-      if (excelDate) return excelDate;
     }
 
     console.log(`Failed to parse date: ${dateValue}. Supported formats:`, 
@@ -158,8 +169,15 @@ export const getDateParsingFeedback = (dateValue: any): string => {
   
   if (typeof dateValue === 'string') {
     if (dateValue.trim() === '') return 'Data vuota';
+    if (/^\d+(\.\d+)?$/.test(dateValue)) {
+      return `Potenziale formato numerico Excel: ${dateValue}`;
+    }
     return `Formati supportati: ${SUPPORTED_FORMATS.map(f => f.description).join(', ')}`;
   }
   
-  return 'Formato data non supportato';
+  if (typeof dateValue === 'number') {
+    return `Potenziale formato numerico Excel: ${dateValue}`;
+  }
+  
+  return `Formato data non supportato: ${typeof dateValue}`;
 };
