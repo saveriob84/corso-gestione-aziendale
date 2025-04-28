@@ -26,7 +26,11 @@ export const useParticipantSubmit = (
     setIsSubmitting(true);
     
     try {
-      const selectedCompany = companies.find(company => company.id === data.aziendaId);
+      // Ensure we have a valid company selection
+      const selectedCompany = data.aziendaId ? 
+        companies.find(company => company.id === data.aziendaId) : 
+        null;
+        
       const aziendaDetails = selectedCompany ? {
         aziendaId: selectedCompany.id,
         azienda: selectedCompany.ragioneSociale

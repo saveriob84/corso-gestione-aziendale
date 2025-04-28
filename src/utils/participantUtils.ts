@@ -8,25 +8,28 @@ export const updateParticipant = async (
   aziendaDetails: { aziendaId?: string, azienda: string },
   formattedBirthDate: string | null
 ) => {
+  // Create an update object with only defined values to prevent sending empty strings for UUID fields
+  const updateData = {
+    nome: data.nome,
+    cognome: data.cognome,
+    codicefiscale: data.codicefiscale || null,
+    luogonascita: data.luogonascita || null,
+    datanascita: formattedBirthDate,
+    username: data.username || null,
+    password: data.password || null,
+    numerocellulare: data.numerocellulare || null,
+    aziendaid: data.aziendaId || null,
+    azienda: aziendaDetails.azienda,
+    titolostudio: data.titolostudio || null,
+    ccnl: data.ccnl || null,
+    contratto: data.contratto || null,
+    qualifica: data.qualifica || null,
+    annoassunzione: data.annoassunzione || null,
+  };
+
   return await supabase
     .from('participants')
-    .update({
-      nome: data.nome,
-      cognome: data.cognome,
-      codicefiscale: data.codicefiscale,
-      luogonascita: data.luogonascita,
-      datanascita: formattedBirthDate,
-      username: data.username,
-      password: data.password,
-      numerocellulare: data.numerocellulare,
-      aziendaid: data.aziendaId,
-      azienda: aziendaDetails.azienda,
-      titolostudio: data.titolostudio,
-      ccnl: data.ccnl,
-      contratto: data.contratto,
-      qualifica: data.qualifica,
-      annoassunzione: data.annoassunzione,
-    })
+    .update(updateData)
     .eq('id', id);
 };
 
@@ -38,27 +41,29 @@ export const createParticipant = async (
   formattedBirthDate: string | null,
   courseId?: string
 ) => {
+  const insertData = {
+    id: id,
+    nome: data.nome,
+    cognome: data.cognome,
+    codicefiscale: data.codicefiscale || null,
+    luogonascita: data.luogonascita || null,
+    datanascita: formattedBirthDate,
+    username: data.username || null,
+    password: data.password || null,
+    numerocellulare: data.numerocellulare || null,
+    aziendaid: data.aziendaId || null,
+    azienda: aziendaDetails.azienda,
+    titolostudio: data.titolostudio || null,
+    ccnl: data.ccnl || null,
+    contratto: data.contratto || null,
+    qualifica: data.qualifica || null,
+    annoassunzione: data.annoassunzione || null,
+    user_id: userId
+  };
+
   const result = await supabase
     .from('participants')
-    .insert({
-      id: id,
-      nome: data.nome,
-      cognome: data.cognome,
-      codicefiscale: data.codicefiscale,
-      luogonascita: data.luogonascita,
-      datanascita: formattedBirthDate,
-      username: data.username,
-      password: data.password,
-      numerocellulare: data.numerocellulare,
-      aziendaid: data.aziendaId,
-      azienda: aziendaDetails.azienda,
-      titolostudio: data.titolostudio,
-      ccnl: data.ccnl,
-      contratto: data.contratto,
-      qualifica: data.qualifica,
-      annoassunzione: data.annoassunzione,
-      user_id: userId
-    });
+    .insert(insertData);
     
   if (!result.error && courseId) {
     return await supabase

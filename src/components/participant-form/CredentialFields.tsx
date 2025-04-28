@@ -19,7 +19,8 @@ export const CredentialFields: React.FC = () => {
             <FormControl>
               <Input 
                 placeholder="es. mario.rossi" 
-                {...field}
+                {...field} 
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -38,6 +39,7 @@ export const CredentialFields: React.FC = () => {
                 type="password" 
                 placeholder="••••••••" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -55,6 +57,7 @@ export const CredentialFields: React.FC = () => {
               <Input 
                 placeholder="es. +39 333 1234567" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
