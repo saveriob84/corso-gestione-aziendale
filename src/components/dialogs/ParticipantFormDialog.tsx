@@ -28,7 +28,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     handleSubmit(data, companies);
   };
   return <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto pointer-events-none">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto pointer-events-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
