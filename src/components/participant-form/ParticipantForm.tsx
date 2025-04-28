@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { FormProvider } from "react-hook-form";
 import { PersonalInfoFields } from './PersonalInfoFields';
 import { CredentialFields } from './CredentialFields';
 import { EmploymentFields } from './EmploymentFields';
@@ -28,37 +29,39 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
   submitButtonLabel = "Aggiungi"
 }) => {
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <PersonalInfoFields form={form} />
-          <CredentialFields form={form} />
-          
-          <CompanySelector 
-            form={form} 
-            companies={companies}
-            onAddCompany={onAddCompany}
-          />
+    <FormProvider {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PersonalInfoFields form={form} />
+            <CredentialFields form={form} />
+            
+            <CompanySelector 
+              form={form} 
+              companies={companies}
+              onAddCompany={onAddCompany}
+            />
 
-          <EmploymentFields form={form} />
+            <EmploymentFields form={form} />
+          </div>
+          
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+            >
+              Annulla
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Elaborazione..." : submitButtonLabel}
+            </Button>
+          </div>
         </div>
-        
-        <div className="flex justify-end space-x-2 mt-6">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-          >
-            Annulla
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Elaborazione..." : submitButtonLabel}
-          </Button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </FormProvider>
   );
 };
