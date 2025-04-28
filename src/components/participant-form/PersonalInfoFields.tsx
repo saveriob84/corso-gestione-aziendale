@@ -2,7 +2,7 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { ParticipantFormValues } from "@/types/participant";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -12,15 +12,13 @@ import { it } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-interface PersonalInfoFieldsProps {
-  form: UseFormReturn<ParticipantFormValues>;
-}
-
-export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) => {
+export const PersonalInfoFields: React.FC = () => {
+  const { control } = useFormContext<ParticipantFormValues>();
+  
   return (
     <>
       <FormField
-        control={form.control}
+        control={control}
         name="nome"
         render={({ field }) => (
           <FormItem>
@@ -37,7 +35,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="cognome"
         render={({ field }) => (
           <FormItem>
@@ -54,7 +52,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="codicefiscale"
         render={({ field }) => (
           <FormItem>
@@ -71,7 +69,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="luogonascita"
         render={({ field }) => (
           <FormItem>
@@ -88,7 +86,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="datanascita"
         render={({ field }) => (
           <FormItem className="flex flex-col">
@@ -130,7 +128,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="numerocellulare"
         render={({ field }) => (
           <FormItem>

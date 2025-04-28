@@ -2,20 +2,18 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { ParticipantFormValues } from "@/types/participant";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-interface EmploymentFieldsProps {
-  form: UseFormReturn<ParticipantFormValues>;
-}
-
-export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
+export const EmploymentFields: React.FC = () => {
+  const { control } = useFormContext<ParticipantFormValues>();
+  
   return (
     <>
       <FormField
-        control={form.control}
+        control={control}
         name="titolostudio"
         render={({ field }) => (
           <FormItem>
@@ -43,7 +41,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="ccnl"
         render={({ field }) => (
           <FormItem>
@@ -60,7 +58,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="contratto"
         render={({ field }) => (
           <FormItem>
@@ -89,7 +87,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="qualifica"
         render={({ field }) => (
           <FormItem>
@@ -106,7 +104,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="annoassunzione"
         render={({ field }) => (
           <FormItem>
@@ -123,7 +121,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="exLege"
         render={({ field }) => (
           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">

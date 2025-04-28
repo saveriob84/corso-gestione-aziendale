@@ -4,18 +4,18 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { ParticipantFormValues } from '@/types/participant';
 import CompanyFormDialog from '../dialogs/CompanyFormDialog';
 
 interface CompanySelectorProps {
-  form: UseFormReturn<ParticipantFormValues>;
   companies: any[];
   onAddCompany: () => void;
 }
 
-export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companies, onAddCompany }) => {
+export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onAddCompany }) => {
   const [isCompanyFormOpen, setIsCompanyFormOpen] = React.useState(false);
+  const { control } = useFormContext<ParticipantFormValues>();
 
   const handleOpenCompanyForm = (e: React.MouseEvent) => {
     onAddCompany();
@@ -25,7 +25,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companie
   return (
     <>
       <FormField
-        control={form.control}
+        control={control}
         name="aziendaId"
         render={({ field }) => (
           <FormItem>

@@ -2,18 +2,16 @@
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { ParticipantFormValues } from "@/types/participant";
 
-interface CredentialFieldsProps {
-  form: UseFormReturn<ParticipantFormValues>;
-}
-
-export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
+export const CredentialFields: React.FC = () => {
+  const { control } = useFormContext<ParticipantFormValues>();
+  
   return (
     <>
       <FormField
-        control={form.control}
+        control={control}
         name="username"
         render={({ field }) => (
           <FormItem>
@@ -30,7 +28,7 @@ export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="password"
         render={({ field }) => (
           <FormItem>
@@ -48,7 +46,7 @@ export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
       />
 
       <FormField
-        control={form.control}
+        control={control}
         name="numerocellulare"
         render={({ field }) => (
           <FormItem>

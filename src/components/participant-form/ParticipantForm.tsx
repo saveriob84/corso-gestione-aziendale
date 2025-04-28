@@ -33,16 +33,15 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonalInfoFields form={form} />
-            <CredentialFields form={form} />
+            <PersonalInfoFields />
+            <CredentialFields />
             
             <CompanySelector 
-              form={form} 
               companies={companies}
               onAddCompany={onAddCompany}
             />
 
-            <EmploymentFields form={form} />
+            <EmploymentFields />
           </div>
           
           <div className="flex justify-end space-x-2 mt-6">
