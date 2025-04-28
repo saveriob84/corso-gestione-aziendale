@@ -23,12 +23,14 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Select 
                 value={field.value} 
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                }}
               >
-                <SelectTrigger>
+                <SelectTrigger onClick={(e) => e.stopPropagation()}>
                   <SelectValue placeholder="Seleziona titolo di studio" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
                   <SelectItem value="licenzaMedia">Licenza media</SelectItem>
                   <SelectItem value="diplomaSuperiore">Diploma superiore</SelectItem>
                   <SelectItem value="laurea">Laurea</SelectItem>
@@ -49,7 +51,14 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
           <FormItem>
             <FormLabel>CCNL di riferimento</FormLabel>
             <FormControl>
-              <Input placeholder="es. Commercio" {...field} />
+              <Input 
+                placeholder="es. Commercio" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -65,12 +74,14 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Select 
                 value={field.value} 
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                }}
               >
-                <SelectTrigger>
+                <SelectTrigger onClick={(e) => e.stopPropagation()}>
                   <SelectValue placeholder="Seleziona tipologia" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
                   <SelectItem value="determinato">Tempo determinato</SelectItem>
                   <SelectItem value="indeterminato">Tempo indeterminato</SelectItem>
                   <SelectItem value="apprendistato">Apprendistato</SelectItem>
@@ -92,7 +103,14 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
           <FormItem>
             <FormLabel>Qualifica professionale</FormLabel>
             <FormControl>
-              <Input placeholder="es. Impiegato" {...field} />
+              <Input 
+                placeholder="es. Impiegato" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -106,7 +124,14 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
           <FormItem>
             <FormLabel>Anno di assunzione</FormLabel>
             <FormControl>
-              <Input placeholder="es. 2020" {...field} />
+              <Input 
+                placeholder="es. 2020" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -121,7 +146,10 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Checkbox
                 checked={field.value}
-                onCheckedChange={field.onChange}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                }}
+                onClick={(e) => e.stopPropagation()}
               />
             </FormControl>
             <div className="space-y-1 leading-none">

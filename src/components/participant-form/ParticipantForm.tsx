@@ -28,9 +28,19 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
   onAddCompany,
   submitButtonLabel = "Aggiungi"
 }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.stopPropagation();
+    return form.handleSubmit(onSubmit)(e);
+  };
+
+  const handleCancel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCancel();
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PersonalInfoFields form={form} />
           <CredentialFields form={form} />
@@ -48,7 +58,7 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
           <Button 
             type="button" 
             variant="outline" 
-            onClick={onCancel}
+            onClick={handleCancel}
             className="pointer-events-auto"
           >
             Annulla
@@ -57,6 +67,7 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
             type="submit" 
             disabled={isSubmitting}
             className="pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
           >
             {isSubmitting ? "Elaborazione..." : submitButtonLabel}
           </Button>

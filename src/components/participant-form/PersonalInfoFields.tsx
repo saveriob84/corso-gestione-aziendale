@@ -26,7 +26,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
           <FormItem>
             <FormLabel>Nome</FormLabel>
             <FormControl>
-              <Input placeholder="es. Mario" {...field} />
+              <Input 
+                placeholder="es. Mario" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -40,7 +47,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
           <FormItem>
             <FormLabel>Cognome</FormLabel>
             <FormControl>
-              <Input placeholder="es. Rossi" {...field} />
+              <Input 
+                placeholder="es. Rossi" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -58,6 +72,10 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                 placeholder="es. RSSMRA80A01H501U" 
                 {...field}
                 value={field.value as string}
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -72,7 +90,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
           <FormItem>
             <FormLabel>Luogo di nascita</FormLabel>
             <FormControl>
-              <Input placeholder="es. Roma" {...field} />
+              <Input 
+                placeholder="es. Roma" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -94,6 +119,7 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                       "w-full pl-3 text-left font-normal pointer-events-auto",
                       !field.value && "text-muted-foreground"
                     )}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {field.value ? (
                       format(field.value, "dd/MM/yyyy", { locale: it })
@@ -104,11 +130,13 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+              <PopoverContent className="w-auto p-0 pointer-events-auto" align="start" onClick={(e) => e.stopPropagation()}>
                 <Calendar
                   mode="single"
                   selected={field.value}
-                  onSelect={field.onChange}
+                  onSelect={(date) => {
+                    field.onChange(date);
+                  }}
                   defaultMonth={field.value || new Date()}
                   disabled={(date) => date > new Date()}
                   initialFocus
@@ -128,7 +156,14 @@ export const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ form }) 
           <FormItem>
             <FormLabel>Numero di cellulare</FormLabel>
             <FormControl>
-              <Input placeholder="es. +39 123 456 7890" {...field} />
+              <Input 
+                placeholder="es. +39 123 456 7890" 
+                {...field} 
+                onInput={(e) => {
+                  field.onChange(e);
+                  e.stopPropagation();
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

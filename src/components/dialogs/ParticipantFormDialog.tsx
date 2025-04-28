@@ -1,12 +1,15 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ParticipantFormValues, ParticipantFormDialogProps } from '@/types/participant';
 import { useParticipantForm } from '@/hooks/useParticipantForm';
 import { useParticipantSubmit } from '@/hooks/useParticipantSubmit';
 import { ParticipantForm } from '../participant-form/ParticipantForm';
+
 interface ExtendedParticipantFormDialogProps extends ParticipantFormDialogProps {
   courseId?: string;
 }
+
 const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   isOpen,
   onClose,
@@ -16,26 +19,48 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   onSuccess
 }) => {
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
+  
   const {
     form,
     companies
   } = useParticipantForm(initialData, isOpen);
+  
   const {
     isSubmitting,
     handleSubmit
   } = useParticipantSubmit(initialData, isEditing, courseId, onSuccess, onClose);
+  
   const onSubmit = (data: ParticipantFormValues) => {
     handleSubmit(data, companies);
   };
-  return <Dialog open={isOpen} onOpenChange={onClose}>
+
+  // Questa funzione intercetta ed evita la chiusura quando si fa clic nel form
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto pointer-events-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
         </DialogHeader>
         
-        <ParticipantForm form={form} isSubmitting={isSubmitting} onSubmit={onSubmit} onCancel={onClose} companies={companies} onAddCompany={() => setIsCompanyFormOpen(true)} submitButtonLabel={isEditing ? 'Aggiorna' : 'Aggiungi'} />
+        <ParticipantForm 
+          form={form} 
+          isSubmitting={isSubmitting} 
+          onSubmit={onSubmit} 
+          onCancel={onClose} 
+          companies={companies} 
+          onAddCompany={() => setIsCompanyFormOpen(true)} 
+          submitButtonLabel={isEditing ? 'Aggiorna' : 'Aggiungi'} 
+        />
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
+
 export default ParticipantFormDialog;

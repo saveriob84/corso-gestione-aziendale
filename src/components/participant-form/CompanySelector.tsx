@@ -17,7 +17,8 @@ interface CompanySelectorProps {
 export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companies, onAddCompany }) => {
   const [isCompanyFormOpen, setIsCompanyFormOpen] = React.useState(false);
 
-  const handleOpenCompanyForm = () => {
+  const handleOpenCompanyForm = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onAddCompany();
     setIsCompanyFormOpen(true);
   };
@@ -33,12 +34,14 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companie
             <div className="flex space-x-2">
               <Select 
                 value={field.value} 
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                }}
               >
-                <SelectTrigger className="flex-1">
+                <SelectTrigger className="flex-1" onClick={(e) => e.stopPropagation()}>
                   <SelectValue placeholder="Seleziona un'azienda" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent onClick={(e) => e.stopPropagation()}>
                   {companies.length > 0 ? 
                     companies.map(company => (
                       <SelectItem key={company.id} value={company.id}>
@@ -51,7 +54,12 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companie
                   }
                 </SelectContent>
               </Select>
-              <Button type="button" variant="outline" size="icon" onClick={handleOpenCompanyForm}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                onClick={handleOpenCompanyForm}
+              >
                 <PlusCircle className="h-4 w-4" />
               </Button>
             </div>
