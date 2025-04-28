@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
@@ -21,7 +22,12 @@ const AlertDialogOverlay = React.forwardRef<
     )}
     {...props}
     ref={ref}
-    onClick={(e) => e.stopPropagation()}
+    onClick={(e) => {
+      e.stopPropagation();
+      if (props.onClick) {
+        props.onClick(e);
+      }
+    }}
   />
 ))
 AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
@@ -39,7 +45,12 @@ const AlertDialogContent = React.forwardRef<
         className
       )}
       {...props}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (props.onClick) {
+          props.onClick(e);
+        }
+      }}
     />
   </AlertDialogPortal>
 ))

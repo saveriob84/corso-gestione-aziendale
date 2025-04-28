@@ -15,12 +15,14 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
         ref={ref}
         {...props}
         onClick={(e) => {
+          // Allow clicks to be processed without bubbling
           e.stopPropagation();
           if (props.onClick) {
             props.onClick(e);
           }
         }}
         onKeyDown={(e) => {
+          // Don't stop propagation on key events to allow typing
           if (props.onKeyDown) {
             props.onKeyDown(e);
           }
@@ -30,6 +32,12 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           if (props.onInput) {
             // @ts-ignore
             props.onInput(e);
+          }
+        }}
+        onChange={(e) => {
+          e.stopPropagation();
+          if (props.onChange) {
+            props.onChange(e);
           }
         }}
       />
