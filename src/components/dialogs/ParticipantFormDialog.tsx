@@ -42,10 +42,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto pointer-events-auto"
-        onPointerDownOutside={(e) => e.preventDefault()}
-      >
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
