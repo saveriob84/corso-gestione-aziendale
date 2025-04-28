@@ -29,8 +29,9 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
   submitButtonLabel = "Aggiungi"
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    return form.handleSubmit(onSubmit)(e);
+    form.handleSubmit(onSubmit)(e);
   };
 
   const handleCancel = (e: React.MouseEvent) => {
@@ -64,13 +65,10 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
             Annulla
           </Button>
           <Button 
+            onClick={handleSubmit}
             type="submit" 
             disabled={isSubmitting}
             className="pointer-events-auto"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSubmit(e);
-            }}
           >
             {isSubmitting ? "Elaborazione..." : submitButtonLabel}
           </Button>

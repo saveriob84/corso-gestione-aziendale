@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -24,7 +23,6 @@ const DialogOverlay = React.forwardRef<
       className
     )}
     {...props}
-    onClick={(e) => e.stopPropagation()}
   />
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName

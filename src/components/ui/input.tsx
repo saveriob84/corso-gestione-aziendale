@@ -21,9 +21,15 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           }
         }}
         onKeyDown={(e) => {
-          e.stopPropagation();
           if (props.onKeyDown) {
             props.onKeyDown(e);
+          }
+        }}
+        onInput={(e) => {
+          e.stopPropagation();
+          if (props.onInput) {
+            // @ts-ignore
+            props.onInput(e);
           }
         }}
       />
