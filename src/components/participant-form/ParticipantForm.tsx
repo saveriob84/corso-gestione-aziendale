@@ -28,20 +28,9 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
   onAddCompany,
   submitButtonLabel = "Aggiungi"
 }) => {
-  // Function to handle form submission
-  const handleFormSubmit = (e: React.FormEvent) => {
-    form.handleSubmit(onSubmit)(e);
-  };
-
-  // Function to handle form cancellation
-  const handleCancel = (e: React.MouseEvent) => {
-    e.preventDefault();
-    onCancel();
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={handleFormSubmit}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PersonalInfoFields form={form} />
@@ -60,7 +49,7 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
             <Button 
               type="button" 
               variant="outline" 
-              onClick={handleCancel}
+              onClick={onCancel}
             >
               Annulla
             </Button>

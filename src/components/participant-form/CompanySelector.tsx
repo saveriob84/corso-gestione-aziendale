@@ -18,7 +18,6 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companie
   const [isCompanyFormOpen, setIsCompanyFormOpen] = React.useState(false);
 
   const handleOpenCompanyForm = (e: React.MouseEvent) => {
-    e.stopPropagation();
     onAddCompany();
     setIsCompanyFormOpen(true);
   };
@@ -34,14 +33,12 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ form, companie
             <div className="flex space-x-2">
               <Select 
                 value={field.value} 
-                onValueChange={(value) => {
-                  field.onChange(value);
-                }}
+                onValueChange={field.onChange}
               >
-                <SelectTrigger className="flex-1" onClick={(e) => e.stopPropagation()}>
+                <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Seleziona un'azienda" />
                 </SelectTrigger>
-                <SelectContent onClick={(e) => e.stopPropagation()}>
+                <SelectContent className="pointer-events-auto">
                   {companies.length > 0 ? 
                     companies.map(company => (
                       <SelectItem key={company.id} value={company.id}>

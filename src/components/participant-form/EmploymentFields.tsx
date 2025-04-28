@@ -23,14 +23,12 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Select 
                 value={field.value} 
-                onValueChange={(value) => {
-                  field.onChange(value);
-                }}
+                onValueChange={field.onChange}
               >
-                <SelectTrigger onClick={(e) => e.stopPropagation()}>
+                <SelectTrigger>
                   <SelectValue placeholder="Seleziona titolo di studio" />
                 </SelectTrigger>
-                <SelectContent onClick={(e) => e.stopPropagation()}>
+                <SelectContent className="pointer-events-auto">
                   <SelectItem value="licenzaMedia">Licenza media</SelectItem>
                   <SelectItem value="diplomaSuperiore">Diploma superiore</SelectItem>
                   <SelectItem value="laurea">Laurea</SelectItem>
@@ -53,11 +51,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Input 
                 placeholder="es. Commercio" 
-                {...field} 
-                onInput={(e) => {
-                  field.onChange(e);
-                  e.stopPropagation();
-                }}
+                {...field}
               />
             </FormControl>
             <FormMessage />
@@ -74,14 +68,12 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Select 
                 value={field.value} 
-                onValueChange={(value) => {
-                  field.onChange(value);
-                }}
+                onValueChange={field.onChange}
               >
-                <SelectTrigger onClick={(e) => e.stopPropagation()}>
+                <SelectTrigger>
                   <SelectValue placeholder="Seleziona tipologia" />
                 </SelectTrigger>
-                <SelectContent onClick={(e) => e.stopPropagation()}>
+                <SelectContent className="pointer-events-auto">
                   <SelectItem value="determinato">Tempo determinato</SelectItem>
                   <SelectItem value="indeterminato">Tempo indeterminato</SelectItem>
                   <SelectItem value="apprendistato">Apprendistato</SelectItem>
@@ -105,11 +97,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Input 
                 placeholder="es. Impiegato" 
-                {...field} 
-                onInput={(e) => {
-                  field.onChange(e);
-                  e.stopPropagation();
-                }}
+                {...field}
               />
             </FormControl>
             <FormMessage />
@@ -126,11 +114,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Input 
                 placeholder="es. 2020" 
-                {...field} 
-                onInput={(e) => {
-                  field.onChange(e);
-                  e.stopPropagation();
-                }}
+                {...field}
               />
             </FormControl>
             <FormMessage />
@@ -146,10 +130,7 @@ export const EmploymentFields: React.FC<EmploymentFieldsProps> = ({ form }) => {
             <FormControl>
               <Checkbox
                 checked={field.value}
-                onCheckedChange={(checked) => {
-                  field.onChange(checked);
-                }}
-                onClick={(e) => e.stopPropagation()}
+                onCheckedChange={field.onChange}
               />
             </FormControl>
             <div className="space-y-1 leading-none">

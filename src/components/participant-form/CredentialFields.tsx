@@ -21,11 +21,7 @@ export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
             <FormControl>
               <Input 
                 placeholder="es. mario.rossi" 
-                {...field} 
-                onInput={(e) => {
-                  field.onChange(e);
-                  e.stopPropagation();
-                }}
+                {...field}
               />
             </FormControl>
             <FormMessage />
@@ -43,11 +39,7 @@ export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
               <Input 
                 type="password" 
                 placeholder="••••••••" 
-                {...field} 
-                onInput={(e) => {
-                  field.onChange(e);
-                  e.stopPropagation();
-                }}
+                {...field}
               />
             </FormControl>
             <FormMessage />
@@ -64,11 +56,7 @@ export const CredentialFields: React.FC<CredentialFieldsProps> = ({ form }) => {
             <FormControl>
               <Input 
                 placeholder="es. +39 333 1234567" 
-                {...field} 
-                onInput={(e) => {
-                  field.onChange(e);
-                  e.stopPropagation();
-                }}
+                {...field}
               />
             </FormControl>
             <FormMessage />
