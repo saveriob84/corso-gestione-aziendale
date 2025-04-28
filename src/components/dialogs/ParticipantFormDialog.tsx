@@ -42,21 +42,23 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <DialogHeader onClick={(e) => e.stopPropagation()}>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
         </DialogHeader>
         
-        <ParticipantForm 
-          form={form} 
-          isSubmitting={isSubmitting} 
-          onSubmit={onSubmit} 
-          onCancel={onClose} 
-          companies={companies} 
-          onAddCompany={() => setIsCompanyFormOpen(true)} 
-          submitButtonLabel={isEditing ? 'Aggiorna' : 'Aggiungi'} 
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <ParticipantForm 
+            form={form} 
+            isSubmitting={isSubmitting} 
+            onSubmit={onSubmit} 
+            onCancel={onClose} 
+            companies={companies} 
+            onAddCompany={() => setIsCompanyFormOpen(true)} 
+            submitButtonLabel={isEditing ? 'Aggiorna' : 'Aggiungi'} 
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
