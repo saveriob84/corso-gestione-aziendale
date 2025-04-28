@@ -34,7 +34,6 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     handleSubmit(data, companies);
   };
 
-  // Questa funzione intercetta ed evita la chiusura quando si fa clic nel form
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       onClose();
@@ -43,7 +42,10 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto pointer-events-auto">
+      <DialogContent 
+        className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto pointer-events-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>

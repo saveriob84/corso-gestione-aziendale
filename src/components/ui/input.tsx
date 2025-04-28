@@ -20,6 +20,12 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
             props.onClick(e);
           }
         }}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (props.onKeyDown) {
+            props.onKeyDown(e);
+          }
+        }}
       />
     )
   }

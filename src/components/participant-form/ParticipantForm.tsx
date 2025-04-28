@@ -40,7 +40,7 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit} className="space-y-4" onClick={(e) => e.stopPropagation()}>
+      <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PersonalInfoFields form={form} />
           <CredentialFields form={form} />
@@ -67,12 +67,15 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
             type="submit" 
             disabled={isSubmitting}
             className="pointer-events-auto"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSubmit(e);
+            }}
           >
             {isSubmitting ? "Elaborazione..." : submitButtonLabel}
           </Button>
         </div>
-      </form>
+      </div>
     </Form>
   );
 };

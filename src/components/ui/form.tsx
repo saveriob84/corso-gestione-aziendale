@@ -79,7 +79,13 @@ const FormItem = React.forwardRef<
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn("space-y-2 pointer-events-auto", className)} {...props} />
+      <div ref={ref} className={cn("space-y-2 pointer-events-auto", className)} {...props} onClick={(e) => {
+        e.stopPropagation();
+        if (props.onClick) {
+          // @ts-ignore
+          props.onClick(e);
+        }
+      }} />
     </FormItemContext.Provider>
   )
 })
@@ -97,6 +103,12 @@ const FormLabel = React.forwardRef<
       className={cn(error && "text-destructive", "pointer-events-auto", className)}
       htmlFor={formItemId}
       {...props}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (props.onClick) {
+          props.onClick(e);
+        }
+      }}
     />
   )
 })
@@ -120,6 +132,13 @@ const FormControl = React.forwardRef<
       aria-invalid={!!error}
       className="pointer-events-auto"
       {...props}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (props.onClick) {
+          // @ts-ignore
+          props.onClick(e);
+        }
+      }}
     />
   )
 })
