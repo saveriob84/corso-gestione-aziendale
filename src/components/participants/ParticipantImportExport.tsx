@@ -25,10 +25,9 @@ const ParticipantImportExport: React.FC<ParticipantImportExportProps> = ({
   
   const {
     isLoading,
-    setIsLoading,
-    handleImport,
+    handleImport: importHandler,
     downloadTemplate,
-    handleExport
+    handleExport: exportHandler
   } = useParticipantImportExport(loadParticipants);
   
   const triggerImportInput = () => {
@@ -36,11 +35,11 @@ const ParticipantImportExport: React.FC<ParticipantImportExportProps> = ({
   };
   
   const handleImportWrapper = (event: React.ChangeEvent<HTMLInputElement>) => {
-    handleImport(event, user?.id);
+    importHandler(event, user?.id);
   };
   
   const handleExportWrapper = () => {
-    handleExport(participants);
+    exportHandler(participants);
   };
   
   return (
