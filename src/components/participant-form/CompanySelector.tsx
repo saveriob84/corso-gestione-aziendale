@@ -32,8 +32,8 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onA
             <FormLabel>Azienda di appartenenza</FormLabel>
             <div className="flex space-x-2">
               <Select 
-                value={field.value || ''} 
                 onValueChange={field.onChange}
+                value={field.value || ''}
               >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Seleziona un'azienda" />

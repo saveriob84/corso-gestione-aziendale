@@ -20,8 +20,8 @@ export const EmploymentFields: React.FC = () => {
             <FormLabel>Titolo di studio</FormLabel>
             <FormControl>
               <Select 
-                value={field.value || ''} 
                 onValueChange={field.onChange}
+                value={field.value || ''}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleziona titolo di studio" />
@@ -66,8 +66,8 @@ export const EmploymentFields: React.FC = () => {
             <FormLabel>Tipologia contrattuale</FormLabel>
             <FormControl>
               <Select 
-                value={field.value || ''} 
                 onValueChange={field.onChange}
+                value={field.value || ''}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleziona tipologia" />
