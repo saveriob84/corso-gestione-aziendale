@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { FormProvider } from "react-hook-form";
 import { PersonalInfoFields } from './PersonalInfoFields';
@@ -28,25 +28,9 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
   onAddCompany,
   submitButtonLabel = "Aggiungi"
 }) => {
-  // Log dei valori del form ad ogni renderizzazione e quando cambiano
-  useEffect(() => {
-    console.log('ParticipantForm - Current form values:', form.getValues());
-    
-    const subscription = form.watch((value) => {
-      console.log('ParticipantForm - Form value changed:', value);
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  const handleFormSubmit = (values: ParticipantFormValues) => {
-    console.log('ParticipantForm - Form submitted with values:', values);
-    onSubmit(values);
-  };
-
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">

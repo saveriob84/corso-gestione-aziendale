@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -14,71 +14,56 @@ interface CompanySelectorProps {
 }
 
 export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onAddCompany }) => {
-  const [isCompanyFormOpen, setIsCompanyFormOpen] = React.useState(false);
-  const { control, watch } = useFormContext<ParticipantFormValues>();
-  
-  // Monitor il valore dell'azienda selezionata
-  const selectedCompanyId = watch('aziendaId');
-  
-  useEffect(() => {
-    console.log('CompanySelector - Current companies:', companies);
-    console.log('CompanySelector - Selected company ID:', selectedCompanyId);
-    
-    const selectedCompany = companies.find(company => company.id === selectedCompanyId);
-    console.log('CompanySelector - Selected company:', selectedCompany);
-  }, [selectedCompanyId, companies]);
-
-  const handleOpenCompanyForm = () => {
-    console.log('CompanySelector - Opening company form');
-    onAddCompany();
-    setIsCompanyFormOpen(true);
-  };
+  const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
+  const { control } = useFormContext<ParticipantFormValues>();
 
   return (
     <>
       <FormField
         control={control}
         name="aziendaId"
-        render={({ field }) => {
-          console.log('CompanySelector - field value:', field.value);
-          return (
-            <FormItem>
-              <FormLabel>Azienda di appartenenza</FormLabel>
-              <div className="flex space-x-2">
-                <Select 
-                  onValueChange={field.onChange}
-                  value={field.value || ''}
-                  defaultValue={field.value || ''}
-                >
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Azienda di appartenenza</FormLabel>
+            <div className="flex space-x-2">
+              <Select 
+                onValueChange={field.onChange}
+                value={field.value || ""}
+                defaultValue={field.value || ""}
+              >
+                <FormControl>
                   <SelectTrigger className="flex-1 bg-background">
                     <SelectValue placeholder="Seleziona un'azienda" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background">
-                    {companies.length > 0 ? 
-                      companies.map(company => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.ragioneSociale}
-                        </SelectItem>
-                      )) : 
-                      <SelectItem value="none" disabled>
-                        Nessuna azienda disponibile
+                </FormControl>
+                <SelectContent className="bg-background">
+                  {companies.length > 0 ? 
+                    companies.map(company => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.ragioneSociale}
                       </SelectItem>
-                    }
-                  </SelectContent>
-                </Select>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={handleOpenCompanyForm}
-                >
-                  <PlusCircle className="h-4 w-4" />
-                </Button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          );
-        }}
+                    )) : 
+                    <SelectItem value="none" disabled>
+                      Nessuna azienda disponibile
+                    </SelectItem>
+                  }
+                </SelectContent>
+              </Select>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="icon" 
+                onClick={() => {
+                  onAddCompany();
+                  setIsCompanyFormOpen(true);
+                }}
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
       />
 
       <CompanyFormDialog 

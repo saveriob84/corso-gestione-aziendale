@@ -4,65 +4,50 @@ import { useForm } from "react-hook-form";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { ParticipantFormValues } from '@/types/participant';
-import { parseDateIfNeeded, parseInitialDate } from '@/utils/dateUtils';
 
 export const useParticipantForm = (initialData: Partial<ParticipantFormValues> = {}, isOpen: boolean) => {
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
-  
-  console.log('useParticipantForm - initialData:', initialData);
-  
-  const formattedInitialData = {
-    ...initialData,
-    datanascita: parseDateIfNeeded(initialData?.datanascita),
-    exLege: Boolean(initialData?.exLege)
-  };
-  
-  console.log('useParticipantForm - formattedInitialData:', formattedInitialData);
-  
+
   const form = useForm<ParticipantFormValues>({
     defaultValues: {
-      nome: formattedInitialData?.nome || "",
-      cognome: formattedInitialData?.cognome || "",
-      codicefiscale: formattedInitialData?.codicefiscale || "",
-      luogonascita: formattedInitialData?.luogonascita || "",
-      datanascita: parseInitialDate(initialData?.datanascita),
-      username: formattedInitialData?.username || "",
-      password: formattedInitialData?.password || "",
-      numerocellulare: formattedInitialData?.numerocellulare || "",
-      aziendaId: formattedInitialData?.aziendaId || "",
-      exLege: formattedInitialData?.exLege || false,
-      titolostudio: formattedInitialData?.titolostudio || "",
-      ccnl: formattedInitialData?.ccnl || "",
-      contratto: formattedInitialData?.contratto || "",
-      qualifica: formattedInitialData?.qualifica || "",
-      annoassunzione: formattedInitialData?.annoassunzione || new Date().getFullYear().toString(),
+      nome: initialData?.nome || "",
+      cognome: initialData?.cognome || "",
+      codicefiscale: initialData?.codicefiscale || "",
+      luogonascita: initialData?.luogonascita || "",
+      datanascita: initialData?.datanascita instanceof Date ? initialData.datanascita : undefined,
+      username: initialData?.username || "",
+      password: initialData?.password || "",
+      numerocellulare: initialData?.numerocellulare || "",
+      aziendaId: initialData?.aziendaId || "",
+      exLege: initialData?.exLege || false,
+      titolostudio: initialData?.titolostudio || "",
+      ccnl: initialData?.ccnl || "",
+      contratto: initialData?.contratto || "",
+      qualifica: initialData?.qualifica || "",
+      annoassunzione: initialData?.annoassunzione || new Date().getFullYear().toString(),
     }
   });
 
-  console.log('useParticipantForm - form values:', form.getValues());
-
   useEffect(() => {
     if (isOpen) {
-      console.log('useParticipantForm - resetting form with:', initialData);
       form.reset({
         nome: initialData?.nome || "",
         cognome: initialData?.cognome || "",
         codicefiscale: initialData?.codicefiscale || "",
         luogonascita: initialData?.luogonascita || "",
-        datanascita: parseInitialDate(initialData?.datanascita),
+        datanascita: initialData?.datanascita instanceof Date ? initialData.datanascita : undefined,
         username: initialData?.username || "",
         password: initialData?.password || "",
         numerocellulare: initialData?.numerocellulare || "",
         aziendaId: initialData?.aziendaId || "",
-        exLege: Boolean(initialData?.exLege) || false,
+        exLege: initialData?.exLege || false,
         titolostudio: initialData?.titolostudio || "",
         ccnl: initialData?.ccnl || "",
         contratto: initialData?.contratto || "",
         qualifica: initialData?.qualifica || "",
         annoassunzione: initialData?.annoassunzione || new Date().getFullYear().toString(),
       });
-      console.log('useParticipantForm - form values after reset:', form.getValues());
     }
   }, [initialData, isOpen, form]);
   
@@ -72,7 +57,6 @@ export const useParticipantForm = (initialData: Partial<ParticipantFormValues> =
         const { data, error } = await supabase.from('companies').select('*');
         if (error) throw error;
         setCompanies(data || []);
-        console.log('useParticipantForm - fetched companies:', data);
       } catch (error) {
         console.error('Error loading companies:', error);
         toast.error("Errore nel caricamento delle aziende");

@@ -17,11 +17,7 @@ export const CredentialFields: React.FC = () => {
           <FormItem>
             <FormLabel>Username</FormLabel>
             <FormControl>
-              <Input 
-                placeholder="es. mario.rossi" 
-                {...field} 
-                value={field.value || ''}
-              />
+              <Input placeholder="es. mario.rossi" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -35,12 +31,7 @@ export const CredentialFields: React.FC = () => {
           <FormItem>
             <FormLabel>Password</FormLabel>
             <FormControl>
-              <Input 
-                type="password" 
-                placeholder="••••••••" 
-                {...field}
-                value={field.value || ''}
-              />
+              <Input type="password" placeholder="••••••••" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -54,11 +45,7 @@ export const CredentialFields: React.FC = () => {
           <FormItem>
             <FormLabel>Numero di cellulare</FormLabel>
             <FormControl>
-              <Input 
-                placeholder="es. +39 333 1234567" 
-                {...field}
-                value={field.value || ''}
-              />
+              <Input placeholder="es. +39 333 1234567" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

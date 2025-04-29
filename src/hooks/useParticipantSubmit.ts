@@ -4,8 +4,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/hooks/useAuth';
 import { ParticipantFormValues } from '@/types/participant';
-import { formatDateForStorage } from '@/utils/dateUtils';
-import { updateParticipant, createParticipant } from '@/utils/participantUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useParticipantSubmit = (
   initialData: Partial<ParticipantFormValues> = {},
@@ -18,9 +17,6 @@ export const useParticipantSubmit = (
   const { user } = useAuth();
 
   const handleSubmit = async (data: ParticipantFormValues, companies: any[]) => {
-    console.log('useParticipantSubmit - starting submission with data:', data);
-    console.log('useParticipantSubmit - companies:', companies);
-    
     if (!user) {
       toast.error("Devi effettuare l'accesso per aggiungere un partecipante");
       return;
@@ -29,57 +25,102 @@ export const useParticipantSubmit = (
     setIsSubmitting(true);
     
     try {
+      // Format the birth date for storage
+      const formattedBirthDate = data.datanascita ? 
+        data.datanascita.toISOString().split('T')[0] : 
+        null;
+      
       // Ensure we have a valid company selection
       const selectedCompany = data.aziendaId ? 
         companies.find(company => company.id === data.aziendaId) : 
         null;
       
-      console.log('useParticipantSubmit - selectedCompany:', selectedCompany);
-        
       const aziendaDetails = selectedCompany ? {
         aziendaId: selectedCompany.id,
         azienda: selectedCompany.ragioneSociale
       } : { azienda: "Non specificata" };
       
-      const formattedBirthDate = formatDateForStorage(data.datanascita);
-      console.log('useParticipantSubmit - formattedBirthDate:', formattedBirthDate);
-      
       let participantId: string;
       
       if (isEditing && initialData.id) {
-        console.log('useParticipantSubmit - updating participant:', initialData.id);
-        const { error } = await updateParticipant(initialData.id, data, aziendaDetails, formattedBirthDate);
+        // Create an update object with only defined values
+        const updateData = {
+          nome: data.nome,
+          cognome: data.cognome,
+          codicefiscale: data.codicefiscale || null,
+          luogonascita: data.luogonascita || null,
+          datanascita: formattedBirthDate,
+          username: data.username || null,
+          password: data.password || null,
+          numerocellulare: data.numerocellulare || null,
+          aziendaid: data.aziendaId || null,
+          azienda: aziendaDetails.azienda,
+          titolostudio: data.titolostudio || null,
+          ccnl: data.ccnl || null,
+          contratto: data.contratto || null,
+          qualifica: data.qualifica || null,
+          annoassunzione: data.annoassunzione || null,
+        };
+
+        const { error } = await supabase
+          .from('participants')
+          .update(updateData)
+          .eq('id', initialData.id);
         
         if (error) {
-          console.error('Error updating participant:', error);
           throw error;
         }
         
         participantId = initialData.id;
-        console.log('useParticipantSubmit - participant updated:', participantId);
         toast.success("Partecipante aggiornato con successo");
         onSuccess?.();
         
       } else {
         const newParticipantId = uuidv4();
-        console.log('useParticipantSubmit - creating new participant:', newParticipantId);
         
-        const { error } = await createParticipant(
-          newParticipantId, 
-          data, 
-          user.id, 
-          aziendaDetails, 
-          formattedBirthDate,
-          courseId
-        );
-        
+        const insertData = {
+          id: newParticipantId,
+          nome: data.nome,
+          cognome: data.cognome,
+          codicefiscale: data.codicefiscale || null,
+          luogonascita: data.luogonascita || null,
+          datanascita: formattedBirthDate,
+          username: data.username || null,
+          password: data.password || null,
+          numerocellulare: data.numerocellulare || null,
+          aziendaid: data.aziendaId || null,
+          azienda: aziendaDetails.azienda,
+          titolostudio: data.titolostudio || null,
+          ccnl: data.ccnl || null,
+          contratto: data.contratto || null,
+          qualifica: data.qualifica || null,
+          annoassunzione: data.annoassunzione || null,
+          user_id: user.id
+        };
+
+        const { error } = await supabase
+          .from('participants')
+          .insert(insertData);
+          
         if (error) {
-          console.error('Error creating participant:', error);
           throw error;
         }
         
+        if (courseId) {
+          const { error: courseParticipantError } = await supabase
+            .from('course_participants')
+            .insert({
+              course_id: courseId,
+              participant_id: newParticipantId,
+              user_id: user.id
+            });
+            
+          if (courseParticipantError) {
+            throw courseParticipantError;
+          }
+        }
+        
         participantId = newParticipantId;
-        console.log('useParticipantSubmit - participant created:', participantId);
         toast.success("Partecipante aggiunto con successo");
       }
       
@@ -88,6 +129,7 @@ export const useParticipantSubmit = (
         window.location.reload();
       } else {
         onClose?.();
+        onSuccess?.();
       }
       
     } catch (error: any) {
