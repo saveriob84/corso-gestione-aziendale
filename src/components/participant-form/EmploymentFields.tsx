@@ -38,7 +38,7 @@ export const EmploymentFields: React.FC = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona titolo di studio" />
                   </SelectTrigger>
-                  <SelectContent className="pointer-events-auto">
+                  <SelectContent>
                     <SelectItem value="licenzaMedia">Licenza media</SelectItem>
                     <SelectItem value="diplomaSuperiore">Diploma superiore</SelectItem>
                     <SelectItem value="laurea">Laurea</SelectItem>
@@ -87,7 +87,7 @@ export const EmploymentFields: React.FC = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona tipologia" />
                   </SelectTrigger>
-                  <SelectContent className="pointer-events-auto">
+                  <SelectContent>
                     <SelectItem value="determinato">Tempo determinato</SelectItem>
                     <SelectItem value="indeterminato">Tempo indeterminato</SelectItem>
                     <SelectItem value="apprendistato">Apprendistato</SelectItem>

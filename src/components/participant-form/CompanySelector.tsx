@@ -34,11 +34,6 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onA
     setIsCompanyFormOpen(true);
   };
 
-  const handleCompanyChange = (value: string) => {
-    console.log('CompanySelector - Company changed to:', value);
-    return value;
-  };
-
   return (
     <>
       <FormField
@@ -51,13 +46,13 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onA
               <FormLabel>Azienda di appartenenza</FormLabel>
               <div className="flex space-x-2">
                 <Select 
-                  onValueChange={(value) => field.onChange(handleCompanyChange(value))}
+                  onValueChange={field.onChange}
                   value={field.value || ''}
                 >
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Seleziona un'azienda" />
                   </SelectTrigger>
-                  <SelectContent className="pointer-events-auto">
+                  <SelectContent>
                     {companies.length > 0 ? 
                       companies.map(company => (
                         <SelectItem key={company.id} value={company.id}>

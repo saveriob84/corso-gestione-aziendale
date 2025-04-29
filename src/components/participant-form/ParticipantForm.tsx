@@ -46,18 +46,26 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} autoComplete="off">
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonalInfoFields />
-            <CredentialFields />
+            <div className="space-y-4">
+              <PersonalInfoFields />
+            </div>
+            <div className="space-y-4">
+              <CredentialFields />
+            </div>
             
-            <CompanySelector 
-              companies={companies}
-              onAddCompany={onAddCompany}
-            />
+            <div className="space-y-4">
+              <CompanySelector 
+                companies={companies}
+                onAddCompany={onAddCompany}
+              />
+            </div>
 
-            <EmploymentFields />
+            <div className="space-y-4">
+              <EmploymentFields />
+            </div>
           </div>
           
           <div className="flex justify-end space-x-2 mt-6">

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
@@ -14,13 +14,14 @@ import { cn } from "@/lib/utils";
 
 export const PersonalInfoFields: React.FC = () => {
   const { control, watch } = useFormContext<ParticipantFormValues>();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   // Monitor dei valori per debugging
   const nome = watch('nome');
   const cognome = watch('cognome');
   const dataNascita = watch('datanascita');
   
-  React.useEffect(() => {
+  useEffect(() => {
     console.log('PersonalInfoFields - nome:', nome);
     console.log('PersonalInfoFields - cognome:', cognome);
     console.log('PersonalInfoFields - dataNascita:', dataNascita);
@@ -108,7 +109,7 @@ export const PersonalInfoFields: React.FC = () => {
           return (
             <FormItem className="flex flex-col">
               <FormLabel>Data di nascita</FormLabel>
-              <Popover>
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
@@ -117,10 +118,8 @@ export const PersonalInfoFields: React.FC = () => {
                         "w-full pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
                       )}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        console.log('PersonalInfoFields - Calendar button clicked');
-                      }}
+                      type="button"
+                      onClick={() => setCalendarOpen(true)}
                     >
                       {field.value ? (
                         format(field.value, "dd/MM/yyyy", { locale: it })
@@ -138,6 +137,7 @@ export const PersonalInfoFields: React.FC = () => {
                     onSelect={(date) => {
                       console.log('PersonalInfoFields - Calendar date selected:', date);
                       field.onChange(date);
+                      setCalendarOpen(false);
                     }}
                     defaultMonth={field.value || new Date()}
                     disabled={(date) => date > new Date()}
