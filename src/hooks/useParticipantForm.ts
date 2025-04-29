@@ -10,11 +10,15 @@ export const useParticipantForm = (initialData: Partial<ParticipantFormValues> =
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [companies, setCompanies] = useState<any[]>([]);
   
+  console.log('useParticipantForm - initialData:', initialData);
+  
   const formattedInitialData = {
     ...initialData,
     datanascita: parseDateIfNeeded(initialData?.datanascita),
     exLege: Boolean(initialData?.exLege)
   };
+  
+  console.log('useParticipantForm - formattedInitialData:', formattedInitialData);
   
   const form = useForm<ParticipantFormValues>({
     defaultValues: {
@@ -36,8 +40,11 @@ export const useParticipantForm = (initialData: Partial<ParticipantFormValues> =
     }
   });
 
+  console.log('useParticipantForm - form values:', form.getValues());
+
   useEffect(() => {
     if (isOpen) {
+      console.log('useParticipantForm - resetting form with:', initialData);
       form.reset({
         nome: initialData?.nome || "",
         cognome: initialData?.cognome || "",
@@ -55,6 +62,7 @@ export const useParticipantForm = (initialData: Partial<ParticipantFormValues> =
         qualifica: initialData?.qualifica || "",
         annoassunzione: initialData?.annoassunzione || new Date().getFullYear().toString(),
       });
+      console.log('useParticipantForm - form values after reset:', form.getValues());
     }
   }, [initialData, isOpen, form]);
   
@@ -64,6 +72,7 @@ export const useParticipantForm = (initialData: Partial<ParticipantFormValues> =
         const { data, error } = await supabase.from('companies').select('*');
         if (error) throw error;
         setCompanies(data || []);
+        console.log('useParticipantForm - fetched companies:', data);
       } catch (error) {
         console.error('Error loading companies:', error);
         toast.error("Errore nel caricamento delle aziende");

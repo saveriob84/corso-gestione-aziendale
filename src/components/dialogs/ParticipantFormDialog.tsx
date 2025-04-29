@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ParticipantFormValues, ParticipantFormDialogProps } from '@/types/participant';
 import { useParticipantForm } from '@/hooks/useParticipantForm';
@@ -19,6 +19,13 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   onSuccess
 }) => {
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
+
+  useEffect(() => {
+    console.log('ParticipantFormDialog - Open state:', isOpen);
+    console.log('ParticipantFormDialog - Initial data:', initialData);
+    console.log('ParticipantFormDialog - Is editing:', isEditing);
+    console.log('ParticipantFormDialog - Course ID:', courseId);
+  }, [isOpen, initialData, isEditing, courseId]);
   
   const {
     form,
@@ -31,10 +38,12 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   } = useParticipantSubmit(initialData, isEditing, courseId, onSuccess, onClose);
   
   const onSubmit = (data: ParticipantFormValues) => {
+    console.log('ParticipantFormDialog - Form submitted:', data);
     handleSubmit(data, companies);
   };
 
   const handleOpenChange = (open: boolean) => {
+    console.log('ParticipantFormDialog - Open state changing to:', open);
     if (!open) {
       onClose();
     }

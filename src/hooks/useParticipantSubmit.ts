@@ -18,6 +18,9 @@ export const useParticipantSubmit = (
   const { user } = useAuth();
 
   const handleSubmit = async (data: ParticipantFormValues, companies: any[]) => {
+    console.log('useParticipantSubmit - starting submission with data:', data);
+    console.log('useParticipantSubmit - companies:', companies);
+    
     if (!user) {
       toast.error("Devi effettuare l'accesso per aggiungere un partecipante");
       return;
@@ -30,6 +33,8 @@ export const useParticipantSubmit = (
       const selectedCompany = data.aziendaId ? 
         companies.find(company => company.id === data.aziendaId) : 
         null;
+      
+      console.log('useParticipantSubmit - selectedCompany:', selectedCompany);
         
       const aziendaDetails = selectedCompany ? {
         aziendaId: selectedCompany.id,
@@ -37,20 +42,27 @@ export const useParticipantSubmit = (
       } : { azienda: "Non specificata" };
       
       const formattedBirthDate = formatDateForStorage(data.datanascita);
+      console.log('useParticipantSubmit - formattedBirthDate:', formattedBirthDate);
       
       let participantId: string;
       
       if (isEditing && initialData.id) {
+        console.log('useParticipantSubmit - updating participant:', initialData.id);
         const { error } = await updateParticipant(initialData.id, data, aziendaDetails, formattedBirthDate);
         
-        if (error) throw error;
-        participantId = initialData.id;
+        if (error) {
+          console.error('Error updating participant:', error);
+          throw error;
+        }
         
+        participantId = initialData.id;
+        console.log('useParticipantSubmit - participant updated:', participantId);
         toast.success("Partecipante aggiornato con successo");
         onSuccess?.();
         
       } else {
         const newParticipantId = uuidv4();
+        console.log('useParticipantSubmit - creating new participant:', newParticipantId);
         
         const { error } = await createParticipant(
           newParticipantId, 
@@ -61,9 +73,13 @@ export const useParticipantSubmit = (
           courseId
         );
         
-        if (error) throw error;
-        participantId = newParticipantId;
+        if (error) {
+          console.error('Error creating participant:', error);
+          throw error;
+        }
         
+        participantId = newParticipantId;
+        console.log('useParticipantSubmit - participant created:', participantId);
         toast.success("Partecipante aggiunto con successo");
       }
       
