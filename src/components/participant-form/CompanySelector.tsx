@@ -48,11 +48,12 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onA
                 <Select 
                   onValueChange={field.onChange}
                   value={field.value || ''}
+                  defaultValue={field.value || ''}
                 >
-                  <SelectTrigger className="flex-1">
+                  <SelectTrigger className="flex-1 bg-background">
                     <SelectValue placeholder="Seleziona un'azienda" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background">
                     {companies.length > 0 ? 
                       companies.map(company => (
                         <SelectItem key={company.id} value={company.id}>

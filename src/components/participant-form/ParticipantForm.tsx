@@ -46,29 +46,34 @@ export const ParticipantForm: React.FC<ParticipantFormProps> = ({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} autoComplete="off">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 w-full">
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
+              <h3 className="text-sm font-medium">Dati personali</h3>
               <PersonalInfoFields />
             </div>
             <div className="space-y-4">
+              <h3 className="text-sm font-medium">Credenziali</h3>
               <CredentialFields />
             </div>
-            
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div className="space-y-4">
+              <h3 className="text-sm font-medium">Azienda</h3>
               <CompanySelector 
                 companies={companies}
                 onAddCompany={onAddCompany}
               />
             </div>
-
             <div className="space-y-4">
+              <h3 className="text-sm font-medium">Dati lavorativi</h3>
               <EmploymentFields />
             </div>
           </div>
           
-          <div className="flex justify-end space-x-2 mt-6">
+          <div className="flex justify-end space-x-2 mt-6 pt-2 border-t">
             <Button 
               type="button" 
               variant="outline" 

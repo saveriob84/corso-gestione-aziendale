@@ -34,11 +34,12 @@ export const EmploymentFields: React.FC = () => {
                 <Select 
                   onValueChange={field.onChange}
                   value={field.value || ''}
+                  defaultValue={field.value || ''}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background">
                     <SelectValue placeholder="Seleziona titolo di studio" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background">
                     <SelectItem value="licenzaMedia">Licenza media</SelectItem>
                     <SelectItem value="diplomaSuperiore">Diploma superiore</SelectItem>
                     <SelectItem value="laurea">Laurea</SelectItem>
@@ -83,11 +84,12 @@ export const EmploymentFields: React.FC = () => {
                 <Select 
                   onValueChange={field.onChange}
                   value={field.value || ''}
+                  defaultValue={field.value || ''}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background">
                     <SelectValue placeholder="Seleziona tipologia" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background">
                     <SelectItem value="determinato">Tempo determinato</SelectItem>
                     <SelectItem value="indeterminato">Tempo indeterminato</SelectItem>
                     <SelectItem value="apprendistato">Apprendistato</SelectItem>
@@ -145,7 +147,7 @@ export const EmploymentFields: React.FC = () => {
         render={({ field }) => {
           console.log('EmploymentFields - exLege field value:', field.value);
           return (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
               <FormControl>
                 <Checkbox
                   checked={field.value}

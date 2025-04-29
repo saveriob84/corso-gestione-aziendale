@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 
 export const PersonalInfoFields: React.FC = () => {
-  const { control, watch } = useFormContext<ParticipantFormValues>();
+  const { control, watch, setValue } = useFormContext<ParticipantFormValues>();
   const [calendarOpen, setCalendarOpen] = useState(false);
   
   // Monitor dei valori per debugging
@@ -40,6 +40,10 @@ export const PersonalInfoFields: React.FC = () => {
                 placeholder="es. Mario" 
                 {...field}
                 value={field.value || ''}
+                onChange={(e) => {
+                  console.log('Input nome changed:', e.target.value);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -58,6 +62,10 @@ export const PersonalInfoFields: React.FC = () => {
                 placeholder="es. Rossi" 
                 {...field}
                 value={field.value || ''}
+                onChange={(e) => {
+                  console.log('Input cognome changed:', e.target.value);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -76,6 +84,10 @@ export const PersonalInfoFields: React.FC = () => {
                 placeholder="es. RSSMRA80A01H501U" 
                 {...field}
                 value={field.value || ''}
+                onChange={(e) => {
+                  console.log('Input codicefiscale changed:', e.target.value);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -94,6 +106,10 @@ export const PersonalInfoFields: React.FC = () => {
                 placeholder="es. Roma" 
                 {...field}
                 value={field.value || ''}
+                onChange={(e) => {
+                  console.log('Input luogonascita changed:', e.target.value);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -119,7 +135,6 @@ export const PersonalInfoFields: React.FC = () => {
                         !field.value && "text-muted-foreground"
                       )}
                       type="button"
-                      onClick={() => setCalendarOpen(true)}
                     >
                       {field.value ? (
                         format(field.value, "dd/MM/yyyy", { locale: it })
@@ -142,6 +157,7 @@ export const PersonalInfoFields: React.FC = () => {
                     defaultMonth={field.value || new Date()}
                     disabled={(date) => date > new Date()}
                     initialFocus
+                    className="bg-background"
                   />
                 </PopoverContent>
               </Popover>
