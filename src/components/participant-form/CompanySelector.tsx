@@ -17,7 +17,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onA
   const [isCompanyFormOpen, setIsCompanyFormOpen] = React.useState(false);
   const { control } = useFormContext<ParticipantFormValues>();
 
-  const handleOpenCompanyForm = (e: React.MouseEvent) => {
+  const handleOpenCompanyForm = () => {
     onAddCompany();
     setIsCompanyFormOpen(true);
   };
@@ -32,7 +32,7 @@ export const CompanySelector: React.FC<CompanySelectorProps> = ({ companies, onA
             <FormLabel>Azienda di appartenenza</FormLabel>
             <div className="flex space-x-2">
               <Select 
-                value={field.value} 
+                value={field.value || ''} 
                 onValueChange={field.onChange}
               >
                 <SelectTrigger className="flex-1">

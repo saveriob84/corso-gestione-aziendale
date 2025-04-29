@@ -27,6 +27,7 @@ export const PersonalInfoFields: React.FC = () => {
               <Input 
                 placeholder="es. Mario" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -44,6 +45,7 @@ export const PersonalInfoFields: React.FC = () => {
               <Input 
                 placeholder="es. Rossi" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -61,6 +63,7 @@ export const PersonalInfoFields: React.FC = () => {
               <Input 
                 placeholder="es. RSSMRA80A01H501U" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -78,6 +81,7 @@ export const PersonalInfoFields: React.FC = () => {
               <Input 
                 placeholder="es. Roma" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -110,7 +114,7 @@ export const PersonalInfoFields: React.FC = () => {
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={field.value}
@@ -118,27 +122,9 @@ export const PersonalInfoFields: React.FC = () => {
                   defaultMonth={field.value || new Date()}
                   disabled={(date) => date > new Date()}
                   initialFocus
-                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={control}
-        name="numerocellulare"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Numero di cellulare</FormLabel>
-            <FormControl>
-              <Input 
-                placeholder="es. +39 123 456 7890" 
-                {...field}
-              />
-            </FormControl>
             <FormMessage />
           </FormItem>
         )}

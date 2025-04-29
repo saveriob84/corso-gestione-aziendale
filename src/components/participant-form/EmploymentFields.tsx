@@ -20,7 +20,7 @@ export const EmploymentFields: React.FC = () => {
             <FormLabel>Titolo di studio</FormLabel>
             <FormControl>
               <Select 
-                value={field.value} 
+                value={field.value || ''} 
                 onValueChange={field.onChange}
               >
                 <SelectTrigger>
@@ -50,6 +50,7 @@ export const EmploymentFields: React.FC = () => {
               <Input 
                 placeholder="es. Commercio" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -65,7 +66,7 @@ export const EmploymentFields: React.FC = () => {
             <FormLabel>Tipologia contrattuale</FormLabel>
             <FormControl>
               <Select 
-                value={field.value} 
+                value={field.value || ''} 
                 onValueChange={field.onChange}
               >
                 <SelectTrigger>
@@ -96,6 +97,7 @@ export const EmploymentFields: React.FC = () => {
               <Input 
                 placeholder="es. Impiegato" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
@@ -113,6 +115,7 @@ export const EmploymentFields: React.FC = () => {
               <Input 
                 placeholder="es. 2020" 
                 {...field}
+                value={field.value || ''}
               />
             </FormControl>
             <FormMessage />
