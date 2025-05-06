@@ -17,7 +17,12 @@ export const CredentialFields: React.FC = () => {
           <FormItem>
             <FormLabel>Username</FormLabel>
             <FormControl>
-              <Input placeholder="es. mario.rossi" {...field} />
+              <Input 
+                placeholder="es. mario.rossi" 
+                {...field} 
+                value={field.value || ''}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -31,7 +36,13 @@ export const CredentialFields: React.FC = () => {
           <FormItem>
             <FormLabel>Password</FormLabel>
             <FormControl>
-              <Input type="password" placeholder="••••••••" {...field} />
+              <Input 
+                type="password" 
+                placeholder="••••••••" 
+                {...field}
+                value={field.value || ''}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -45,7 +56,12 @@ export const CredentialFields: React.FC = () => {
           <FormItem>
             <FormLabel>Numero di cellulare</FormLabel>
             <FormControl>
-              <Input placeholder="es. +39 333 1234567" {...field} />
+              <Input 
+                placeholder="es. +39 333 1234567" 
+                {...field}
+                value={field.value || ''}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

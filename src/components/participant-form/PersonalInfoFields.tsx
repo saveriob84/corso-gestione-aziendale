@@ -25,7 +25,11 @@ export const PersonalInfoFields: React.FC = () => {
           <FormItem>
             <FormLabel>Nome</FormLabel>
             <FormControl>
-              <Input placeholder="es. Mario" {...field} />
+              <Input 
+                placeholder="es. Mario" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -39,7 +43,11 @@ export const PersonalInfoFields: React.FC = () => {
           <FormItem>
             <FormLabel>Cognome</FormLabel>
             <FormControl>
-              <Input placeholder="es. Rossi" {...field} />
+              <Input 
+                placeholder="es. Rossi" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -53,7 +61,11 @@ export const PersonalInfoFields: React.FC = () => {
           <FormItem>
             <FormLabel>Codice Fiscale</FormLabel>
             <FormControl>
-              <Input placeholder="es. RSSMRA80A01H501U" {...field} />
+              <Input 
+                placeholder="es. RSSMRA80A01H501U" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -67,7 +79,11 @@ export const PersonalInfoFields: React.FC = () => {
           <FormItem>
             <FormLabel>Luogo di nascita</FormLabel>
             <FormControl>
-              <Input placeholder="es. Roma" {...field} />
+              <Input 
+                placeholder="es. Roma" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -90,6 +106,7 @@ export const PersonalInfoFields: React.FC = () => {
                       !field.value && "text-muted-foreground"
                     )}
                     type="button"
+                    onClick={() => setCalendarOpen(true)}
                   >
                     {field.value ? (
                       format(field.value, "dd/MM/yyyy", { locale: it })

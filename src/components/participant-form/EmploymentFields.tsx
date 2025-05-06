@@ -28,7 +28,7 @@ export const EmploymentFields: React.FC = () => {
                   <SelectValue placeholder="Seleziona titolo di studio" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-background">
+              <SelectContent className="bg-background z-50">
                 <SelectItem value="licenzaMedia">Licenza media</SelectItem>
                 <SelectItem value="diplomaSuperiore">Diploma superiore</SelectItem>
                 <SelectItem value="laurea">Laurea</SelectItem>
@@ -48,7 +48,11 @@ export const EmploymentFields: React.FC = () => {
           <FormItem>
             <FormLabel>CCNL di riferimento</FormLabel>
             <FormControl>
-              <Input placeholder="es. Commercio" {...field} />
+              <Input 
+                placeholder="es. Commercio" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -71,7 +75,7 @@ export const EmploymentFields: React.FC = () => {
                   <SelectValue placeholder="Seleziona tipologia" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-background">
+              <SelectContent className="bg-background z-50">
                 <SelectItem value="determinato">Tempo determinato</SelectItem>
                 <SelectItem value="indeterminato">Tempo indeterminato</SelectItem>
                 <SelectItem value="apprendistato">Apprendistato</SelectItem>
@@ -92,7 +96,11 @@ export const EmploymentFields: React.FC = () => {
           <FormItem>
             <FormLabel>Qualifica professionale</FormLabel>
             <FormControl>
-              <Input placeholder="es. Impiegato" {...field} />
+              <Input 
+                placeholder="es. Impiegato" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -106,7 +114,11 @@ export const EmploymentFields: React.FC = () => {
           <FormItem>
             <FormLabel>Anno di assunzione</FormLabel>
             <FormControl>
-              <Input placeholder="es. 2020" {...field} />
+              <Input 
+                placeholder="es. 2020" 
+                value={field.value || ''} 
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -120,7 +132,7 @@ export const EmploymentFields: React.FC = () => {
           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
             <FormControl>
               <Checkbox
-                checked={field.value}
+                checked={field.value || false}
                 onCheckedChange={field.onChange}
               />
             </FormControl>

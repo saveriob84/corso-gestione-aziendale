@@ -31,6 +31,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   } = useParticipantSubmit(initialData, isEditing, courseId, onSuccess, onClose);
   
   const onSubmit = (data: ParticipantFormValues) => {
+    console.log("Form submitted with data:", data);
     handleSubmit(data, companies);
   };
 
@@ -40,7 +41,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-background">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
