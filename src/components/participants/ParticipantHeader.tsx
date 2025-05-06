@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileText, UserPlus } from "lucide-react";
+import { Download, Upload, FileText } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ParticipantHeaderProps {
@@ -15,7 +15,6 @@ const ParticipantHeader = ({
   isLoading,
   onDownloadTemplate,
   onImportClick,
-  onAddParticipant,
   onExport
 }: ParticipantHeaderProps) => {
   return (
@@ -25,22 +24,6 @@ const ParticipantHeader = ({
         <p className="text-muted-foreground">Gestione partecipanti ai corsi</p>
       </div>
       <div className="flex gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="default"
-              onClick={onAddParticipant}
-              disabled={isLoading}
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Nuovo Partecipante
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-sm">
-            Aggiungi un nuovo partecipante
-          </TooltipContent>
-        </Tooltip>
-
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="outline" onClick={onDownloadTemplate} disabled={isLoading}>
