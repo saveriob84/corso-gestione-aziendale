@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { formatDateForDisplay } from '@/utils/dateUtils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,7 +51,7 @@ const ParticipantTable = ({
       <div className="flex items-center space-x-2">
         <Input
           type="search"
-          placeholder="Cerca per nome, cognome o codice fiscale..."
+          placeholder="Cerca per nome o cognome..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="max-w-sm"
@@ -64,11 +63,6 @@ const ParticipantTable = ({
           <TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>Cognome</TableHead>
-            <TableHead>Codice Fiscale</TableHead>
-            <TableHead>Data di Nascita</TableHead>
-            <TableHead>Azienda</TableHead>
-            <TableHead>Titolo di Studio</TableHead>
-            <TableHead>Qualifica</TableHead>
             <TableHead>Azioni</TableHead>
           </TableRow>
         </TableHeader>
@@ -77,11 +71,6 @@ const ParticipantTable = ({
             <TableRow key={participant.id}>
               <TableCell>{participant.nome}</TableCell>
               <TableCell>{participant.cognome}</TableCell>
-              <TableCell>{participant.codicefiscale}</TableCell>
-              <TableCell>{formatDateForDisplay(participant.datanascita)}</TableCell>
-              <TableCell>{participant.azienda || '-'}</TableCell>
-              <TableCell>{participant.titolostudio || '-'}</TableCell>
-              <TableCell>{participant.qualifica || '-'}</TableCell>
               <TableCell>
                 <div className="flex space-x-2">
                   <Button
@@ -107,7 +96,7 @@ const ParticipantTable = ({
           ))}
           {participants.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-4">
+              <TableCell colSpan={3} className="text-center py-4">
                 {isLoading ? 'Caricamento...' : 'Nessun partecipante trovato'}
               </TableCell>
             </TableRow>

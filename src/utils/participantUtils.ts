@@ -4,27 +4,12 @@ import { ParticipantFormValues } from '@/types/participant';
 
 export const updateParticipant = async (
   id: string,
-  data: ParticipantFormValues,
-  aziendaDetails: { aziendaId?: string, azienda: string },
-  formattedBirthDate: string | null
+  data: ParticipantFormValues
 ) => {
-  // Create an update object with only defined values to prevent sending empty strings for UUID fields
+  // Create an update object with only defined values
   const updateData = {
     nome: data.nome,
     cognome: data.cognome,
-    codicefiscale: data.codicefiscale || null,
-    luogonascita: data.luogonascita || null,
-    datanascita: formattedBirthDate,
-    username: data.username || null,
-    password: data.password || null,
-    numerocellulare: data.numerocellulare || null,
-    aziendaid: data.aziendaId || null,
-    azienda: aziendaDetails.azienda,
-    titolostudio: data.titolostudio || null,
-    ccnl: data.ccnl || null,
-    contratto: data.contratto || null,
-    qualifica: data.qualifica || null,
-    annoassunzione: data.annoassunzione || null,
   };
 
   return await supabase
@@ -37,27 +22,12 @@ export const createParticipant = async (
   id: string,
   data: ParticipantFormValues,
   userId: string,
-  aziendaDetails: { aziendaId?: string, azienda: string },
-  formattedBirthDate: string | null,
   courseId?: string
 ) => {
   const insertData = {
     id: id,
     nome: data.nome,
     cognome: data.cognome,
-    codicefiscale: data.codicefiscale || null,
-    luogonascita: data.luogonascita || null,
-    datanascita: formattedBirthDate,
-    username: data.username || null,
-    password: data.password || null,
-    numerocellulare: data.numerocellulare || null,
-    aziendaid: data.aziendaId || null,
-    azienda: aziendaDetails.azienda,
-    titolostudio: data.titolostudio || null,
-    ccnl: data.ccnl || null,
-    contratto: data.contratto || null,
-    qualifica: data.qualifica || null,
-    annoassunzione: data.annoassunzione || null,
     user_id: userId
   };
 

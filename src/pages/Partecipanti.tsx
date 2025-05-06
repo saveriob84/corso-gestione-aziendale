@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ImportInstructions } from "@/components/alerts/ImportInstructions";
 import { useParticipants } from "@/hooks/useParticipants";
 import { Participant, ParticipantFormValues } from '@/types/participant';
-import { parseDateIfNeeded } from '@/utils/dateUtils';
 import ParticipantFormDialog from "@/components/dialogs/ParticipantFormDialog";
 import ParticipantHeader from "@/components/participants/ParticipantHeader";
 import ParticipantTable from "@/components/participants/ParticipantTable";
@@ -23,11 +22,10 @@ const Partecipanti = () => {
   } = useParticipants();
 
   const handleEdit = (participant: Participant) => {
-    // Convert the participant object to match ParticipantFormValues
-    // The key step here is to convert the datanascita string to a Date object
     const formattedParticipant: Partial<ParticipantFormValues> = {
-      ...participant,
-      datanascita: parseDateIfNeeded(participant.datanascita)
+      id: participant.id,
+      nome: participant.nome,
+      cognome: participant.cognome
     };
     
     setEditingParticipant(formattedParticipant);

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ParticipantFormValues } from '@/types/participant';
 import { useParticipantSubmit } from '@/hooks/useParticipantSubmit';
 import { useForm } from "react-hook-form";
-import { FormProvider, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -39,7 +39,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   
   const onSubmit = (data: ParticipantFormValues) => {
     console.log("Form submitted with data:", data);
-    handleSubmit(data, []);
+    handleSubmit(data);
   };
 
   return (
@@ -55,7 +55,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         </DialogHeader>
         
         <div className="mt-4">
-          <FormProvider {...form}>
+          <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-4">
                 <FormField
@@ -109,7 +109,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
                 </div>
               </div>
             </form>
-          </FormProvider>
+          </Form>
         </div>
       </DialogContent>
     </Dialog>

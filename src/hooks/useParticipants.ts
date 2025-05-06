@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { useAuth } from '@/hooks/useAuth';
 import { Participant, DatabaseParticipant } from '@/types/participant';
-import { parseDateIfNeeded } from '@/utils/dateUtils';
 
 export const useParticipants = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -30,17 +29,6 @@ export const useParticipants = () => {
         id: dbParticipant.id,
         nome: dbParticipant.nome,
         cognome: dbParticipant.cognome,
-        codicefiscale: dbParticipant.codicefiscale || '-',
-        luogonascita: dbParticipant.luogonascita,
-        datanascita: dbParticipant.datanascita,
-        aziendaId: dbParticipant.aziendaid,
-        azienda: dbParticipant.azienda,
-        titolostudio: dbParticipant.titolostudio,
-        qualifica: dbParticipant.qualifica,
-        username: dbParticipant.username,
-        numerocellulare: dbParticipant.numerocellulare,
-        annoassunzione: dbParticipant.annoassunzione,
-        contratto: dbParticipant.contratto,
         user_id: dbParticipant.user_id
       }));
       
@@ -81,8 +69,7 @@ export const useParticipants = () => {
     const searchLower = searchQuery.toLowerCase();
     return (
       participant.nome?.toLowerCase().includes(searchLower) ||
-      participant.cognome?.toLowerCase().includes(searchLower) ||
-      participant.codicefiscale?.toLowerCase().includes(searchLower)
+      participant.cognome?.toLowerCase().includes(searchLower)
     );
   });
 
