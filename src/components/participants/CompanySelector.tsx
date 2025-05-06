@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/participant';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
@@ -120,31 +119,32 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                   <CommandEmpty>Nessuna azienda trovata</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
+                      value="none"
                       onSelect={() => {
+                        console.log("No company selected");
                         field.onChange("none");
                         setOpen(false);
                       }}
-                      className="flex cursor-pointer items-center justify-between px-3 py-2"
                     >
                       <span>Nessuna azienda</span>
-                      {field.value === "none" && <Check className="h-4 w-4" />}
+                      {field.value === "none" && <Check className="ml-auto h-4 w-4" />}
                     </CommandItem>
                     
                     {filteredCompanies.map((company) => (
                       <CommandItem
                         key={company.id}
+                        value={company.id}
                         onSelect={() => {
                           console.log("Company selected:", company);
                           field.onChange(company.id);
                           setOpen(false);
                         }}
-                        className="flex cursor-pointer items-center justify-between px-3 py-2"
                       >
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{company.ragioneSociale}</p>
                           <p className="text-xs text-muted-foreground">{company.partitaIva}</p>
                         </div>
-                        {field.value === company.id && <Check className="h-4 w-4" />}
+                        {field.value === company.id && <Check className="ml-auto h-4 w-4" />}
                       </CommandItem>
                     ))}
                   </CommandGroup>
