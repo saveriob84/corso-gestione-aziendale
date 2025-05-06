@@ -96,7 +96,6 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                     !field.value && "text-muted-foreground"
                   )}
                   disabled={isLoading}
-                  onClick={() => setOpen(!open)}
                 >
                   {field.value && companies.length > 0
                     ? companies.find((company) => company.id === field.value)?.ragioneSociale || "Seleziona un'azienda"
@@ -120,7 +119,7 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                   <CommandEmpty>Nessuna azienda trovata</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
-                      key="none"
+                      value="none"
                       onSelect={() => {
                         console.log("No company selected");
                         field.onChange("none");
@@ -134,6 +133,7 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                     {filteredCompanies.map((company) => (
                       <CommandItem
                         key={company.id}
+                        value={company.id}
                         onSelect={() => {
                           console.log("Company selected:", company);
                           field.onChange(company.id);
