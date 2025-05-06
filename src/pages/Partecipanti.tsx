@@ -38,6 +38,11 @@ const Partecipanti = () => {
     await deleteParticipant(id);
   };
 
+  const handleAddParticipant = () => {
+    setEditingParticipant(null);
+    setIsAddingParticipant(true);
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-4">
       <ParticipantImportExport 
@@ -49,7 +54,7 @@ const Partecipanti = () => {
             isLoading={isLoading || importExportLoading}
             onDownloadTemplate={downloadTemplate}
             onImportClick={triggerImportInput}
-            onAddParticipant={() => {}} // Keep the prop but make it a no-op function
+            onAddParticipant={handleAddParticipant}
             onExport={handleExport}
           />
         )}

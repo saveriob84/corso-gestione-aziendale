@@ -17,6 +17,7 @@ interface CourseDetailTabsProps {
   onLoadExistingParticipant: () => void;
   onAddTeacher: () => void;
   onAddTutor: () => void;
+  onAddParticipant: () => void;
   getCompanyName: (companyId: string) => string;
   courseId: string;
 }
@@ -33,6 +34,7 @@ const CourseDetailTabs = ({
   onLoadExistingParticipant,
   onAddTeacher,
   onAddTutor,
+  onAddParticipant,
   getCompanyName,
   courseId
 }: CourseDetailTabsProps) => {
@@ -66,6 +68,7 @@ const CourseDetailTabs = ({
           onDownloadTemplate={onDownloadTemplate}
           onImportExcel={onImportExcel}
           onLoadExistingParticipant={onLoadExistingParticipant}
+          onAddParticipant={onAddParticipant}
           getCompanyName={getCompanyName}
           courseId={courseId}
         />

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Download, Upload, FileText } from "lucide-react";
+import { Download, Upload, FileText, UserPlus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ParticipantHeaderProps {
@@ -15,6 +15,7 @@ const ParticipantHeader = ({
   isLoading,
   onDownloadTemplate,
   onImportClick,
+  onAddParticipant,
   onExport
 }: ParticipantHeaderProps) => {
   return (
@@ -51,6 +52,11 @@ const ParticipantHeader = ({
             Importa un file Excel o CSV contenente l'elenco dei partecipanti
           </TooltipContent>
         </Tooltip>
+
+        <Button variant="outline" onClick={onAddParticipant} disabled={isLoading}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Nuovo Partecipante
+        </Button>
         
         <Button variant="outline" onClick={onExport} disabled={isLoading}>
           <Download className="mr-2 h-4 w-4" />

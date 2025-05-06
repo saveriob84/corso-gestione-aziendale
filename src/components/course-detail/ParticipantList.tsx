@@ -14,6 +14,7 @@ interface ParticipantListProps {
   onLoadExistingParticipant: () => void;
   getCompanyName: (companyId: string) => string;
   courseId?: string;
+  onAddParticipant?: () => void;
 }
 
 const getContractTypeName = (contractCode: string): string => {
@@ -49,7 +50,8 @@ const ParticipantList = ({
   onImportExcel,
   onLoadExistingParticipant,
   getCompanyName,
-  courseId
+  courseId,
+  onAddParticipant
 }: ParticipantListProps) => {
   return (
     <Card>
@@ -99,6 +101,24 @@ const ParticipantList = ({
               Seleziona un partecipante già inserito in un altro corso
             </TooltipContent>
           </Tooltip>
+
+          {onAddParticipant && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={onAddParticipant}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Nuovo Partecipante
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm">
+                Aggiungi un nuovo partecipante
+              </TooltipContent>
+            </Tooltip>
+          )}
 
           <Button variant="outline" size="sm">
             <Download className="mr-2 h-4 w-4" />

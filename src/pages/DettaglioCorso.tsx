@@ -110,6 +110,11 @@ const DettaglioCorso = () => {
     }
   };
 
+  const handleAddParticipant = () => {
+    setSelectedParticipant(null);
+    setIsAddingParticipant(true);
+  };
+
   const handleGeneratePdf = () => {
     setSelectedPdfType('inizioCorso');
   };
@@ -156,6 +161,7 @@ const DettaglioCorso = () => {
         onDownloadTemplate={downloadTemplate}
         onImportExcel={() => document.getElementById('import-file')?.click()}
         onLoadExistingParticipant={() => setIsParticipantSearchOpen(true)}
+        onAddParticipant={handleAddParticipant}
         onAddTeacher={() => setIsAddingTeacher(true)}
         onAddTutor={() => setIsAddingTutor(true)}
         getCompanyName={getCompanyName}
