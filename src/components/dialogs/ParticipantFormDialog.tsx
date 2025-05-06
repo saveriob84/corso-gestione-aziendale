@@ -7,6 +7,8 @@ import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { formatDateForDisplay, parseInitialDate } from '@/utils/dateUtils';
+import CompanySelector from '@/components/participants/CompanySelector';
 
 interface ExtendedParticipantFormDialogProps {
   isOpen: boolean;
@@ -29,6 +31,10 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
     defaultValues: {
       nome: initialData?.nome || "",
       cognome: initialData?.cognome || "",
+      codicefiscale: initialData?.codicefiscale || "",
+      luogonascita: initialData?.luogonascita || "",
+      datanascita: initialData?.datanascita || "",
+      aziendaid: initialData?.aziendaid || ""
     }
   });
   
@@ -48,7 +54,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-[500px] bg-background">
+      <DialogContent className="sm:max-w-[600px] bg-background">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
@@ -58,16 +64,53 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="nome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="es. Mario" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="cognome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cognome</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="es. Rossi" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="nome"
+                  name="codicefiscale"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome</FormLabel>
+                      <FormLabel>Codice Fiscale</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="es. Mario" 
+                          placeholder="es. RSSMRA80A01H501X" 
                           {...field} 
+                          value={field.value || ''}
                         />
                       </FormControl>
                       <FormMessage />
@@ -75,24 +118,51 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
                   )}
                 />
 
-                <FormField
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="luogonascita"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Luogo di Nascita</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="es. Roma" 
+                            {...field} 
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="datanascita"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Data di Nascita</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <CompanySelector 
                   control={form.control}
-                  name="cognome"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cognome</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="es. Rossi" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="aziendaid"
+                  defaultValue={initialData?.aziendaid}
                 />
                 
-                <div className="flex justify-end space-x-2 pt-2">
+                <div className="flex justify-end space-x-2 pt-4">
                   <Button 
                     type="button" 
                     variant="outline" 

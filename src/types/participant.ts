@@ -3,6 +3,10 @@ export interface ParticipantFormValues {
   id?: string;
   nome: string;
   cognome: string;
+  codicefiscale?: string;
+  luogonascita?: string;
+  datanascita?: string;
+  aziendaid?: string;
 }
 
 export interface Company {
@@ -33,6 +37,10 @@ export interface DatabaseParticipant {
   id: string;
   nome: string;
   cognome: string;
+  codicefiscale?: string;
+  luogonascita?: string;
+  datanascita?: string;
+  aziendaid?: string;
   user_id?: string;
 }
 
@@ -40,5 +48,9 @@ export interface Participant {
   id: string;
   nome: string;
   cognome: string;
+  codicefiscale?: string;
+  luogonascita?: string;
+  datanascita?: string;
+  aziendaid?: string;
   user_id?: string;
 }

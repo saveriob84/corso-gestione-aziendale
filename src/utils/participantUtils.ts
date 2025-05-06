@@ -10,6 +10,10 @@ export const updateParticipant = async (
   const updateData = {
     nome: data.nome,
     cognome: data.cognome,
+    codicefiscale: data.codicefiscale,
+    luogonascita: data.luogonascita,
+    datanascita: data.datanascita,
+    aziendaid: data.aziendaid || null
   };
 
   return await supabase
@@ -28,6 +32,10 @@ export const createParticipant = async (
     id: id,
     nome: data.nome,
     cognome: data.cognome,
+    codicefiscale: data.codicefiscale,
+    luogonascita: data.luogonascita,
+    datanascita: data.datanascita,
+    aziendaid: data.aziendaid || null,
     user_id: userId
   };
 

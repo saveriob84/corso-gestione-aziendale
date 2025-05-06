@@ -29,6 +29,10 @@ export const useParticipants = () => {
         id: dbParticipant.id,
         nome: dbParticipant.nome,
         cognome: dbParticipant.cognome,
+        codicefiscale: dbParticipant.codicefiscale,
+        luogonascita: dbParticipant.luogonascita,
+        datanascita: dbParticipant.datanascita,
+        aziendaid: dbParticipant.aziendaid,
         user_id: dbParticipant.user_id
       }));
       
@@ -69,7 +73,9 @@ export const useParticipants = () => {
     const searchLower = searchQuery.toLowerCase();
     return (
       participant.nome?.toLowerCase().includes(searchLower) ||
-      participant.cognome?.toLowerCase().includes(searchLower)
+      participant.cognome?.toLowerCase().includes(searchLower) ||
+      participant.codicefiscale?.toLowerCase().includes(searchLower) ||
+      participant.luogonascita?.toLowerCase().includes(searchLower)
     );
   });
 

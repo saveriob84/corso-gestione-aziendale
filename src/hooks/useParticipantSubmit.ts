@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/hooks/useAuth';
 import { ParticipantFormValues } from '@/types/participant';
 import { supabase } from '@/integrations/supabase/client';
+import { createParticipant, updateParticipant } from '@/utils/participantUtils';
 
 export const useParticipantSubmit = (
   initialData: Partial<ParticipantFormValues> = {},
@@ -25,61 +26,24 @@ export const useParticipantSubmit = (
     setIsSubmitting(true);
     
     try {
-      let participantId: string;
+      let result;
       
       if (isEditing && initialData.id) {
-        // Create an update object with only defined values
-        const updateData = {
-          nome: data.nome,
-          cognome: data.cognome,
-        };
-
-        const { error } = await supabase
-          .from('participants')
-          .update(updateData)
-          .eq('id', initialData.id);
+        result = await updateParticipant(initialData.id, data);
         
-        if (error) {
-          throw error;
+        if (result.error) {
+          throw result.error;
         }
         
-        participantId = initialData.id;
         toast.success("Partecipante aggiornato con successo");
-        onSuccess?.();
-        
       } else {
         const newParticipantId = uuidv4();
+        result = await createParticipant(newParticipantId, data, user.id, courseId);
         
-        const insertData = {
-          id: newParticipantId,
-          nome: data.nome,
-          cognome: data.cognome,
-          user_id: user.id
-        };
-
-        const { error } = await supabase
-          .from('participants')
-          .insert(insertData);
-          
-        if (error) {
-          throw error;
+        if (result.error) {
+          throw result.error;
         }
         
-        if (courseId) {
-          const { error: courseParticipantError } = await supabase
-            .from('course_participants')
-            .insert({
-              course_id: courseId,
-              participant_id: newParticipantId,
-              user_id: user.id
-            });
-            
-          if (courseParticipantError) {
-            throw courseParticipantError;
-          }
-        }
-        
-        participantId = newParticipantId;
         toast.success("Partecipante aggiunto con successo");
       }
       
