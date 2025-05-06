@@ -5,6 +5,7 @@ import { Company } from '@/types/participant';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface CompanySelectorProps {
   control: any;
@@ -31,8 +32,11 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
       
       if (error) {
         console.error('Error loading companies:', error);
+        toast.error('Errore nel caricamento delle aziende');
         return;
       }
+      
+      console.log('Companies loaded from database:', data);
       
       // Transform the data to match our Company interface
       const transformedData: Company[] = (data || []).map(item => ({
@@ -50,9 +54,11 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
         macrosettore: item.macrosettore
       }));
       
+      console.log('Transformed companies data:', transformedData);
       setCompanies(transformedData);
     } catch (error) {
       console.error('Error in loadCompanies:', error);
+      toast.error('Errore nel caricamento delle aziende');
     } finally {
       setIsLoading(false);
     }
@@ -62,6 +68,9 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
     const query = searchQuery.toLowerCase();
     return company.ragioneSociale.toLowerCase().includes(query);
   });
+
+  console.log('Filtered companies:', filteredCompanies);
+  console.log('Current search query:', searchQuery);
 
   return (
     <FormField
