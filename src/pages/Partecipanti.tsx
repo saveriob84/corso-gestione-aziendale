@@ -49,7 +49,10 @@ const Partecipanti = () => {
             isLoading={isLoading || importExportLoading}
             onDownloadTemplate={downloadTemplate}
             onImportClick={triggerImportInput}
-            onAddParticipant={() => {}} // Keep the prop but make it a no-op function
+            onAddParticipant={() => {
+              setEditingParticipant(null);
+              setIsAddingParticipant(true);
+            }}
             onExport={handleExport}
           />
         )}
