@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Company } from '@/types/participant';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 interface CompanySelectorProps {
   control: any;
@@ -71,7 +71,8 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
 
   const filteredCompanies = companies.filter(company => {
     const query = searchQuery.toLowerCase();
-    return company.ragioneSociale.toLowerCase().includes(query);
+    return company.ragioneSociale.toLowerCase().includes(query) || 
+           company.partitaIva.toLowerCase().includes(query);
   });
 
   console.log('Filtered companies:', filteredCompanies);
@@ -105,48 +106,50 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
               </FormControl>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0" align="start">
-              <div className="flex items-center border-b px-3 py-2">
-                <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                <Input
-                  placeholder="Cerca azienda..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border-0 bg-transparent p-1 focus-visible:outline-none focus-visible:ring-0"
-                />
-              </div>
-              <div className="max-h-[300px] overflow-y-auto">
-                <div 
-                  className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-accent"
-                  onClick={() => {
-                    field.onChange("none");
-                    setOpen(false);
-                  }}
-                >
-                  <span>Nessuna azienda</span>
-                  {field.value === "none" && <Check className="h-4 w-4" />}
+              <Command>
+                <div className="flex items-center border-b px-3 py-2">
+                  <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                  <CommandInput 
+                    placeholder="Cerca azienda..."
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                    className="border-0 bg-transparent p-1 focus-visible:outline-none focus-visible:ring-0"
+                  />
                 </div>
-                {filteredCompanies.length === 0 && searchQuery && (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">
-                    Nessuna azienda trovata
-                  </div>
-                )}
-                {filteredCompanies.map((company) => (
-                  <div
-                    key={company.id}
-                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-accent"
-                    onClick={() => {
-                      field.onChange(company.id);
-                      setOpen(false);
-                    }}
-                  >
-                    <div>
-                      <p className="font-medium">{company.ragioneSociale}</p>
-                      <p className="text-xs text-muted-foreground">{company.partitaIva}</p>
-                    </div>
-                    {field.value === company.id && <Check className="h-4 w-4" />}
-                  </div>
-                ))}
-              </div>
+                <CommandList className="max-h-[300px] overflow-y-auto">
+                  <CommandEmpty>Nessuna azienda trovata</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        field.onChange("none");
+                        setOpen(false);
+                      }}
+                      className="flex cursor-pointer items-center justify-between px-3 py-2"
+                    >
+                      <span>Nessuna azienda</span>
+                      {field.value === "none" && <Check className="h-4 w-4" />}
+                    </CommandItem>
+                    
+                    {filteredCompanies.map((company) => (
+                      <CommandItem
+                        key={company.id}
+                        onSelect={() => {
+                          console.log("Company selected:", company);
+                          field.onChange(company.id);
+                          setOpen(false);
+                        }}
+                        className="flex cursor-pointer items-center justify-between px-3 py-2"
+                      >
+                        <div>
+                          <p className="font-medium">{company.ragioneSociale}</p>
+                          <p className="text-xs text-muted-foreground">{company.partitaIva}</p>
+                        </div>
+                        {field.value === company.id && <Check className="h-4 w-4" />}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
             </PopoverContent>
           </Popover>
           <FormMessage />
