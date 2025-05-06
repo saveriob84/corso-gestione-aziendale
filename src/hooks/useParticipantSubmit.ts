@@ -16,7 +16,7 @@ export const useParticipantSubmit = (
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
 
-  const handleSubmit = async (data: ParticipantFormValues, companies: any[]) => {
+  const handleSubmit = async (data: ParticipantFormValues) => {
     if (!user) {
       toast.error("Devi effettuare l'accesso per aggiungere un partecipante");
       return;
@@ -25,21 +25,6 @@ export const useParticipantSubmit = (
     setIsSubmitting(true);
     
     try {
-      // Format the birth date for storage
-      const formattedBirthDate = data.datanascita ? 
-        data.datanascita.toISOString().split('T')[0] : 
-        null;
-      
-      // Ensure we have a valid company selection
-      const selectedCompany = data.aziendaId ? 
-        companies.find(company => company.id === data.aziendaId) : 
-        null;
-      
-      const aziendaDetails = selectedCompany ? {
-        aziendaId: selectedCompany.id,
-        azienda: selectedCompany.ragioneSociale
-      } : { azienda: "Non specificata" };
-      
       let participantId: string;
       
       if (isEditing && initialData.id) {
@@ -47,19 +32,6 @@ export const useParticipantSubmit = (
         const updateData = {
           nome: data.nome,
           cognome: data.cognome,
-          codicefiscale: data.codicefiscale || null,
-          luogonascita: data.luogonascita || null,
-          datanascita: formattedBirthDate,
-          username: data.username || null,
-          password: data.password || null,
-          numerocellulare: data.numerocellulare || null,
-          aziendaid: data.aziendaId || null,
-          azienda: aziendaDetails.azienda,
-          titolostudio: data.titolostudio || null,
-          ccnl: data.ccnl || null,
-          contratto: data.contratto || null,
-          qualifica: data.qualifica || null,
-          annoassunzione: data.annoassunzione || null,
         };
 
         const { error } = await supabase
@@ -82,19 +54,6 @@ export const useParticipantSubmit = (
           id: newParticipantId,
           nome: data.nome,
           cognome: data.cognome,
-          codicefiscale: data.codicefiscale || null,
-          luogonascita: data.luogonascita || null,
-          datanascita: formattedBirthDate,
-          username: data.username || null,
-          password: data.password || null,
-          numerocellulare: data.numerocellulare || null,
-          aziendaid: data.aziendaId || null,
-          azienda: aziendaDetails.azienda,
-          titolostudio: data.titolostudio || null,
-          ccnl: data.ccnl || null,
-          contratto: data.contratto || null,
-          qualifica: data.qualifica || null,
-          annoassunzione: data.annoassunzione || null,
           user_id: user.id
         };
 

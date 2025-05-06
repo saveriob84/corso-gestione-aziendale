@@ -1,13 +1,20 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ParticipantFormValues, ParticipantFormDialogProps } from '@/types/participant';
-import { useParticipantForm } from '@/hooks/useParticipantForm';
+import { ParticipantFormValues } from '@/types/participant';
 import { useParticipantSubmit } from '@/hooks/useParticipantSubmit';
-import { ParticipantForm } from '../participant-form/ParticipantForm';
+import { useForm } from "react-hook-form";
+import { FormProvider, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-interface ExtendedParticipantFormDialogProps extends ParticipantFormDialogProps {
+interface ExtendedParticipantFormDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialData?: Partial<ParticipantFormValues>;
+  isEditing?: boolean;
   courseId?: string;
+  onSuccess?: () => void;
 }
 
 const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
@@ -18,12 +25,12 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   courseId,
   onSuccess
 }) => {
-  const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
-  
-  const {
-    form,
-    companies
-  } = useParticipantForm(initialData, isOpen);
+  const form = useForm<ParticipantFormValues>({
+    defaultValues: {
+      nome: initialData?.nome || "",
+      cognome: initialData?.cognome || "",
+    }
+  });
   
   const {
     isSubmitting,
@@ -32,7 +39,7 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
   
   const onSubmit = (data: ParticipantFormValues) => {
     console.log("Form submitted with data:", data);
-    handleSubmit(data, companies);
+    handleSubmit(data, []);
   };
 
   return (
@@ -41,22 +48,68 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-background">
+      <DialogContent className="sm:max-w-[500px] bg-background">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Partecipante' : 'Aggiungi Partecipante'}</DialogTitle>
           <DialogDescription>Inserisci i dati del partecipante al corso</DialogDescription>
         </DialogHeader>
         
         <div className="mt-4">
-          <ParticipantForm 
-            form={form} 
-            isSubmitting={isSubmitting} 
-            onSubmit={onSubmit} 
-            onCancel={onClose} 
-            companies={companies} 
-            onAddCompany={() => setIsCompanyFormOpen(true)} 
-            submitButtonLabel={isEditing ? 'Aggiorna' : 'Aggiungi'} 
-          />
+          <FormProvider {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="nome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="es. Mario" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cognome"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cognome</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="es. Rossi" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end space-x-2 pt-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={onClose}
+                  >
+                    Annulla
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Elaborazione..." : isEditing ? "Aggiorna" : "Aggiungi"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </FormProvider>
         </div>
       </DialogContent>
     </Dialog>
