@@ -5,7 +5,6 @@ import { Company } from '@/types/participant';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
 
 interface CompanySelectorProps {
   control: any;
@@ -35,7 +34,23 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
         return;
       }
       
-      setCompanies(data || []);
+      // Transform the data to match our Company interface
+      const transformedData: Company[] = (data || []).map(item => ({
+        id: item.id,
+        ragioneSociale: item.ragionesociale,
+        partitaIva: item.partitaiva,
+        indirizzo: item.indirizzo || '',
+        comune: item.comune || '',
+        cap: item.cap || '',
+        provincia: item.provincia || '',
+        telefono: item.telefono || '',
+        email: item.email || '',
+        referente: item.referente || '',
+        codiceAteco: item.codiceateco || '',
+        macrosettore: item.macrosettore
+      }));
+      
+      setCompanies(transformedData);
     } catch (error) {
       console.error('Error in loadCompanies:', error);
     } finally {
@@ -45,7 +60,7 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
 
   const filteredCompanies = companies.filter(company => {
     const query = searchQuery.toLowerCase();
-    return company.ragionesociale.toLowerCase().includes(query);
+    return company.ragioneSociale.toLowerCase().includes(query);
   });
 
   return (
@@ -75,7 +90,7 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                   <SelectItem value="">Nessuna azienda</SelectItem>
                   {filteredCompanies.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
-                      {company.ragionesociale}
+                      {company.ragioneSociale}
                     </SelectItem>
                   ))}
                 </SelectContent>
