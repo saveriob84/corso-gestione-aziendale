@@ -87,7 +87,7 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                   <SelectValue placeholder="Seleziona un'azienda" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nessuna azienda</SelectItem>
+                  <SelectItem value="none">Nessuna azienda</SelectItem>
                   {filteredCompanies.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
                       {company.ragioneSociale}
