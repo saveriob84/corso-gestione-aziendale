@@ -4,7 +4,8 @@ import { Participant } from "@/types/participant";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenIcon, Trash2, UserMinus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,34 @@ const ParticipantTable = ({
   const [participantToDelete, setParticipantToDelete] = useState<Participant | null>(null);
   const [participantToDisassociate, setParticipantToDisassociate] = useState<Participant | null>(null);
   const [isDisassociateDialogOpen, setIsDisassociateDialogOpen] = useState(false);
+  const [companiesMap, setCompaniesMap] = useState<Record<string, string>>({});
+
+  // Fetch all companies to map company IDs to company names
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('id, ragionesociale');
+        
+        if (error) {
+          console.error('Error fetching companies:', error);
+          return;
+        }
+        
+        const companyMap: Record<string, string> = {};
+        data.forEach((company) => {
+          companyMap[company.id] = company.ragionesociale;
+        });
+        
+        setCompaniesMap(companyMap);
+      } catch (error) {
+        console.error('Error in fetchCompanies:', error);
+      }
+    };
+    
+    fetchCompanies();
+  }, []);
 
   const handleDeleteClick = (participant: Participant) => {
     setParticipantToDelete(participant);
@@ -109,6 +138,7 @@ const ParticipantTable = ({
           <TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>Cognome</TableHead>
+            <TableHead>Azienda</TableHead>
             <TableHead>Azioni</TableHead>
           </TableRow>
         </TableHeader>
@@ -117,6 +147,15 @@ const ParticipantTable = ({
             <TableRow key={participant.id}>
               <TableCell>{participant.nome}</TableCell>
               <TableCell>{participant.cognome}</TableCell>
+              <TableCell>
+                {participant.aziendaid ? (
+                  <span className="text-sm">{companiesMap[participant.aziendaid] || 'Azienda sconosciuta'}</span>
+                ) : (
+                  <Badge variant="outline" className="bg-gray-100 text-gray-600 hover:bg-gray-100">
+                    Nessuna azienda associata
+                  </Badge>
+                )}
+              </TableCell>
               <TableCell>
                 <div className="flex space-x-2">
                   <Button
@@ -153,7 +192,7 @@ const ParticipantTable = ({
           ))}
           {participants.length === 0 && (
             <TableRow>
-              <TableCell colSpan={3} className="text-center py-4">
+              <TableCell colSpan={4} className="text-center py-4">
                 {isLoading ? 'Caricamento...' : 'Nessun partecipante trovato'}
               </TableCell>
             </TableRow>
