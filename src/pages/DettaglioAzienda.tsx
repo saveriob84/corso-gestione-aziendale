@@ -9,11 +9,11 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Building, Edit, Trash2, Users } from 'lucide-react';
+import { ChevronLeft, Building, Edit, Trash2, Users, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import CompanyFormDialog from '@/components/dialogs/CompanyFormDialog';
-import { Company } from '@/types/participant';
+import { Company, Participant } from '@/types/participant';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,11 +32,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import CompanyParticipantSearchDialog from '@/components/dialogs/CompanyParticipantSearchDialog';
 
-interface Participant {
-  id: string;
-  nome: string;
-  cognome: string;
+interface ParticipantExtended extends Participant {
   qualifica?: string;
   annoassunzione?: string;
 }
@@ -45,10 +43,11 @@ const DettaglioAzienda: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [company, setCompany] = useState<Company | null>(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [participants, setParticipants] = useState<ParticipantExtended[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isParticipantSearchDialogOpen, setIsParticipantSearchDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -100,7 +99,7 @@ const DettaglioAzienda: React.FC = () => {
       // Fetch participants associated with this company
       const { data: participantsData, error: participantsError } = await supabase
         .from('participants')
-        .select('id, nome, cognome, qualifica, annoassunzione')
+        .select('id, nome, cognome, qualifica, annoassunzione, codicefiscale, datanascita, luogonascita, user_id')
         .eq('aziendaid', companyId);
       
       if (participantsError) {
@@ -151,6 +150,36 @@ const DettaglioAzienda: React.FC = () => {
   const handleCompanyUpdated = (updatedCompany: Company) => {
     setCompany(updatedCompany);
     toast.success('Azienda aggiornata con successo');
+  };
+
+  const handleAddParticipant = () => {
+    setIsParticipantSearchDialogOpen(true);
+  };
+
+  const handleAssociateParticipant = async (participant: Participant) => {
+    if (!company) return;
+    
+    try {
+      // Update participant record to associate with this company
+      const { error } = await supabase
+        .from('participants')
+        .update({ aziendaid: company.id })
+        .eq('id', participant.id);
+      
+      if (error) {
+        console.error('Error associating participant with company:', error);
+        toast.error('Errore nell\'associazione del partecipante all\'azienda');
+        return;
+      }
+      
+      toast.success('Partecipante associato all\'azienda con successo');
+      
+      // Refresh the participants list
+      loadCompanyDetails(company.id);
+    } catch (error) {
+      console.error('Error in handleAssociateParticipant:', error);
+      toast.error('Errore nell\'associazione del partecipante all\'azienda');
+    }
   };
 
   if (isLoading) {
@@ -234,7 +263,14 @@ const DettaglioAzienda: React.FC = () => {
             <Users className="inline mr-2 h-5 w-5" />
             Dipendenti dell'Azienda
           </h2>
-          <div className="text-sm text-gray-500">
+          <Button 
+            variant="outline" 
+            onClick={handleAddParticipant}
+            className="flex items-center"
+          >
+            <UserPlus className="mr-2 h-4 w-4" /> Aggiungi Dipendente
+          </Button>
+          <div className="text-sm text-gray-500 ml-4">
             Totale: {participants.length}
           </div>
         </div>
@@ -247,6 +283,7 @@ const DettaglioAzienda: React.FC = () => {
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Cognome</TableHead>
+                    <TableHead>Codice Fiscale</TableHead>
                     <TableHead>Qualifica</TableHead>
                     <TableHead>Anno Assunzione</TableHead>
                   </TableRow>
@@ -256,6 +293,7 @@ const DettaglioAzienda: React.FC = () => {
                     <TableRow key={participant.id}>
                       <TableCell>{participant.nome}</TableCell>
                       <TableCell>{participant.cognome}</TableCell>
+                      <TableCell>{participant.codicefiscale || 'Non specificato'}</TableCell>
                       <TableCell>{participant.qualifica || 'Non specificata'}</TableCell>
                       <TableCell>{participant.annoassunzione || 'Non specificato'}</TableCell>
                     </TableRow>
@@ -280,6 +318,16 @@ const DettaglioAzienda: React.FC = () => {
           initialData={company}
           isEditing={true}
           onCompanyAdded={handleCompanyUpdated}
+        />
+      )}
+
+      {/* Dialogo di ricerca partecipanti */}
+      {company && (
+        <CompanyParticipantSearchDialog
+          isOpen={isParticipantSearchDialogOpen}
+          onClose={() => setIsParticipantSearchDialogOpen(false)}
+          onSelectParticipant={handleAssociateParticipant}
+          companyId={company.id}
         />
       )}
 
