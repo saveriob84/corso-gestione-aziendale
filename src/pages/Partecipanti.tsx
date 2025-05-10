@@ -22,10 +22,16 @@ const Partecipanti = () => {
   } = useParticipants();
 
   const handleEdit = (participant: Participant) => {
+    console.log("Editing participant:", participant);
+    
     const formattedParticipant: Partial<ParticipantFormValues> = {
       id: participant.id,
       nome: participant.nome,
-      cognome: participant.cognome
+      cognome: participant.cognome,
+      codicefiscale: participant.codicefiscale,
+      luogonascita: participant.luogonascita,
+      datanascita: participant.datanascita,
+      aziendaid: participant.aziendaid
     };
     
     setEditingParticipant(formattedParticipant);

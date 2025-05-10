@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ParticipantFormValues } from '@/types/participant';
 import { useParticipantSubmit } from '@/hooks/useParticipantSubmit';
@@ -29,14 +29,31 @@ const ParticipantFormDialog: React.FC<ExtendedParticipantFormDialogProps> = ({
 }) => {
   const form = useForm<ParticipantFormValues>({
     defaultValues: {
-      nome: initialData?.nome || "",
-      cognome: initialData?.cognome || "",
-      codicefiscale: initialData?.codicefiscale || "",
-      luogonascita: initialData?.luogonascita || "",
-      datanascita: initialData?.datanascita || "",
-      aziendaid: initialData?.aziendaid || ""
+      nome: "",
+      cognome: "",
+      codicefiscale: "",
+      luogonascita: "",
+      datanascita: "",
+      aziendaid: ""
     }
   });
+  
+  // Effect to populate form with initial data when editing or when initialData changes
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      console.log("Setting form values with initialData:", initialData);
+      
+      // Reset form with initial data
+      form.reset({
+        nome: initialData.nome || "",
+        cognome: initialData.cognome || "",
+        codicefiscale: initialData.codicefiscale || "",
+        luogonascita: initialData.luogonascita || "",
+        datanascita: initialData.datanascita || "",
+        aziendaid: initialData.aziendaid || ""
+      });
+    }
+  }, [initialData, form]);
   
   const {
     isSubmitting,
