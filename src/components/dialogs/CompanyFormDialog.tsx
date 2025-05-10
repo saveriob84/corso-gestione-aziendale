@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { 
@@ -53,15 +54,6 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
   onCompanyAdded
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [existingCompanies, setExistingCompanies] = useState<CompanyFormValues[]>([]);
-  
-  useEffect(() => {
-    const storedCompanies = localStorage.getItem('companies');
-    if (storedCompanies) {
-      setExistingCompanies(JSON.parse(storedCompanies));
-    }
-  }, []);
   
   const form = useForm<CompanyFormValues>({
     defaultValues: {
@@ -202,13 +194,13 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Azienda' : 'Aggiungi Azienda'}</DialogTitle>
           <DialogDescription>Inserisci i dati dell'azienda</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -217,7 +209,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Ragione sociale</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. TechSolutions Srl" {...field} />
+                      <Input 
+                        placeholder="es. TechSolutions Srl" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -231,7 +227,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Partita IVA</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. IT12345678901" {...field} />
+                      <Input 
+                        placeholder="es. IT12345678901" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -245,7 +245,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem className="md:col-span-2">
                     <FormLabel>Indirizzo</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. Via Roma 123" {...field} />
+                      <Input 
+                        placeholder="es. Via Roma 123" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -259,7 +263,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Comune</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. Milano" {...field} />
+                      <Input 
+                        placeholder="es. Milano" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -274,7 +282,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                     <FormItem>
                       <FormLabel>CAP</FormLabel>
                       <FormControl>
-                        <Input placeholder="es. 20100" {...field} />
+                        <Input 
+                          placeholder="es. 20100" 
+                          {...field} 
+                          onClick={(e) => e.stopPropagation()}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -288,7 +300,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                     <FormItem>
                       <FormLabel>Provincia</FormLabel>
                       <FormControl>
-                        <Input placeholder="es. MI" {...field} />
+                        <Input 
+                          placeholder="es. MI" 
+                          {...field} 
+                          onClick={(e) => e.stopPropagation()}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -303,7 +319,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Telefono</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. 02 12345678" {...field} />
+                      <Input 
+                        placeholder="es. 02 12345678" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -317,7 +337,12 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="es. info@azienda.it" {...field} />
+                      <Input 
+                        type="email" 
+                        placeholder="es. info@azienda.it" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -331,7 +356,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Referente aziendale (opzionale)</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. Dott. Mario Bianchi" {...field} />
+                      <Input 
+                        placeholder="es. Dott. Mario Bianchi" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -345,7 +374,11 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                   <FormItem>
                     <FormLabel>Macrosettore (codice ATECO)</FormLabel>
                     <FormControl>
-                      <Input placeholder="es. 62.01.00" {...field} />
+                      <Input 
+                        placeholder="es. 62.01.00" 
+                        {...field} 
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
