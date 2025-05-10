@@ -13,6 +13,7 @@ import Corsi from "./pages/Corsi";
 import DettaglioCorso from "./pages/DettaglioCorso";
 import ArchivioComunicazioni from "./pages/ArchivioComunicazioni";
 import Aziende from "./pages/Aziende";
+import DettaglioAzienda from "./pages/DettaglioAzienda";
 import Partecipanti from "./pages/Partecipanti";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,11 @@ const App = () => (
             <Route path="/aziende" element={
               <AuthGuard>
                 <SidebarLayout><Aziende /></SidebarLayout>
+              </AuthGuard>
+            } />
+            <Route path="/aziende/:id" element={
+              <AuthGuard>
+                <SidebarLayout><DettaglioAzienda /></SidebarLayout>
               </AuthGuard>
             } />
             <Route path="/partecipanti" element={

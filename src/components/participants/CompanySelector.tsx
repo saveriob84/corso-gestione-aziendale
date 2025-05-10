@@ -74,9 +74,6 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
            company.partitaIva.toLowerCase().includes(query);
   });
 
-  console.log('Filtered companies:', filteredCompanies);
-  console.log('Current search query:', searchQuery);
-
   return (
     <FormField
       control={control}
@@ -96,9 +93,12 @@ export const CompanySelector = ({ control, defaultValue, name }: CompanySelector
                     !field.value && "text-muted-foreground"
                   )}
                   disabled={isLoading}
+                  onClick={() => setOpen(true)}
                 >
-                  {field.value && companies.length > 0
+                  {field.value && field.value !== "none" && companies.length > 0
                     ? companies.find((company) => company.id === field.value)?.ragioneSociale || "Seleziona un'azienda"
+                    : field.value === "none"
+                    ? "Nessuna azienda"
                     : "Seleziona un'azienda"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>

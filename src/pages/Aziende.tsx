@@ -4,12 +4,25 @@ import {
   Card, 
   CardContent, 
   CardHeader, 
-  CardTitle 
+  CardTitle,
+  CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Building } from 'lucide-react';
+import { Plus, Building, Edit, Trash2 } from 'lucide-react';
 import CompanyFormDialog from '@/components/dialogs/CompanyFormDialog';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from '@/integrations/supabase/client';
 
 // Make sure this interface matches CompanyFormValues in CompanyFormDialog.tsx
 interface Company {
@@ -24,41 +37,117 @@ interface Company {
   email: string;
   referente: string;
   codiceAteco: string;
+  macrosettore?: string;
 }
 
 const Aziende: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isCompanyFormOpen, setIsCompanyFormOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedCompanies = localStorage.getItem('companies');
-    if (storedCompanies) {
-      setCompanies(JSON.parse(storedCompanies));
-    }
+    loadCompanies();
   }, []);
+
+  const loadCompanies = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .order('ragionesociale', { ascending: true });
+      
+      if (error) {
+        console.error('Error loading companies:', error);
+        toast.error('Errore nel caricamento delle aziende');
+        return;
+      }
+      
+      // Transform the data to match our Company interface
+      const transformedData: Company[] = (data || []).map(item => ({
+        id: item.id,
+        ragioneSociale: item.ragionesociale,
+        partitaIva: item.partitaiva,
+        indirizzo: item.indirizzo || '',
+        comune: item.comune || '',
+        cap: item.cap || '',
+        provincia: item.provincia || '',
+        telefono: item.telefono || '',
+        email: item.email || '',
+        referente: item.referente || '',
+        codiceAteco: item.codiceateco || '',
+        macrosettore: item.macrosettore
+      }));
+      
+      setCompanies(transformedData);
+    } catch (error) {
+      console.error('Error in loadCompanies:', error);
+      toast.error('Errore nel caricamento delle aziende');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleOpenCompanyForm = () => {
     setIsCompanyFormOpen(true);
   };
 
-  const handleCompanySelect = (company: Company) => {
-    setSelectedCompany(company);
+  const handleViewCompany = (company: Company) => {
+    navigate(`/aziende/${company.id}`);
   };
 
-  const findEmployeesForCompany = (companyId: string) => {
-    const courses = JSON.parse(localStorage.getItem('courses') || '[]');
-    const employeesInCompany: any[] = [];
+  const handleEditCompany = (e: React.MouseEvent, company: Company) => {
+    e.stopPropagation();
+    setSelectedCompany(company);
+    setIsEditDialogOpen(true);
+  };
 
-    courses.forEach((course: any) => {
-      const courseEmployees = course.partecipantiList?.filter(
-        (participant: any) => participant.aziendaId === companyId
-      ) || [];
+  const handleDeleteCompany = (e: React.MouseEvent, company: Company) => {
+    e.stopPropagation();
+    setSelectedCompany(company);
+    setIsDeleteDialogOpen(true);
+  };
 
-      employeesInCompany.push(...courseEmployees);
-    });
+  const confirmDeleteCompany = async () => {
+    if (!selectedCompany) return;
+    
+    try {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', selectedCompany.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setCompanies(companies.filter((c) => c.id !== selectedCompany.id));
+      toast.success('Azienda eliminata con successo');
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      toast.error('Errore durante l\'eliminazione dell\'azienda');
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setSelectedCompany(null);
+    }
+  };
 
-    return employeesInCompany;
+  const handleCompanyUpdated = (updatedCompany: Company) => {
+    setCompanies(prevCompanies => 
+      prevCompanies.map(company => 
+        company.id === updatedCompany.id ? updatedCompany : company
+      )
+    );
+    toast.success('Azienda aggiornata con successo');
+  };
+
+  const handleCompanyAdded = (newCompany: Company) => {
+    setCompanies([...companies, newCompany]);
+    toast.success('Azienda aggiunta con successo');
   };
 
   return (
@@ -70,90 +159,105 @@ const Aziende: React.FC = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {companies.map((company) => (
-          <Card 
-            key={company.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => handleCompanySelect(company)}
-          >
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Building className="mr-2 h-5 w-5" />
-                {company.ragioneSociale}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p><strong>P. IVA:</strong> {company.partitaIva}</p>
-              <p><strong>Comune:</strong> {company.comune}</p>
-              <p><strong>Referente:</strong> {company.referente || 'Non specificato'}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {selectedCompany && (
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">
-            Dettagli Azienda: {selectedCompany.ragioneSociale}
-          </h2>
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <p><strong>Partita IVA:</strong> {selectedCompany.partitaIva}</p>
-                  <p><strong>Indirizzo:</strong> {selectedCompany.indirizzo}</p>
-                  <p><strong>Comune:</strong> {selectedCompany.comune}</p>
-                  <p><strong>CAP:</strong> {selectedCompany.cap}</p>
-                  <p><strong>Provincia:</strong> {selectedCompany.provincia}</p>
-                </div>
-                <div>
-                  <p><strong>Telefono:</strong> {selectedCompany.telefono}</p>
-                  <p><strong>Email:</strong> {selectedCompany.email}</p>
-                  <p><strong>Referente:</strong> {selectedCompany.referente || 'Non specificato'}</p>
-                  <p><strong>Codice ATECO:</strong> {selectedCompany.codiceAteco}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <h3 className="text-lg font-semibold mt-6 mb-4">
-            Dipendenti dell'Azienda
-          </h3>
-          {findEmployeesForCompany(selectedCompany.id).length > 0 ? (
-            <div className="space-y-2">
-              {findEmployeesForCompany(selectedCompany.id).map((employee) => (
-                <Card key={employee.id}>
-                  <CardContent className="p-4">
-                    <div className="flex justify-between">
-                      <div>
-                        <p><strong>Nome:</strong> {employee.nome} {employee.cognome}</p>
-                        <p><strong>Qualifica:</strong> {employee.qualifica}</p>
-                      </div>
-                      <div>
-                        <p><strong>Anno Assunzione:</strong> {employee.annoAssunzione}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">Nessun dipendente trovato per questa azienda.</p>
-          )}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-40">
+          <p>Caricamento aziende...</p>
+        </div>
+      ) : companies.length === 0 ? (
+        <div className="text-center p-10 border rounded-lg border-dashed">
+          <Building className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+          <p className="text-gray-500">Nessuna azienda trovata</p>
+          <Button variant="outline" className="mt-4" onClick={handleOpenCompanyForm}>
+            <Plus className="mr-2 h-4 w-4" /> Aggiungi la prima azienda
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {companies.map((company) => (
+            <Card 
+              key={company.id}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => handleViewCompany(company)}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Building className="mr-2 h-5 w-5" />
+                  {company.ragioneSociale}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p><strong>P. IVA:</strong> {company.partitaIva}</p>
+                <p><strong>Comune:</strong> {company.comune}</p>
+                <p><strong>Referente:</strong> {company.referente || 'Non specificato'}</p>
+              </CardContent>
+              <CardFooter className="flex justify-end space-x-2 pt-0">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={(e) => handleEditCompany(e, company)}
+                >
+                  <Edit className="h-4 w-4 mr-1" /> Modifica
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={(e) => handleDeleteCompany(e, company)}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" /> Elimina
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       )}
 
+      {/* Dialogo di conferma eliminazione */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questa azienda?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Questa azione non può essere annullata. L'azienda sarà rimossa permanentemente dal sistema.
+              {selectedCompany && (
+                <div className="mt-2 p-3 bg-gray-100 rounded-md dark:bg-gray-800">
+                  <p><strong>Ragione Sociale:</strong> {selectedCompany.ragioneSociale}</p>
+                  <p><strong>Partita IVA:</strong> {selectedCompany.partitaIva}</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700" 
+              onClick={confirmDeleteCompany}
+            >
+              Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Form di aggiunta azienda */}
       <CompanyFormDialog
         isOpen={isCompanyFormOpen}
         onClose={() => setIsCompanyFormOpen(false)}
-        onCompanyAdded={(newCompany: Company) => {
-          const updatedCompanies = [...companies, newCompany];
-          setCompanies(updatedCompanies);
-          localStorage.setItem('companies', JSON.stringify(updatedCompanies));
-          toast.success('Azienda aggiunta con successo');
-        }}
+        onCompanyAdded={handleCompanyAdded}
       />
+
+      {/* Form di modifica azienda */}
+      {selectedCompany && (
+        <CompanyFormDialog
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setSelectedCompany(null);
+          }}
+          initialData={selectedCompany}
+          isEditing={true}
+          onCompanyAdded={handleCompanyUpdated}
+        />
+      )}
     </div>
   );
 };
