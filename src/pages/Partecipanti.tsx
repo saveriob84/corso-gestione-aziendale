@@ -75,6 +75,7 @@ const Partecipanti = () => {
             onDelete={handleDelete}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            onRefreshData={loadParticipants}
           />
         </CardContent>
       </Card>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -9,7 +8,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Building, Edit, Trash2, Users, UserPlus } from 'lucide-react';
+import { ChevronLeft, Building, Edit, Trash2, Users, UserPlus, UserMinus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import CompanyFormDialog from '@/components/dialogs/CompanyFormDialog';
@@ -48,6 +47,8 @@ const DettaglioAzienda: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isParticipantSearchDialogOpen, setIsParticipantSearchDialogOpen] = useState(false);
+  const [participantToDisassociate, setParticipantToDisassociate] = useState<ParticipantExtended | null>(null);
+  const [isDisassociateDialogOpen, setIsDisassociateDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -182,6 +183,42 @@ const DettaglioAzienda: React.FC = () => {
     }
   };
 
+  const handleDisassociateParticipant = (participant: ParticipantExtended) => {
+    setParticipantToDisassociate(participant);
+    setIsDisassociateDialogOpen(true);
+  };
+
+  const confirmDisassociateParticipant = async () => {
+    if (!participantToDisassociate) return;
+    
+    try {
+      // Update participant record to remove company association
+      const { error } = await supabase
+        .from('participants')
+        .update({ aziendaid: null })
+        .eq('id', participantToDisassociate.id);
+      
+      if (error) {
+        console.error('Error disassociating participant from company:', error);
+        toast.error('Errore nella rimozione del partecipante dall\'azienda');
+        return;
+      }
+      
+      toast.success('Partecipante rimosso dall\'azienda con successo');
+      
+      // Refresh the participants list
+      if (company) {
+        loadCompanyDetails(company.id);
+      }
+    } catch (error) {
+      console.error('Error in confirmDisassociateParticipant:', error);
+      toast.error('Errore nella rimozione del partecipante dall\'azienda');
+    } finally {
+      setIsDisassociateDialogOpen(false);
+      setParticipantToDisassociate(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-4">
@@ -286,6 +323,7 @@ const DettaglioAzienda: React.FC = () => {
                     <TableHead>Codice Fiscale</TableHead>
                     <TableHead>Qualifica</TableHead>
                     <TableHead>Anno Assunzione</TableHead>
+                    <TableHead>Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -296,6 +334,17 @@ const DettaglioAzienda: React.FC = () => {
                       <TableCell>{participant.codicefiscale || 'Non specificato'}</TableCell>
                       <TableCell>{participant.qualifica || 'Non specificata'}</TableCell>
                       <TableCell>{participant.annoassunzione || 'Non specificato'}</TableCell>
+                      <TableCell>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDisassociateParticipant(participant)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                        >
+                          <UserMinus className="h-4 w-4 mr-1" />
+                          Dissocia
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -331,7 +380,7 @@ const DettaglioAzienda: React.FC = () => {
         />
       )}
 
-      {/* Dialogo di conferma eliminazione */}
+      {/* Dialogo di conferma eliminazione azienda */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -351,6 +400,33 @@ const DettaglioAzienda: React.FC = () => {
               onClick={confirmDeleteCompany}
             >
               Elimina
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialogo di conferma disassociazione partecipante */}
+      <AlertDialog open={isDisassociateDialogOpen} onOpenChange={setIsDisassociateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Conferma disassociazione</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sei sicuro di voler rimuovere questo partecipante dall'azienda?
+              {participantToDisassociate && (
+                <div className="mt-2 p-3 bg-gray-100 rounded-md dark:bg-gray-800">
+                  <p><strong>Nome:</strong> {participantToDisassociate.nome} {participantToDisassociate.cognome}</p>
+                  <p><strong>Codice Fiscale:</strong> {participantToDisassociate.codicefiscale || 'Non specificato'}</p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700" 
+              onClick={confirmDisassociateParticipant}
+            >
+              Dissocia
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
