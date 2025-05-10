@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CompanyFormValues {
   id: string;
@@ -33,6 +34,7 @@ interface CompanyFormValues {
   email: string;
   referente: string;
   codiceAteco: string;
+  macrosettore?: string;
 }
 
 interface CompanyFormDialogProps {
@@ -50,6 +52,8 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
   isEditing = false,
   onCompanyAdded
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [existingCompanies, setExistingCompanies] = useState<CompanyFormValues[]>([]);
   
   useEffect(() => {
@@ -72,45 +76,128 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
       email: initialData.email || "",
       referente: initialData.referente || "",
       codiceAteco: initialData.codiceAteco || "",
+      macrosettore: initialData.macrosettore || "",
     }
   });
 
-  const onSubmit = (data: CompanyFormValues) => {
-    const duplicateCompany = existingCompanies.find(
-      company => company.partitaIva === data.partitaIva && company.id !== initialData.id
-    );
-    
-    if (duplicateCompany) {
-      toast.error("Esiste già un'azienda con questa Partita IVA");
-      return;
+  // Reset form when initialData changes
+  useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        id: initialData.id || uuidv4(),
+        ragioneSociale: initialData.ragioneSociale || "",
+        partitaIva: initialData.partitaIva || "",
+        indirizzo: initialData.indirizzo || "",
+        comune: initialData.comune || "",
+        cap: initialData.cap || "",
+        provincia: initialData.provincia || "",
+        telefono: initialData.telefono || "",
+        email: initialData.email || "",
+        referente: initialData.referente || "",
+        codiceAteco: initialData.codiceAteco || "",
+        macrosettore: initialData.macrosettore || "",
+      });
     }
+  }, [initialData, isOpen, form]);
+
+  const onSubmit = async (data: CompanyFormValues) => {
+    setIsSubmitting(true);
     
-    const companyToSave = {
-      ...data,
-      id: isEditing && initialData.id ? initialData.id : data.id || uuidv4()
-    };
-    
-    let updatedCompanies;
-    if (isEditing && initialData.id) {
-      updatedCompanies = existingCompanies.map(company => 
-        company.id === initialData.id ? companyToSave : company
+    try {
+      // Check for duplicate partita IVA if not editing
+      if (!isEditing && data.partitaIva) {
+        const { data: existingCompany, error: checkError } = await supabase
+          .from('companies')
+          .select('id')
+          .eq('partitaiva', data.partitaIva)
+          .maybeSingle();
+          
+        if (checkError) {
+          console.error("Error checking for duplicate company:", checkError);
+        }
+        
+        if (existingCompany) {
+          toast.error("Esiste già un'azienda con questa Partita IVA");
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      // Prepare data for Supabase (convert to snake_case)
+      const companyData = {
+        ragionesociale: data.ragioneSociale,
+        partitaiva: data.partitaIva,
+        indirizzo: data.indirizzo,
+        comune: data.comune,
+        cap: data.cap,
+        provincia: data.provincia,
+        telefono: data.telefono,
+        email: data.email,
+        referente: data.referente,
+        codiceateco: data.codiceAteco,
+        macrosettore: data.macrosettore
+      };
+      
+      let result;
+      
+      if (isEditing && initialData.id) {
+        // Update existing company
+        result = await supabase
+          .from('companies')
+          .update(companyData)
+          .eq('id', initialData.id)
+          .select()
+          .single();
+      } else {
+        // Insert new company
+        result = await supabase
+          .from('companies')
+          .insert(companyData)
+          .select()
+          .single();
+      }
+      
+      const { data: savedCompany, error } = result;
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Transform the saved company data to match our CompanyFormValues interface
+      const transformedCompany: CompanyFormValues = {
+        id: savedCompany.id,
+        ragioneSociale: savedCompany.ragionesociale,
+        partitaIva: savedCompany.partitaiva,
+        indirizzo: savedCompany.indirizzo || '',
+        comune: savedCompany.comune || '',
+        cap: savedCompany.cap || '',
+        provincia: savedCompany.provincia || '',
+        telefono: savedCompany.telefono || '',
+        email: savedCompany.email || '',
+        referente: savedCompany.referente || '',
+        codiceAteco: savedCompany.codiceateco || '',
+        macrosettore: savedCompany.macrosettore || ''
+      };
+      
+      toast.success(isEditing 
+        ? "Azienda aggiornata con successo" 
+        : "Azienda aggiunta con successo"
       );
-    } else {
-      updatedCompanies = [...existingCompanies, companyToSave];
+      
+      if (onCompanyAdded) {
+        onCompanyAdded(transformedCompany);
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error("Error saving company:", error);
+      toast.error(isEditing
+        ? "Errore durante l'aggiornamento dell'azienda"
+        : "Errore durante l'aggiunta dell'azienda"
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    localStorage.setItem('companies', JSON.stringify(updatedCompanies));
-    
-    toast.success(isEditing 
-      ? "Azienda aggiornata con successo" 
-      : "Azienda aggiunta con successo"
-    );
-    
-    if (onCompanyAdded && !isEditing) {
-      onCompanyAdded(companyToSave);
-    }
-    
-    onClose();
   };
 
   return (
@@ -267,8 +354,10 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
             </div>
             
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>Annulla</Button>
-              <Button type="submit">{isEditing ? 'Aggiorna' : 'Aggiungi'}</Button>
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Annulla</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Salvataggio in corso...' : isEditing ? 'Aggiorna' : 'Aggiungi'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

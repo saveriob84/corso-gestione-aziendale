@@ -48,3 +48,44 @@ export const findOrCreateCompany = async (companyData: any) => {
     return undefined;
   }
 };
+
+export const checkCompanyHasParticipants = async (companyId: string) => {
+  try {
+    const { count, error } = await supabase
+      .from('participants')
+      .select('id', { count: 'exact', head: true })
+      .eq('aziendaid', companyId);
+    
+    if (error) {
+      console.error('Error checking company participants:', error);
+      return { hasParticipants: true, count: 0, error };
+    }
+    
+    return { 
+      hasParticipants: count > 0, 
+      count: count || 0,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error in checkCompanyHasParticipants:', error);
+    return { hasParticipants: true, count: 0, error };
+  }
+};
+
+export const deleteCompany = async (companyId: string) => {
+  try {
+    const { error } = await supabase
+      .from('companies')
+      .delete()
+      .eq('id', companyId);
+    
+    if (error) {
+      return { success: false, error };
+    }
+    
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error in deleteCompany:', error);
+    return { success: false, error };
+  }
+};
