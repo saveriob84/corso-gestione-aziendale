@@ -23,7 +23,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from '@/integrations/supabase/client';
-import { checkCompanyHasParticipants, deleteCompany } from '@/utils/companyUtils';
 
 // Make sure this interface matches CompanyFormValues in CompanyFormDialog.tsx
 interface Company {
@@ -48,8 +47,6 @@ const Aziende: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasParticipants, setHasParticipants] = useState(false);
-  const [participantCount, setParticipantCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,7 +83,6 @@ const Aziende: React.FC = () => {
         macrosettore: item.macrosettore
       }));
       
-      console.info('Transformed companies data:', transformedData);
       setCompanies(transformedData);
     } catch (error) {
       console.error('Error in loadCompanies:', error);
@@ -110,14 +106,9 @@ const Aziende: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteCompany = async (e: React.MouseEvent, company: Company) => {
+  const handleDeleteCompany = (e: React.MouseEvent, company: Company) => {
     e.stopPropagation();
     setSelectedCompany(company);
-    
-    // Check if company has participants before showing delete dialog
-    const { hasParticipants, count } = await checkCompanyHasParticipants(company.id);
-    setHasParticipants(hasParticipants);
-    setParticipantCount(count);
     setIsDeleteDialogOpen(true);
   };
 
@@ -125,16 +116,12 @@ const Aziende: React.FC = () => {
     if (!selectedCompany) return;
     
     try {
-      if (hasParticipants) {
-        toast.error(`Impossibile eliminare l'azienda: ci sono ${participantCount} partecipanti associati. Dissociali prima di procedere.`);
-        setIsDeleteDialogOpen(false);
-        setSelectedCompany(null);
-        return;
-      }
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', selectedCompany.id);
       
-      const { success, error } = await deleteCompany(selectedCompany.id);
-      
-      if (!success) {
+      if (error) {
         throw error;
       }
       
@@ -159,10 +146,8 @@ const Aziende: React.FC = () => {
   };
 
   const handleCompanyAdded = (newCompany: Company) => {
-    setCompanies(prevCompanies => [...prevCompanies, newCompany]);
+    setCompanies([...companies, newCompany]);
     toast.success('Azienda aggiunta con successo');
-    // Force refresh the companies list to ensure new company appears
-    loadCompanies();
   };
 
   return (
@@ -230,44 +215,25 @@ const Aziende: React.FC = () => {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {hasParticipants 
-                ? "Impossibile eliminare l'azienda" 
-                : "Sei sicuro di voler eliminare questa azienda?"}
-            </AlertDialogTitle>
+            <AlertDialogTitle>Sei sicuro di voler eliminare questa azienda?</AlertDialogTitle>
             <AlertDialogDescription>
-              {hasParticipants ? (
-                <div>
-                  <p className="text-red-500 font-semibold">
-                    L'azienda ha {participantCount} partecipanti associati.
-                  </p>
-                  <p className="mt-2">
-                    Prima di eliminare l'azienda, devi dissociare tutti i partecipanti.
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  Questa azione non può essere annullata. L'azienda sarà rimossa permanentemente dal sistema.
-                  {selectedCompany && (
-                    <div className="mt-2 p-3 bg-gray-100 rounded-md dark:bg-gray-800">
-                      <p><strong>Ragione Sociale:</strong> {selectedCompany.ragioneSociale}</p>
-                      <p><strong>Partita IVA:</strong> {selectedCompany.partitaIva}</p>
-                    </div>
-                  )}
+              Questa azione non può essere annullata. L'azienda sarà rimossa permanentemente dal sistema.
+              {selectedCompany && (
+                <div className="mt-2 p-3 bg-gray-100 rounded-md dark:bg-gray-800">
+                  <p><strong>Ragione Sociale:</strong> {selectedCompany.ragioneSociale}</p>
+                  <p><strong>Partita IVA:</strong> {selectedCompany.partitaIva}</p>
                 </div>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annulla</AlertDialogCancel>
-            {!hasParticipants && (
-              <AlertDialogAction 
-                className="bg-red-600 hover:bg-red-700" 
-                onClick={confirmDeleteCompany}
-              >
-                Elimina
-              </AlertDialogAction>
-            )}
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700" 
+              onClick={confirmDeleteCompany}
+            >
+              Elimina
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
