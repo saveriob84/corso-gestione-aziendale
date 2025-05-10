@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { 
@@ -20,6 +21,8 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
+import { findOrCreateCompany } from '@/utils/companyUtils';
 
 interface CompanyFormValues {
   id: string;
@@ -50,14 +53,6 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
   isEditing = false,
   onCompanyAdded
 }) => {
-  const [existingCompanies, setExistingCompanies] = useState<CompanyFormValues[]>([]);
-  
-  useEffect(() => {
-    const storedCompanies = localStorage.getItem('companies');
-    if (storedCompanies) {
-      setExistingCompanies(JSON.parse(storedCompanies));
-    }
-  }, []);
   
   const form = useForm<CompanyFormValues>({
     defaultValues: {
@@ -75,47 +70,83 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
     }
   });
 
-  const onSubmit = (data: CompanyFormValues) => {
-    const duplicateCompany = existingCompanies.find(
-      company => company.partitaIva === data.partitaIva && company.id !== initialData.id
-    );
-    
-    if (duplicateCompany) {
-      toast.error("Esiste già un'azienda con questa Partita IVA");
-      return;
+  const handleDialogClick = (e: React.MouseEvent) => {
+    // Prevent click from propagating to parent elements
+    e.stopPropagation();
+  };
+
+  const onSubmit = async (data: CompanyFormValues) => {
+    try {
+      let companyId;
+      
+      if (isEditing && initialData.id) {
+        // Update existing company in Supabase
+        const { error } = await supabase
+          .from('companies')
+          .update({
+            ragionesociale: data.ragioneSociale,
+            partitaiva: data.partitaIva,
+            indirizzo: data.indirizzo,
+            comune: data.comune,
+            cap: data.cap,
+            provincia: data.provincia,
+            telefono: data.telefono,
+            email: data.email,
+            referente: data.referente,
+            codiceateco: data.codiceAteco
+          })
+          .eq('id', initialData.id);
+        
+        if (error) {
+          console.error('Error updating company:', error);
+          toast.error("Errore durante l'aggiornamento dell'azienda");
+          return;
+        }
+        
+        companyId = initialData.id;
+        toast.success("Azienda aggiornata con successo");
+      } else {
+        // Insert new company to Supabase
+        companyId = await findOrCreateCompany({
+          ragioneSociale: data.ragioneSociale,
+          partitaIva: data.partitaIva,
+          indirizzo: data.indirizzo,
+          comune: data.comune,
+          cap: data.cap,
+          provincia: data.provincia,
+          telefono: data.telefono,
+          email: data.email,
+          referente: data.referente,
+          codiceAteco: data.codiceAteco
+        });
+        
+        if (!companyId) {
+          toast.error("Errore durante la creazione dell'azienda");
+          return;
+        }
+        toast.success("Azienda aggiunta con successo");
+      }
+      
+      // Transform the data for the onCompanyAdded callback
+      const companyToReturn = {
+        ...data,
+        id: companyId
+      };
+      
+      if (onCompanyAdded) {
+        onCompanyAdded(companyToReturn);
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error('Error in company submission:', error);
+      toast.error("Si è verificato un errore durante il salvataggio dell'azienda");
     }
-    
-    const companyToSave = {
-      ...data,
-      id: isEditing && initialData.id ? initialData.id : data.id || uuidv4()
-    };
-    
-    let updatedCompanies;
-    if (isEditing && initialData.id) {
-      updatedCompanies = existingCompanies.map(company => 
-        company.id === initialData.id ? companyToSave : company
-      );
-    } else {
-      updatedCompanies = [...existingCompanies, companyToSave];
-    }
-    
-    localStorage.setItem('companies', JSON.stringify(updatedCompanies));
-    
-    toast.success(isEditing 
-      ? "Azienda aggiornata con successo" 
-      : "Azienda aggiunta con successo"
-    );
-    
-    if (onCompanyAdded && !isEditing) {
-      onCompanyAdded(companyToSave);
-    }
-    
-    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]" onClick={handleDialogClick}>
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Modifica Azienda' : 'Aggiungi Azienda'}</DialogTitle>
           <DialogDescription>Inserisci i dati dell'azienda</DialogDescription>

@@ -116,19 +116,40 @@ const Aziende: React.FC = () => {
     if (!selectedCompany) return;
     
     try {
+      // First check if there are any participants associated with this company
+      const { data: associatedParticipants, error: checkError } = await supabase
+        .from('participants')
+        .select('id')
+        .eq('aziendaid', selectedCompany.id);
+      
+      if (checkError) {
+        console.error('Error checking associated participants:', checkError);
+        toast.error('Errore durante la verifica delle associazioni');
+        return;
+      }
+      
+      if (associatedParticipants && associatedParticipants.length > 0) {
+        toast.error(`Non puoi eliminare questa azienda perché ha ${associatedParticipants.length} dipendenti associati. Rimuovi prima tutte le associazioni.`);
+        setIsDeleteDialogOpen(false);
+        return;
+      }
+      
+      // If no associations, proceed with deletion
       const { error } = await supabase
         .from('companies')
         .delete()
         .eq('id', selectedCompany.id);
       
       if (error) {
-        throw error;
+        console.error('Error deleting company:', error);
+        toast.error('Errore durante l\'eliminazione dell\'azienda');
+        return;
       }
       
       setCompanies(companies.filter((c) => c.id !== selectedCompany.id));
       toast.success('Azienda eliminata con successo');
     } catch (error) {
-      console.error('Error deleting company:', error);
+      console.error('Error in confirmDeleteCompany:', error);
       toast.error('Errore durante l\'eliminazione dell\'azienda');
     } finally {
       setIsDeleteDialogOpen(false);
@@ -142,11 +163,12 @@ const Aziende: React.FC = () => {
         company.id === updatedCompany.id ? updatedCompany : company
       )
     );
+    loadCompanies(); // Refresh companies to get the latest data
     toast.success('Azienda aggiornata con successo');
   };
 
   const handleCompanyAdded = (newCompany: Company) => {
-    setCompanies([...companies, newCompany]);
+    loadCompanies(); // Reload companies from the database instead of just adding to state
     toast.success('Azienda aggiunta con successo');
   };
 
@@ -213,7 +235,7 @@ const Aziende: React.FC = () => {
 
       {/* Dialogo di conferma eliminazione */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>Sei sicuro di voler eliminare questa azienda?</AlertDialogTitle>
             <AlertDialogDescription>
